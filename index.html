@@ -11,15 +11,14 @@
 <script src="data/products.js"></script>
 </head>
 <body>
-<header class="head"><div class="wrap"><div class="eyebrow">Prototype 0.4</div><h1>Growbox Fertilizer Toolbox</h1><p class="muted">Label analysis → elemental analysis → ppm → blend feed charts.</p></div></header>
+<header class="head"><div class="wrap"><div class="eyebrow">Prototype 0.5</div><h1>Growbox Fertilizer Toolbox</h1><p class="muted">Label analysis → elemental analysis → ppm → blend feed charts.</p></div></header>
 <main class="wrap">
 <nav class="tabs"><button class="tab active" data-view="compare">Compare</button><button class="tab" data-view="analysis">Guaranteed analysis</button><button class="tab" data-view="blend">Blend finder</button></nav>
 <div id="notice" class="notice hidden"></div>
 <section id="compare" class="view active">
-<div class="grid2"><div class="card"><div class="section-head"><div><h2>Compare product lines</h2><p class="muted">Choose up to 5 complete nutrient lines. Ingredient salts stay in Blend Finder only.</p></div><div id="compareCount" class="limit-note"></div></div><div id="compareGroups"></div><div class="toolbar" style="margin-top:12px"><label>Standardized N <select id="nLevel"><option>120</option><option>140</option><option selected>160</option><option>180</option><option>200</option></select> ppm</label><div class="nutrient-toggle"><button id="macroView" class="active" type="button">Macros</button><button id="microView" type="button">+ Micros</button></div></div></div><div class="card"><h2>Two ways to read fertilizer</h2><p><b>Label</b> uses N-P₂O₅-K₂O, the familiar fertilizer convention.</p><p><b>Elemental</b> converts phosphorus and potassium to actual P and K. All ppm math uses elemental values.</p></div></div>
-<div class="card"><h2>Label vs elemental</h2><div class="table"><table id="analysisCompare"></table></div></div>
-<div class="card"><h2>Standardized nitrogen comparison</h2><div class="table"><table id="nCompare"></table></div></div>
-<div class="card"><h2>Manufacturer suggested use rates</h2><p class="muted">Rates are shown only when they are present in the hardcoded product record. We will populate verified manufacturer data next.</p><div id="rates"></div></div>
+<div class="grid2"><div class="card"><div class="section-head"><div><h2>Compare product lines</h2><p class="muted">Choose up to 5 complete nutrient lines. Ingredient salts stay in Blend Finder only.</p></div><div id="compareCount" class="limit-note"></div></div><div id="compareGroups"></div><div class="toolbar" style="margin-top:12px"><label>Standardized N <select id="nLevel"><option>120</option><option>140</option><option selected>160</option><option>180</option><option>200</option></select> ppm</label><div class="nutrient-toggle"><button id="macroView" class="active" type="button">Macros</button><button id="microView" type="button">+ Micros</button></div></div></div><div class="card"><h2>How the comparison works</h2><p><b>Guaranteed analysis</b> is shown as the manufacturer prints it: N-P₂O₅-K₂O plus listed secondary nutrients and micros.</p><p><b>Elemental ppm</b> converts P₂O₅ → P and K₂O → K, then calculates the actual mg/L delivered at the selected dose.</p></div></div>
+<div class="card"><h2>Guaranteed analysis → elemental ppm</h2><p class="muted">Guaranteed analysis stays in familiar label units. The ppm columns convert that analysis to elemental N, P, K, Ca, Mg, S and micros at the selected standardized-N level.</p><div class="table"><table id="analysisCompare"></table></div></div>
+<div class="card"><h2>Manufacturer suggested rates → elemental ppm</h2><p class="muted">Each loaded manufacturer rate is converted to elemental ppm using the same chemistry engine. Multi-part lines show the component doses used.</p><div class="table"><table id="ratesTable"></table></div></div>
 </section>
 <section id="analysis" class="view">
 <div class="grid2"><div class="card"><h2>Enter guaranteed analysis</h2><p class="muted">Enter the label exactly as printed. P₂O₅ and K₂O are converted automatically.</p><div id="gaInputs" class="inputs"></div></div><div class="card"><h2>Elemental analysis</h2><div class="table"><table id="gaElemental"></table></div></div></div>
@@ -35,7 +34,7 @@
 </main>
 <script>
 (()=>{'use strict';
-const PRODUCTS=window.FERTILIZER_PRODUCTS||[],SYSTEMS=window.FERTILIZER_SYSTEMS||[],G=3.785411784,F=1000/G,PF=.436426,KF=.830151,LEVELS=[120,140,160,180,200],KEY='growbox-fert-tool-v04';
+const PRODUCTS=window.FERTILIZER_PRODUCTS||[],SYSTEMS=window.FERTILIZER_SYSTEMS||[],G=3.785411784,F=1000/G,PF=.436426,KF=.830151,LEVELS=[120,140,160,180,200],KEY='growbox-fert-tool-v05';
 const EK=['N','P','K','Ca','Mg','S','Fe','Mn','Zn','B','Cu','Mo'];
 const fresh=()=>({view:'compare',compare:['megacrop-11-5-14','jacks-12-4-16'],systemCompare:['athena-pro-veg'],systemParts:{},showMicros:false,n:160,manual:{N:12,P2O5:4,K2O:16,Ca:7,Mg:2,S:0,Fe:.15,Mn:.05,Zn:.035,B:.02,Cu:.02,Mo:.001},blend:{mode:'label',ids:['jacks-12-4-16','jacks-5-12-26-a','jacks-15-0-0-b','jacks-epsom','mkp-0-52-34'],target:{N:12,P2O5:5,K2O:16,P:2.18,K:13.28,Ca:7,Mg:2,S:2},result:null}});
 let S;try{S=JSON.parse(sessionStorage.getItem(KEY))||fresh()}catch{S=fresh()}
@@ -109,6 +108,29 @@ function selectedCompareEntries(){
   S.systemCompare.map(id=>SYSTEMS.find(x=>x.id===id)).filter(Boolean).forEach(sys=>{const m=systemMix(sys);items.push({kind:'system',brand:sys.brand,name:sys.name,analysis:m.analysis,system:sys,mix:m,useRates:sys.useRates||[]})});
   return items.slice(0,5);
 }
+function flash(message,kind=''){
+  const box=$('notice');box.textContent=message;box.className='notice'+(kind?' '+kind:'');box.classList.remove('hidden');
+  clearTimeout(flash._t);flash._t=setTimeout(()=>box.classList.add('hidden'),3500);
+}
+function systemStandardDoseText(e,totalG){
+  const pieces=e.mix.products.map((p,i)=>{
+    const g=totalG*e.mix.weights[i];
+    if(p.form==='liquid'&&num(p.densityGPerMl)>0)return esc(e.system.components[i].label)+' '+fmt(g/p.densityGPerMl,3)+' mL/gal';
+    return esc(e.system.components[i].label)+' '+fmt(g,3)+' g/gal';
+  });
+  return fmt(totalG,3)+' g/gal total<br><small class="muted">'+pieces.join(' + ')+'</small>';
+}
+function systemRateResult(e,r){
+  const total={};EK.forEach(k=>total[k]=0);
+  const labels=[];let totalG=0;
+  (r.components||[]).forEach(c=>{
+    const p=prod(c.productId);if(!p)return;
+    const g=c.gPerGal!=null?num(c.gPerGal):num(c.mLPerGal)*num(p.densityGPerMl||1);
+    const x=ppm(p,g);totalG+=g;EK.forEach(k=>total[k]+=x[k]||0);
+    labels.push(c.gPerGal!=null?esc(p.name)+' '+fmt(c.gPerGal,3)+' g/gal':esc(p.name)+' '+fmt(c.mLPerGal,3)+' mL/gal');
+  });
+  return{total,totalG,label:labels.join(' + ')};
+}
 function highlightClass(entries,key,index){
   if(entries.length<2)return'';
   const vals=entries.map(e=>e.values[key]).filter(Number.isFinite);
@@ -140,22 +162,59 @@ function compareTables(){
   const entries=selectedCompareEntries();
   const macroKeys=['N','P','K','Ca','Mg','S'],microKeys=['Fe','Mn','Zn','B','Cu','Mo'];
   const displayKeys=S.showMicros?macroKeys.concat(microKeys):macroKeys;
-  $('analysisCompare').innerHTML='<thead><tr><th>Product / system</th><th>Label N-P₂O₅-K₂O</th><th>Elemental N / P / K</th>'+displayKeys.slice(3).map(k=>'<th>'+k+'%</th>').join('')+'</tr></thead><tbody>'+entries.map(e=>{const x=elem(e.analysis),suffix=e.kind==='system'?' <small class="muted">(linked system)</small>':'';return'<tr><td>'+esc(e.brand+' — '+e.name)+suffix+'</td><td>'+fmt(e.analysis.N)+'-'+fmt(e.analysis.P2O5)+'-'+fmt(e.analysis.K2O)+'</td><td>'+fmt(x.N)+' / '+fmt(x.P)+' / '+fmt(x.K)+'</td>'+displayKeys.slice(3).map(k=>'<td>'+fmt(x[k],k==='Mo'?4:3)+'</td>').join('')+'</tr>'}).join('')+'</tbody>';
+  const labelExtra=S.showMicros?['Fe','Mn','Zn','B','Cu','Mo']:['Ca','Mg','S'];
+  const calc=entries.map(e=>{
+    const d=doseN(e.analysis,S.n),x=d===null?null:ppm(e.analysis,d);
+    return{entry:e,dose:d,values:x||{}};
+  });
 
-  const calc=entries.map(e=>{const d=doseN(e.analysis,S.n),x=d===null?null:ppm(e.analysis,d);return{entry:e,dose:d,values:x||{}}});
-  $('nCompare').innerHTML='<thead><tr><th>Product / system</th><th>Dose at '+S.n+' ppm N</th>'+displayKeys.map(k=>'<th>'+k+'</th>').join('')+'</tr></thead><tbody>'+calc.map((row,i)=>{
-    const e=row.entry;if(row.dose===null)return'<tr><td>'+esc(e.name)+'</td><td colspan="'+(displayKeys.length+1)+'">No N — cannot standardize</td></tr>';
-    const doseText=e.kind==='system'?systemStandardDoseText(e,row.dose):productDoseText(e.product,row.dose);
-    return'<tr><td>'+esc(e.name)+'</td><td>'+doseText+'</td>'+displayKeys.map(k=>'<td class="'+highlightClass(calc,k,i)+'">'+fmt(row.values[k],microKeys.includes(k)?(k==='Mo'?4:3):1)+'</td>').join('')+'</tr>';
-  }).join('')+'</tbody>';
+  $('analysisCompare').innerHTML=
+    '<thead><tr><th>Product / system</th><th>Guaranteed analysis</th>'+
+    labelExtra.map(k=>'<th>'+k+' %</th>').join('')+
+    '<th>Dose @ '+S.n+' ppm N</th>'+
+    displayKeys.map(k=>'<th>'+k+' ppm</th>').join('')+
+    '</tr></thead><tbody>'+
+    calc.map((row,i)=>{
+      const e=row.entry,combined=e.kind==='system'?' <small class="muted">(combined)</small>':'';
+      const ga=fmt(e.analysis.N)+'-'+fmt(e.analysis.P2O5)+'-'+fmt(e.analysis.K2O);
+      if(row.dose===null){
+        return'<tr><td>'+esc(e.brand+' — '+e.name)+combined+'</td><td>'+ga+'</td>'+
+          labelExtra.map(k=>'<td>'+fmt(e.analysis[k],k==='Mo'?4:3)+'</td>').join('')+
+          '<td>Cannot standardize: 0% N</td>'+
+          displayKeys.map(()=>'<td>—</td>').join('')+'</tr>';
+      }
+      const doseText=e.kind==='system'?systemStandardDoseText(e,row.dose):productDoseText(e.product,row.dose);
+      return'<tr><td>'+esc(e.brand+' — '+e.name)+combined+'</td><td>'+ga+'</td>'+
+        labelExtra.map(k=>'<td>'+fmt(e.analysis[k],k==='Mo'?4:3)+'</td>').join('')+
+        '<td>'+doseText+'</td>'+
+        displayKeys.map(k=>'<td class="'+highlightClass(calc,k,i)+'">'+fmt(row.values[k],microKeys.includes(k)?(k==='Mo'?4:3):1)+'</td>').join('')+
+        '</tr>';
+    }).join('')+'</tbody>';
 
-  $('rates').innerHTML=entries.map(e=>{
-    if(!e.useRates.length)return'<div class="manufacturer"><b>'+esc(e.name)+'</b><br><span class="muted">'+(e.kind==='system'?'No verified full-system use rate loaded. Adjust the component ratio above for standardized-N comparison.':'No verified use rates loaded yet.')+'</span></div>';
-    if(e.kind==='system'){
-      return'<div class="manufacturer"><b>'+esc(e.name)+'</b><div class="table"><table><tr><th>Rate</th><th>Components</th>'+displayKeys.map(k=>'<th>'+k+'</th>').join('')+'</tr>'+e.useRates.map(r=>{const q=systemRateResult(e,r),x=q.total;return'<tr><td>'+esc(r.label)+'</td><td>'+q.label+'</td>'+displayKeys.map(k=>'<td>'+fmt(x[k],microKeys.includes(k)?(k==='Mo'?4:3):1)+'</td>').join('')+'</tr>'}).join('')+'</table></div></div>';
+  const rateRows=[];
+  entries.forEach(e=>{
+    if(!e.useRates.length){
+      rateRows.push({entry:e,label:'No verified rate loaded',doseText:'—',values:null});
+      return;
     }
-    return'<div class="manufacturer"><b>'+esc(e.name)+'</b><div class="table"><table><tr><th>Rate</th><th>Dose</th>'+displayKeys.map(k=>'<th>'+k+'</th>').join('')+'</tr>'+e.useRates.map(r=>{const x=ppmAtRate(e.product,r),dose=r.gPerGal!=null?fmt(r.gPerGal,3)+' g/gal':fmt(r.mLPerGal,3)+' mL/gal';return'<tr><td>'+esc(r.label)+'</td><td>'+dose+'</td>'+displayKeys.map(k=>'<td>'+fmt(x?.[k],microKeys.includes(k)?(k==='Mo'?4:3):1)+'</td>').join('')+'</tr>'}).join('')+'</table></div></div>';
-  }).join('');
+    e.useRates.forEach(r=>{
+      if(e.kind==='system'){
+        const q=systemRateResult(e,r);
+        rateRows.push({entry:e,label:r.label,doseText:q.label,values:q.total});
+      }else{
+        const x=ppmAtRate(e.product,r);
+        const dose=r.gPerGal!=null?fmt(r.gPerGal,3)+' g/gal':fmt(r.mLPerGal,3)+' mL/gal';
+        rateRows.push({entry:e,label:r.label,doseText:dose,values:x});
+      }
+    });
+  });
+  const rateCalc=rateRows.map(r=>({values:r.values||{}}));
+  $('ratesTable').innerHTML='<thead><tr><th>Product / system</th><th>Manufacturer rate</th><th>Dose / components</th>'+
+    displayKeys.map(k=>'<th>'+k+' ppm</th>').join('')+
+    '</tr></thead><tbody>'+
+    rateRows.map((r,i)=>'<tr><td>'+esc(r.entry.brand+' — '+r.entry.name)+'</td><td>'+esc(r.label)+'</td><td>'+r.doseText+'</td>'+
+      displayKeys.map(k=>r.values?'<td class="'+highlightClass(rateCalc,k,i)+'">'+fmt(r.values[k],microKeys.includes(k)?(k==='Mo'?4:3):1)+'</td>':'<td>—</td>').join('')+
+      '</tr>').join('')+'</tbody>';
 }
 function manual(){const fs=[['N','N %'],['P2O5','P₂O₅ %'],['K2O','K₂O %'],['Ca','Ca %'],['Mg','Mg %'],['S','S %'],['Fe','Fe %'],['Mn','Mn %'],['Zn','Zn %'],['B','B %'],['Cu','Cu %'],['Mo','Mo %']];$('gaInputs').innerHTML=fs.map(([k,l])=>'<label>'+l+'<input class="gai" data-k="'+k+'" type="number" min="0" step=".001" value="'+fmt(S.manual[k],6)+'"></label>').join('');document.querySelectorAll('.gai').forEach(x=>x.oninput=()=>{S.manual[x.dataset.k]=Math.max(0,num(x.value));save();manualOut()});manualOut()}
 function manualOut(){const e=elem(S.manual);$('gaElemental').innerHTML='<thead><tr><th>Basis</th><th>N</th><th>P / P₂O₅</th><th>K / K₂O</th><th>Ca</th><th>Mg</th><th>S</th></tr></thead><tbody><tr><td>Label</td><td>'+fmt(S.manual.N,3)+'</td><td>'+fmt(S.manual.P2O5,3)+' P₂O₅</td><td>'+fmt(S.manual.K2O,3)+' K₂O</td><td>'+fmt(S.manual.Ca,3)+'</td><td>'+fmt(S.manual.Mg,3)+'</td><td>'+fmt(S.manual.S,3)+'</td></tr><tr><td>Elemental</td><td>'+fmt(e.N,3)+'</td><td>'+fmt(e.P,3)+' P</td><td>'+fmt(e.K,3)+' K</td><td>'+fmt(e.Ca,3)+'</td><td>'+fmt(e.Mg,3)+'</td><td>'+fmt(e.S,3)+'</td></tr></tbody>';$('gaFeed').innerHTML='<thead><tr><th>N target</th><th>g/gal</th><th>N</th><th>P</th><th>K</th><th>Ca</th><th>Mg</th><th>S</th></tr></thead><tbody>'+LEVELS.map(N=>{const d=doseN(S.manual,N);if(d===null)return'<tr><td>'+N+'</td><td colspan="7">N must be greater than 0%</td></tr>';const x=ppm(S.manual,d);return'<tr><td>'+N+'</td><td>'+fmt(d,3)+'</td>'+['N','P','K','Ca','Mg','S'].map(k=>'<td>'+fmt(x[k],1)+'</td>').join('')+'</tr>'}).join('')+'</tbody>'}
