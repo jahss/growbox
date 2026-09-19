@@ -168,7 +168,7 @@ window.FERTILIZER_SYSTEMS = [
       {productId:'athena-pro-core',label:'Core',defaultParts:.6},
       {productId:'athena-pro-grow',label:'Grow',defaultParts:1}
     ],
-    ratioNote:'Manufacturer ratio: 0.6 g Core for every 1 g Pro Grow.', useRates:[]
+    ratioNote:'Manufacturer ratio: 0.6 g Core for every 1 g Pro Grow.', useRates:[{label:'Low reservoir rate',components:[{productId:'athena-pro-core',gPerGal:2.4},{productId:'athena-pro-grow',gPerGal:4}]},{label:'High reservoir rate',components:[{productId:'athena-pro-core',gPerGal:3.6},{productId:'athena-pro-grow',gPerGal:6}]}]
   },
   {
     id:'athena-pro-bloom', brand:'Athena', name:'Pro Line — Flower (Core + Bloom)',
@@ -176,7 +176,7 @@ window.FERTILIZER_SYSTEMS = [
       {productId:'athena-pro-core',label:'Core',defaultParts:.6},
       {productId:'athena-pro-bloom',label:'Bloom',defaultParts:1}
     ],
-    ratioNote:'Manufacturer ratio: 0.6 g Core for every 1 g Pro Bloom.', useRates:[]
+    ratioNote:'Manufacturer ratio: 0.6 g Core for every 1 g Pro Bloom.', useRates:[{label:'Low reservoir rate',components:[{productId:'athena-pro-core',gPerGal:2.4},{productId:'athena-pro-bloom',gPerGal:4}]},{label:'High reservoir rate',components:[{productId:'athena-pro-core',gPerGal:4.2},{productId:'athena-pro-bloom',gPerGal:7}]}]
   },
   {
     id:'athena-blended-veg', brand:'Athena', name:'Blended Line — Veg (Grow A + Grow B)',
@@ -184,7 +184,7 @@ window.FERTILIZER_SYSTEMS = [
       {productId:'athena-grow-a',label:'Grow A',defaultParts:1},
       {productId:'athena-grow-b',label:'Grow B',defaultParts:1}
     ],
-    ratioNote:'Manufacturer specifies equal parts Grow A and Grow B by volume.', useRates:[]
+    ratioNote:'Manufacturer specifies equal parts Grow A and Grow B by volume.', useRates:[{label:'Low application rate',components:[{productId:'athena-grow-a',mLPerGal:2},{productId:'athena-grow-b',mLPerGal:2}]},{label:'High application rate',components:[{productId:'athena-grow-a',mLPerGal:15},{productId:'athena-grow-b',mLPerGal:15}]}]
   },
   {
     id:'athena-blended-bloom', brand:'Athena', name:'Blended Line — Flower (Bloom A + Bloom B)',
@@ -192,7 +192,7 @@ window.FERTILIZER_SYSTEMS = [
       {productId:'athena-bloom-a',label:'Bloom A',defaultParts:1},
       {productId:'athena-bloom-b',label:'Bloom B',defaultParts:1}
     ],
-    ratioNote:'Manufacturer specifies equal parts Bloom A and Bloom B by volume.', useRates:[]
+    ratioNote:'Manufacturer specifies equal parts Bloom A and Bloom B by volume.', useRates:[{label:'Low application rate',components:[{productId:'athena-bloom-a',mLPerGal:2},{productId:'athena-bloom-b',mLPerGal:2}]},{label:'High application rate',components:[{productId:'athena-bloom-a',mLPerGal:7},{productId:'athena-bloom-b',mLPerGal:7}]}]
   }
 ];
 
