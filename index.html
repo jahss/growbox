@@ -11,7 +11,7 @@
 <script src="data/products.js"></script>
 </head>
 <body>
-<header class="head"><div class="wrap"><div class="eyebrow">Prototype 0.6</div><h1>Growbox Fertilizer Toolbox</h1><p class="muted">Label analysis → elemental analysis → ppm → blend feed charts.</p></div></header>
+<header class="head"><div class="wrap"><div class="eyebrow">Prototype 0.7</div><h1>Growbox Fertilizer Toolbox</h1><p class="muted">Label analysis → elemental analysis → ppm → blend feed charts.</p></div></header>
 <main class="wrap">
 <nav class="tabs"><button class="tab active" data-view="compare">Compare</button><button class="tab" data-view="analysis">Guaranteed analysis</button><button class="tab" data-view="blend">Blend finder</button></nav>
 <div id="notice" class="notice hidden"></div>
@@ -34,7 +34,7 @@
 </main>
 <script>
 (()=>{'use strict';
-const PRODUCTS=window.FERTILIZER_PRODUCTS||[],SYSTEMS=window.FERTILIZER_SYSTEMS||[],G=3.785411784,F=1000/G,PF=.436426,KF=.830151,LEVELS=[120,140,160,180,200],KEY='growbox-fert-tool-v06';
+const PRODUCTS=window.FERTILIZER_PRODUCTS||[],SYSTEMS=window.FERTILIZER_SYSTEMS||[],G=3.785411784,F=1000/G,PF=.436426,KF=.830151,LEVELS=[120,140,160,180,200],KEY='growbox-fert-tool-v07';
 const EK=['N','P','K','Ca','Mg','S','Fe','Mn','Zn','B','Cu','Mo'];
 const fresh=()=>({view:'compare',compare:['megacrop-11-5-14','jacks-12-4-16'],systemCompare:['athena-pro-veg'],systemParts:{},compareMode:'ppm',rateChoice:{},n:160,manual:{N:12,P2O5:4,K2O:16,Ca:7,Mg:2,S:0,Fe:.15,Mn:.05,Zn:.035,B:.02,Cu:.02,Mo:.001},blend:{mode:'label',ids:['jacks-12-4-16','jacks-5-12-26-a','jacks-15-0-0-b','jacks-epsom','mkp-0-52-34'],target:{N:12,P2O5:5,K2O:16,P:2.18,K:13.28,Ca:7,Mg:2,S:2},result:null}});
 let S;try{S=JSON.parse(sessionStorage.getItem(KEY))||fresh()}catch{S=fresh()}
@@ -46,6 +46,17 @@ S.compare=(S.compare||[]).filter(id=>{const p=PRODUCTS.find(x=>x.id===id);return
 S.systemCompare=(S.systemCompare||[]).filter(id=>SYSTEMS.some(x=>x.id===id));
 while(S.compare.length+S.systemCompare.length>5){if(S.systemCompare.length)S.systemCompare.pop();else S.compare.pop()}
 const $=id=>document.getElementById(id),num=v=>Number.isFinite(+v)?+v:0,fmt=(v,d=2)=>Number.isFinite(+v)?(+v).toFixed(d).replace(/(\.\d*?[1-9])0+$|\.0+$/,'$1'):'—',esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),prod=id=>PRODUCTS.find(p=>p.id===id),save=()=>sessionStorage.setItem(KEY,JSON.stringify(S));
+function displayProgram(x){return x.program||x.name||''}
+function displayFormula(x){
+  if(x.displayFormula)return x.displayFormula;
+  if(x.analysis)return fmt(x.analysis.N)+'-'+fmt(x.analysis.P2O5)+'-'+fmt(x.analysis.K2O);
+  return x.name||'';
+}
+function displayParts(x){return (x.partCount||1)+'-part'}
+function entryTitle(x){return x.brand+' — '+displayProgram(x)}
+function entryCell(x){return esc(entryTitle(x))+'<br><small class="muted">'+esc(displayFormula(x))+' · '+esc(displayParts(x))+'</small>'}
+function exportLabel(x){return entryTitle(x)+' | '+displayFormula(x)+' | '+displayParts(x)}
+
 function elem(a){return{N:num(a.N),P:num(a.P2O5)*PF,K:num(a.K2O)*KF,Ca:num(a.Ca),Mg:num(a.Mg),S:num(a.S),Fe:num(a.Fe),Mn:num(a.Mn),Zn:num(a.Zn),B:num(a.B),Cu:num(a.Cu),Mo:num(a.Mo)}}
 function ppm(p,d){const e=elem(p.analysis||p),out={};EK.forEach(k=>out[k]=F*d*e[k]/100);return out}
 function doseN(p,n){const x=num((p.analysis||p).N);return x>0?n/(F*x/100):null}
@@ -81,18 +92,23 @@ function compareControls(){
   const one=PRODUCTS.filter(p=>p.compareGroup==='1-part'&&!S.compare.includes(p.id));
   const two=SYSTEMS.filter(x=>x.partCount===2&&!S.systemCompare.includes(x.id));
   const three=SYSTEMS.filter(x=>x.partCount===3&&!S.systemCompare.includes(x.id));
-  const group=(label,items,prefix)=>items.length?'<optgroup label="'+label+'">'+items.map(x=>'<option value="'+prefix+':'+esc(x.id)+'">'+esc(x.brand+' — '+x.name)+'</option>').join('')+'</optgroup>':'';
+  const group=(label,items,prefix)=>items.length?'<optgroup label="'+label+'">'+items.map(x=>'<option value="'+prefix+':'+esc(x.id)+'">'+esc(x.brand+' — '+displayProgram(x)+' · '+displayFormula(x)+' · '+displayParts(x))+'</option>').join('')+'</optgroup>':'';
   $('productPicker').innerHTML='<option value="">Add product line…</option>'+group('1-Part',one,'p')+group('2-Part',two,'s')+group('3-Part',three,'s');
   $('productPicker').disabled=compareSelectionCount()>=5;
   $('compareCount').textContent=compareSelectionCount()+' / 5 selected';
+
   const selected=[];
-  S.compare.map(prod).filter(Boolean).forEach(p=>selected.push({kind:'product',id:p.id,brand:p.brand,name:p.name,detail:fmt(p.analysis.N)+'-'+fmt(p.analysis.P2O5)+'-'+fmt(p.analysis.K2O)}));
+  S.compare.map(prod).filter(Boolean).forEach(p=>selected.push({
+    kind:'product',id:p.id,brand:p.brand,program:displayProgram(p),formula:displayFormula(p),parts:displayParts(p)
+  }));
   S.systemCompare.map(id=>SYSTEMS.find(x=>x.id===id)).filter(Boolean).forEach(sys=>{
     const m=systemMix(sys),unit=sys.ratioBasis==='volume'?'volume':'mass';
     const controls=sys.components.map((c,i)=>'<label>'+esc(c.label)+' <input class="spr" data-sys="'+esc(sys.id)+'" data-i="'+i+'" type="number" min="0" step=".1" value="'+fmt(m.parts[i],3)+'"> '+unit+' parts</label>').join('');
-    selected.push({kind:'system',id:sys.id,brand:sys.brand,name:sys.name,detail:sys.partCount+'-part',controls});
+    selected.push({kind:'system',id:sys.id,brand:sys.brand,program:displayProgram(sys),formula:displayFormula(sys),parts:displayParts(sys),controls});
   });
-  $('selectedLines').innerHTML=selected.map(x=>'<div class="selected-line"><div class="selected-line-head"><div><b>'+esc(x.brand+' — '+x.name)+'</b><div class="muted">'+esc(x.detail)+'</div></div><button class="removeLine" data-kind="'+x.kind+'" data-id="'+esc(x.id)+'" type="button">Remove</button></div>'+(x.controls?'<details><summary>Adjust part ratio</summary><div class="toolbar" style="margin-top:7px">'+x.controls+'</div></details>':'')+'</div>').join('');
+
+  $('selectedLines').innerHTML=selected.map(x=>'<div class="selected-line"><div class="selected-line-head"><div><b>'+esc(x.brand+' — '+x.program)+'</b><div>'+esc(x.formula)+'</div><div class="muted">'+esc(x.parts)+'</div></div><button class="removeLine" data-kind="'+x.kind+'" data-id="'+esc(x.id)+'" type="button">Remove</button></div>'+(x.controls?'<details><summary>Adjust part ratio</summary><div class="toolbar" style="margin-top:7px">'+x.controls+'</div></details>':'')+'</div>').join('');
+
   document.querySelectorAll('.removeLine').forEach(b=>b.onclick=()=>removeCompareItem(b.dataset.kind,b.dataset.id));
   document.querySelectorAll('.spr').forEach(x=>x.oninput=()=>{
     const sys=SYSTEMS.find(y=>y.id===x.dataset.sys);if(!sys)return;
@@ -101,8 +117,17 @@ function compareControls(){
   });
 }
 function selectedCompareEntries(){
-  const items=S.compare.map(prod).filter(p=>p&&p.compareGroup==='1-part').map(p=>({kind:'product',id:p.id,brand:p.brand,name:p.name,analysis:p.analysis,product:p,useRates:p.useRates||[]}));
-  S.systemCompare.map(id=>SYSTEMS.find(x=>x.id===id)).filter(Boolean).forEach(sys=>{const m=systemMix(sys);items.push({kind:'system',id:sys.id,brand:sys.brand,name:sys.name,analysis:m.analysis,system:sys,mix:m,useRates:sys.useRates||[]})});
+  const items=S.compare.map(prod).filter(p=>p&&p.compareGroup==='1-part').map(p=>({
+    kind:'product',id:p.id,brand:p.brand,program:displayProgram(p),displayFormula:displayFormula(p),partCount:p.partCount||1,
+    name:p.name,analysis:p.analysis,product:p,useRates:p.useRates||[]
+  }));
+  S.systemCompare.map(id=>SYSTEMS.find(x=>x.id===id)).filter(Boolean).forEach(sys=>{
+    const m=systemMix(sys);
+    items.push({
+      kind:'system',id:sys.id,brand:sys.brand,program:displayProgram(sys),displayFormula:displayFormula(sys),partCount:sys.partCount,
+      name:sys.name,analysis:m.analysis,system:sys,mix:m,useRates:sys.useRates||[]
+    });
+  });
   return items.slice(0,5);
 }
 function flash(message,kind=''){
@@ -124,7 +149,7 @@ function systemRateResult(e,r){
     const p=prod(c.productId);if(!p)return;
     const g=c.gPerGal!=null?num(c.gPerGal):num(c.mLPerGal)*num(p.densityGPerMl||1);
     const x=ppm(p,g);totalG+=g;EK.forEach(k=>total[k]+=x[k]||0);
-    labels.push(c.gPerGal!=null?esc(p.name)+' '+fmt(c.gPerGal,3)+' g/gal':esc(p.name)+' '+fmt(c.mLPerGal,3)+' mL/gal');
+    labels.push(c.gPerGal!=null?esc(displayFormula(p))+' '+fmt(c.gPerGal,3)+' g/gal':esc(displayFormula(p))+' '+fmt(c.mLPerGal,3)+' mL/gal');
   });
   return{total,totalG,label:labels.join(' + ')};
 }
@@ -144,7 +169,7 @@ function solveBlend(ps,target,mode){const keys=mode==='label'?['N','P2O5','K2O',
 function tabs(){document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{S.view=b.dataset.view;save();document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===b));document.querySelectorAll('.view').forEach(x=>x.classList.toggle('active',x.id===S.view))});document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x.dataset.view===S.view));document.querySelectorAll('.view').forEach(x=>x.classList.toggle('active',x.id===S.view))}
 function checks(box,cls,ids,onchange){
   const regular=PRODUCTS.filter(p=>p.compareGroup!=='salt'),salts=PRODUCTS.filter(p=>p.compareGroup==='salt');
-  const row=p=>'<label class="check"><input class="'+cls+'" type="checkbox" value="'+esc(p.id)+'" '+(ids.includes(p.id)?'checked':'')+'><span><b>'+esc(p.brand+' — '+p.name)+'</b><small>'+fmt(p.analysis.N)+'-'+fmt(p.analysis.P2O5)+'-'+fmt(p.analysis.K2O)+' label · '+fmt(elem(p.analysis).N)+' / '+fmt(elem(p.analysis).P)+' / '+fmt(elem(p.analysis).K)+' elemental</small></span></label>';
+  const row=p=>'<label class="check"><input class="'+cls+'" type="checkbox" value="'+esc(p.id)+'" '+(ids.includes(p.id)?'checked':'')+'><span><b>'+esc(p.brand+' — '+displayFormula(p))+'</b><small>'+fmt(p.analysis.N)+'-'+fmt(p.analysis.P2O5)+'-'+fmt(p.analysis.K2O)+' label · '+fmt(elem(p.analysis).N)+' / '+fmt(elem(p.analysis).P)+' / '+fmt(elem(p.analysis).K)+' elemental</small></span></label>';
   $(box).innerHTML='<div class="compare-group"><div class="group-title"><h3>Fertilizers & components</h3></div>'+regular.map(row).join('')+'</div><div class="compare-group"><div class="group-title"><h3>Ingredient salts</h3></div>'+salts.map(row).join('')+'</div>';
   document.querySelectorAll('.'+cls).forEach(x=>x.onchange=()=>onchange([...document.querySelectorAll('.'+cls+':checked')].map(y=>y.value)));
 }
@@ -168,7 +193,7 @@ function compareTables(){
     $('comparisonHeading').textContent='Guaranteed analysis (%)';
     const rows=entries.map(e=>({entry:e,values:e.analysis}));
     $('analysisCompare').innerHTML='<thead><tr><th>Product / system</th>'+percentCols.map(c=>'<th>'+c[1]+' %</th>').join('')+'</tr></thead><tbody>'+
-      rows.map((row,i)=>'<tr><td>'+esc(row.entry.brand+' — '+row.entry.name)+(row.entry.kind==='system'?' <small class="muted">(combined)</small>':'')+'</td>'+
+      rows.map((row,i)=>'<tr><td>'+entryCell(row.entry)+(row.entry.kind==='system'?' <small class="muted">(combined)</small>':'')+'</td>'+
       percentCols.map(([k])=>'<td class="'+highlightClass(rows,k,i)+'">'+fmt(row.values[k],['Fe','Mn','Zn','B','Cu','Mo'].includes(k)?(k==='Mo'?4:3):2)+'</td>').join('')+'</tr>').join('')+
       '</tbody>';
   }else{
@@ -177,9 +202,9 @@ function compareTables(){
     $('analysisCompare').innerHTML='<thead><tr><th>Product / system</th><th>Dose</th>'+ppmCols.map(c=>'<th>'+c[1]+' ppm</th>').join('')+'</tr></thead><tbody>'+
       rows.map((row,i)=>{
         const e=row.entry;
-        if(row.dose===null)return'<tr><td>'+esc(e.brand+' — '+e.name)+'</td><td>Cannot standardize</td>'+ppmCols.map(()=>'<td>—</td>').join('')+'</tr>';
+        if(row.dose===null)return'<tr><td>'+entryCell(e)+'</td><td>Cannot standardize</td>'+ppmCols.map(()=>'<td>—</td>').join('')+'</tr>';
         const doseText=e.kind==='system'?systemStandardDoseText(e,row.dose):productDoseText(e.product,row.dose);
-        return'<tr><td>'+esc(e.brand+' — '+e.name)+'</td><td>'+doseText+'</td>'+
+        return'<tr><td>'+entryCell(e)+'</td><td>'+doseText+'</td>'+
           ppmCols.map(([k])=>'<td class="'+highlightClass(rows,k,i)+'">'+fmt(row.values[k],['Fe','Mn','Zn','B','Cu','Mo'].includes(k)?(k==='Mo'?4:3):1)+'</td>').join('')+'</tr>';
       }).join('')+'</tbody>';
   }
@@ -202,7 +227,7 @@ function compareTables(){
     rateRows.map((r,i)=>{
       const e=r.entry,key=e.kind+':'+e.id;
       const rateCell=e.useRates.length>1?'<select class="rateSelect" data-key="'+esc(key)+'">'+e.useRates.map((x,j)=>'<option value="'+j+'" '+(j===r.rateIndex?'selected':'')+'>'+esc(x.label)+'</option>').join('')+'</select>':esc(r.label);
-      return'<tr><td>'+esc(e.brand+' — '+e.name)+'</td><td>'+rateCell+'</td><td>'+r.doseText+'</td>'+
+      return'<tr><td>'+entryCell(e)+'</td><td>'+rateCell+'</td><td>'+r.doseText+'</td>'+
         ppmCols.map(([k])=>r.values?'<td class="'+highlightClass(rateCalc,k,i)+'">'+fmt(r.values[k],['Fe','Mn','Zn','B','Cu','Mo'].includes(k)?(k==='Mo'?4:3):1)+'</td>':'<td>—</td>').join('')+'</tr>';
     }).join('')+'</tbody>';
   document.querySelectorAll('.rateSelect').forEach(x=>x.onchange=()=>{S.rateChoice[x.dataset.key]=+x.value;save();compareTables()});
@@ -211,10 +236,10 @@ function manual(){const fs=[['N','N %'],['P2O5','P₂O₅ %'],['K2O','K₂O %'],
 function manualOut(){const e=elem(S.manual);$('gaElemental').innerHTML='<thead><tr><th>Basis</th><th>N</th><th>P / P₂O₅</th><th>K / K₂O</th><th>Ca</th><th>Mg</th><th>S</th></tr></thead><tbody><tr><td>Label</td><td>'+fmt(S.manual.N,3)+'</td><td>'+fmt(S.manual.P2O5,3)+' P₂O₅</td><td>'+fmt(S.manual.K2O,3)+' K₂O</td><td>'+fmt(S.manual.Ca,3)+'</td><td>'+fmt(S.manual.Mg,3)+'</td><td>'+fmt(S.manual.S,3)+'</td></tr><tr><td>Elemental</td><td>'+fmt(e.N,3)+'</td><td>'+fmt(e.P,3)+' P</td><td>'+fmt(e.K,3)+' K</td><td>'+fmt(e.Ca,3)+'</td><td>'+fmt(e.Mg,3)+'</td><td>'+fmt(e.S,3)+'</td></tr></tbody>';$('gaFeed').innerHTML='<thead><tr><th>N target</th><th>g/gal</th><th>N</th><th>P</th><th>K</th><th>Ca</th><th>Mg</th><th>S</th></tr></thead><tbody>'+LEVELS.map(N=>{const d=doseN(S.manual,N);if(d===null)return'<tr><td>'+N+'</td><td colspan="7">N must be greater than 0%</td></tr>';const x=ppm(S.manual,d);return'<tr><td>'+N+'</td><td>'+fmt(d,3)+'</td>'+['N','P','K','Ca','Mg','S'].map(k=>'<td>'+fmt(x[k],1)+'</td>').join('')+'</tr>'}).join('')+'</tbody>'}
 function blend(){checks('blendChecks','bc',S.blend.ids,ids=>{S.blend.ids=ids;S.blend.result=null;save();$('blendResult').classList.add('hidden')});$('labelMode').classList.toggle('active',S.blend.mode==='label');$('elementMode').classList.toggle('active',S.blend.mode==='element');const fs=S.blend.mode==='label'?[['N','N'],['P2O5','P₂O₅'],['K2O','K₂O'],['Ca','Ca'],['Mg','Mg'],['S','S']]:[['N','N'],['P','P'],['K','K'],['Ca','Ca'],['Mg','Mg'],['S','S']];$('blendInputs').innerHTML=fs.map(([k,l])=>'<label>'+l+'<input class="bi" data-k="'+k+'" type="number" min="0" step=".01" value="'+fmt(S.blend.target[k]??0,4)+'"></label>').join('');document.querySelectorAll('.bi').forEach(x=>x.oninput=()=>{S.blend.target[x.dataset.k]=Math.max(0,num(x.value));S.blend.result=null;save()});renderBlendResult()}
 function renderTable(id,a,mode){const ks=mode==='label'?[['N','N'],['P2O5','P₂O₅'],['K2O','K₂O'],['Ca','Ca'],['Mg','Mg'],['S','S']]:[['N','N'],['P','P'],['K','K'],['Ca','Ca'],['Mg','Mg'],['S','S']];$(id).innerHTML='<thead><tr>'+ks.map(x=>'<th>'+x[1]+'</th>').join('')+'</tr></thead><tbody><tr>'+ks.map(x=>'<td>'+fmt(a[x[0]],3)+'</td>').join('')+'</tr></tbody>'}
-function renderBlendResult(){const r=S.blend.result;if(!r){$('blendResult').classList.add('hidden');return}const ps=r.ids.map(prod).filter(Boolean);$('blendResult').classList.remove('hidden');$('fit').textContent='Relative RMS error: '+fmt(r.rms*100,2)+'%. Lower is closer; 0% is exact.';$('weights').innerHTML=ps.map((p,i)=>'<div class="pill"><b>'+esc(p.name)+'</b><span>'+fmt(r.w[i]*100,2)+'% by mass</span></div>').join('');renderTable('labelResult',r.label,'label');renderTable('elementResult',r.element,'element');const nPct=r.element.N;$('feed').innerHTML='<thead><tr><th>N target</th>'+ps.map(p=>'<th>'+esc(p.name)+' g/gal</th>').join('')+'<th>Total</th><th>P</th><th>K</th><th>Ca</th><th>Mg</th><th>S</th></tr></thead><tbody>'+(nPct<=0?'<tr><td colspan="20">Blend contains no nitrogen.</td></tr>':LEVELS.map(N=>{const total=N/(F*nPct/100),ds=r.w.map(w=>total*w);return'<tr><td>'+N+'</td>'+ds.map(d=>'<td>'+fmt(d,3)+'</td>').join('')+'<td>'+fmt(total,3)+'</td>'+['P','K','Ca','Mg','S'].map(k=>'<td>'+fmt(F*total*r.element[k]/100,1)+'</td>').join('')+'</tr>'}).join(''))+'</tbody>'}
+function renderBlendResult(){const r=S.blend.result;if(!r){$('blendResult').classList.add('hidden');return}const ps=r.ids.map(prod).filter(Boolean);$('blendResult').classList.remove('hidden');$('fit').textContent='Relative RMS error: '+fmt(r.rms*100,2)+'%. Lower is closer; 0% is exact.';$('weights').innerHTML=ps.map((p,i)=>'<div class="pill"><b>'+esc(displayFormula(p))+'</b><span>'+fmt(r.w[i]*100,2)+'% by mass</span></div>').join('');renderTable('labelResult',r.label,'label');renderTable('elementResult',r.element,'element');const nPct=r.element.N;$('feed').innerHTML='<thead><tr><th>N target</th>'+ps.map(p=>'<th>'+esc(displayFormula(p))+' g/gal</th>').join('')+'<th>Total</th><th>P</th><th>K</th><th>Ca</th><th>Mg</th><th>S</th></tr></thead><tbody>'+(nPct<=0?'<tr><td colspan="20">Blend contains no nitrogen.</td></tr>':LEVELS.map(N=>{const total=N/(F*nPct/100),ds=r.w.map(w=>total*w);return'<tr><td>'+N+'</td>'+ds.map(d=>'<td>'+fmt(d,3)+'</td>').join('')+'<td>'+fmt(total,3)+'</td>'+['P','K','Ca','Mg','S'].map(k=>'<td>'+fmt(F*total*r.element[k]/100,1)+'</td>').join('')+'</tr>'}).join(''))+'</tbody>'}
 function dl(name,type,text){const u=URL.createObjectURL(new Blob([text],{type})),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),500)}
 function exportJSON(){dl('growbox-fertilizer-results.json','application/json',JSON.stringify(S,null,2))}
-function exportCSV(){let rows=[];if(S.view==='analysis'){rows.push(['Target N','g/gal','N','P','K','Ca','Mg','S']);LEVELS.forEach(N=>{const d=doseN(S.manual,N),x=d===null?null:ppm(S.manual,d);rows.push([N,d,...(x?['N','P','K','Ca','Mg','S'].map(k=>x[k]):['','','','','',''])])})}else if(S.view==='blend'&&S.blend.result){const r=S.blend.result,ps=r.ids.map(prod),nPct=r.element.N;rows.push(['Target N',...ps.map(p=>p.name+' g/gal'),'Total g/gal','P','K','Ca','Mg','S']);if(nPct>0)LEVELS.forEach(N=>{const total=N/(F*nPct/100);rows.push([N,...r.w.map(w=>total*w),total,...['P','K','Ca','Mg','S'].map(k=>F*total*r.element[k]/100)])})}else{const keys=['N','P','K','Ca','Mg','S','Fe','Mn','Zn','B','Cu','Mo'];rows.push(['Product / system','Total g/gal',...keys]);selectedCompareEntries().forEach(e=>{const d=doseN(e.analysis,S.n),x=d===null?null:ppm(e.analysis,d);rows.push([e.name,d,...(x?keys.map(k=>x[k]):keys.map(()=>''))])})}dl('growbox-fertilizer-results.csv','text/csv',rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\n'))}
+function exportCSV(){let rows=[];if(S.view==='analysis'){rows.push(['Target N','g/gal','N','P','K','Ca','Mg','S']);LEVELS.forEach(N=>{const d=doseN(S.manual,N),x=d===null?null:ppm(S.manual,d);rows.push([N,d,...(x?['N','P','K','Ca','Mg','S'].map(k=>x[k]):['','','','','',''])])})}else if(S.view==='blend'&&S.blend.result){const r=S.blend.result,ps=r.ids.map(prod),nPct=r.element.N;rows.push(['Target N',...ps.map(p=>p.name+' g/gal'),'Total g/gal','P','K','Ca','Mg','S']);if(nPct>0)LEVELS.forEach(N=>{const total=N/(F*nPct/100);rows.push([N,...r.w.map(w=>total*w),total,...['P','K','Ca','Mg','S'].map(k=>F*total*r.element[k]/100)])})}else{const keys=['N','P','K','Ca','Mg','S','Fe','Mn','Zn','B','Cu','Mo'];rows.push(['Product / system','Total g/gal',...keys]);selectedCompareEntries().forEach(e=>{const d=doseN(e.analysis,S.n),x=d===null?null:ppm(e.analysis,d);rows.push([exportLabel(e),d,...(x?keys.map(k=>x[k]):keys.map(()=>''))])})}dl('growbox-fertilizer-results.csv','text/csv',rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\n'))}
 $('productPicker').onchange=e=>{addCompareItem(e.target.value);e.target.value=''};$('nLevel').onchange=e=>{S.n=+e.target.value;save();compareTables()};$('percentView').onclick=()=>{S.compareMode='percent';save();compare()};$('ppmView').onclick=()=>{S.compareMode='ppm';save();compare()};$('labelMode').onclick=()=>{S.blend.mode='label';S.blend.result=null;save();blend()};$('elementMode').onclick=()=>{S.blend.mode='element';S.blend.result=null;save();blend()};$('solve').onclick=()=>{const ps=S.blend.ids.map(prod).filter(Boolean);if(!ps.length){$('notice').textContent='Select at least one fertilizer.';$('notice').classList.remove('hidden');return}S.blend.result={ids:ps.map(p=>p.id),...solveBlend(ps,S.blend.target,S.blend.mode)};save();renderBlendResult()};$('csv').onclick=exportCSV;$('json').onclick=exportJSON;$('reset').onclick=()=>{if(confirm('Reset this browser session?')){S=fresh();save();render()}};
 function render(){tabs();compare();manual();blend()}render();
 })();
