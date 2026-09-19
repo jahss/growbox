@@ -64,13 +64,13 @@ window.FERTILIZER_PRODUCTS = [
     id:'athena-pro-grow', brand:'Athena', name:'Pro Grow 2-8-20', form:'dry',
     analysis:{N:2,P2O5:8,K2O:20,Ca:0,Mg:3,S:8,Fe:.1,Mn:0,Zn:0,B:0,Cu:0,Mo:0},
     nitrogenForms:{nitrateN:2},
-    useRates:[{label:'Reservoir range — low',gPerGal:4},{label:'Reservoir range — high',gPerGal:6}],
+    useRates:[],
     source:{url:'https://hydrobuilder.com/media/pdf/specs/Athena-Pro-Grow-Product-Label.pdf',checked:'2026-09-19'}
   },
   {
     id:'athena-pro-bloom', brand:'Athena', name:'Pro Bloom 0-12-24', form:'dry',
     analysis:{N:0,P2O5:12,K2O:24,Ca:0,Mg:3,S:9,Fe:.1,Mn:0,Zn:0,B:0,Cu:0,Mo:0},
-    useRates:[{label:'Reservoir range — low',gPerGal:4},{label:'Reservoir range — high',gPerGal:7}],
+    useRates:[],
     source:{url:'https://www.athenaag.com/',checked:'2026-09-19'}
   },
   {
@@ -168,7 +168,7 @@ window.FERTILIZER_SYSTEMS = [
       {productId:'athena-pro-core',label:'Core',defaultParts:.6},
       {productId:'athena-pro-grow',label:'Grow',defaultParts:1}
     ],
-    ratioNote:'Manufacturer ratio: 0.6 g Core for every 1 g Pro Grow.', useRates:[{label:'Low reservoir rate',components:[{productId:'athena-pro-core',gPerGal:2.4},{productId:'athena-pro-grow',gPerGal:4}]},{label:'High reservoir rate',components:[{productId:'athena-pro-core',gPerGal:3.6},{productId:'athena-pro-grow',gPerGal:6}]}]
+    ratioNote:'Manufacturer dry-weight relationship is approximately 0.6 g Core for every 1 g Pro Grow across the dosage guide.', useRates:[{label:'EC 1.0',components:[{productId:'athena-pro-core',gPerGal:1.4},{productId:'athena-pro-grow',gPerGal:2.3}]},{label:'EC 1.5',components:[{productId:'athena-pro-core',gPerGal:2.1},{productId:'athena-pro-grow',gPerGal:3.6}]},{label:'EC 2.0',components:[{productId:'athena-pro-core',gPerGal:2.9},{productId:'athena-pro-grow',gPerGal:4.9}]},{label:'EC 2.5',components:[{productId:'athena-pro-core',gPerGal:3.8},{productId:'athena-pro-grow',gPerGal:6.3}]},{label:'EC 3.0',components:[{productId:'athena-pro-core',gPerGal:4.6},{productId:'athena-pro-grow',gPerGal:7.7}]},{label:'EC 3.5',components:[{productId:'athena-pro-core',gPerGal:5.5},{productId:'athena-pro-grow',gPerGal:9.1}]},{label:'EC 4.0',components:[{productId:'athena-pro-core',gPerGal:6.4},{productId:'athena-pro-grow',gPerGal:10.6}]}]
   },
   {
     id:'athena-pro-bloom', brand:'Athena', name:'Pro Line — Flower (Core + Bloom)',
@@ -176,7 +176,7 @@ window.FERTILIZER_SYSTEMS = [
       {productId:'athena-pro-core',label:'Core',defaultParts:.6},
       {productId:'athena-pro-bloom',label:'Bloom',defaultParts:1}
     ],
-    ratioNote:'Manufacturer ratio: 0.6 g Core for every 1 g Pro Bloom.', useRates:[{label:'Low reservoir rate',components:[{productId:'athena-pro-core',gPerGal:2.4},{productId:'athena-pro-bloom',gPerGal:4}]},{label:'High reservoir rate',components:[{productId:'athena-pro-core',gPerGal:4.2},{productId:'athena-pro-bloom',gPerGal:7}]}]
+    ratioNote:'Manufacturer dry-weight relationship is approximately 0.6 g Core for every 1 g Pro Bloom across the dosage guide.', useRates:[{label:'EC 1.0',components:[{productId:'athena-pro-core',gPerGal:1.4},{productId:'athena-pro-bloom',gPerGal:2.3}]},{label:'EC 1.5',components:[{productId:'athena-pro-core',gPerGal:2.1},{productId:'athena-pro-bloom',gPerGal:3.6}]},{label:'EC 2.0',components:[{productId:'athena-pro-core',gPerGal:2.9},{productId:'athena-pro-bloom',gPerGal:4.9}]},{label:'EC 2.5',components:[{productId:'athena-pro-core',gPerGal:3.8},{productId:'athena-pro-bloom',gPerGal:6.3}]},{label:'EC 3.0',components:[{productId:'athena-pro-core',gPerGal:4.6},{productId:'athena-pro-bloom',gPerGal:7.7}]},{label:'EC 3.5',components:[{productId:'athena-pro-core',gPerGal:5.5},{productId:'athena-pro-bloom',gPerGal:9.1}]},{label:'EC 4.0',components:[{productId:'athena-pro-core',gPerGal:6.4},{productId:'athena-pro-bloom',gPerGal:10.6}]}]
   },
   {
     id:'athena-blended-veg', brand:'Athena', name:'Blended Line — Veg (Grow A + Grow B)',
@@ -184,7 +184,7 @@ window.FERTILIZER_SYSTEMS = [
       {productId:'athena-grow-a',label:'Grow A',defaultParts:1},
       {productId:'athena-grow-b',label:'Grow B',defaultParts:1}
     ],
-    ratioNote:'Manufacturer specifies equal parts Grow A and Grow B by volume.', useRates:[{label:'Low application rate',components:[{productId:'athena-grow-a',mLPerGal:2},{productId:'athena-grow-b',mLPerGal:2}]},{label:'High application rate',components:[{productId:'athena-grow-a',mLPerGal:15},{productId:'athena-grow-b',mLPerGal:15}]}]
+    ratioNote:'Manufacturer specifies equal parts Grow A and Grow B by volume. Full published program also uses CaMg; base-only comparison here excludes that component.', useRates:[{label:'Veg W1-W4 base',components:[{productId:'athena-grow-a',mLPerGal:11},{productId:'athena-grow-b',mLPerGal:11}]}]
   },
   {
     id:'athena-blended-bloom', brand:'Athena', name:'Blended Line — Flower (Bloom A + Bloom B)',
@@ -192,7 +192,7 @@ window.FERTILIZER_SYSTEMS = [
       {productId:'athena-bloom-a',label:'Bloom A',defaultParts:1},
       {productId:'athena-bloom-b',label:'Bloom B',defaultParts:1}
     ],
-    ratioNote:'Manufacturer specifies equal parts Bloom A and Bloom B by volume.', useRates:[{label:'Low application rate',components:[{productId:'athena-bloom-a',mLPerGal:2},{productId:'athena-bloom-b',mLPerGal:2}]},{label:'High application rate',components:[{productId:'athena-bloom-a',mLPerGal:7},{productId:'athena-bloom-b',mLPerGal:7}]}]
+    ratioNote:'Manufacturer specifies equal parts Bloom A and Bloom B by volume. Full published program also uses CaMg and later PK; base-only comparison here excludes those components.', useRates:[{label:'Flower W1-W4 base',components:[{productId:'athena-bloom-a',mLPerGal:12},{productId:'athena-bloom-b',mLPerGal:12}]},{label:'Flower W5 base',components:[{productId:'athena-bloom-a',mLPerGal:10},{productId:'athena-bloom-b',mLPerGal:10}]},{label:'Flower W6 base',components:[{productId:'athena-bloom-a',mLPerGal:9},{productId:'athena-bloom-b',mLPerGal:9}]},{label:'Flower W7 base',components:[{productId:'athena-bloom-a',mLPerGal:5},{productId:'athena-bloom-b',mLPerGal:5}]},{label:'Flower W8-W9 base',components:[{productId:'athena-bloom-a',mLPerGal:4},{productId:'athena-bloom-b',mLPerGal:4}]}]
   }
 ];
 
