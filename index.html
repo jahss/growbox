@@ -11,7 +11,7 @@
 <script src="data/products.js"></script>
 </head>
 <body>
-<header class="head"><div class="wrap"><div class="eyebrow">Prototype 0.2</div><h1>Growbox Fertilizer Toolbox</h1><p class="muted">Label analysis → elemental analysis → ppm → blend feed charts.</p></div></header>
+<header class="head"><div class="wrap"><div class="eyebrow">Prototype 0.3</div><h1>Growbox Fertilizer Toolbox</h1><p class="muted">Label analysis → elemental analysis → ppm → blend feed charts.</p></div></header>
 <main class="wrap">
 <nav class="tabs"><button class="tab active" data-view="compare">Compare</button><button class="tab" data-view="analysis">Guaranteed analysis</button><button class="tab" data-view="blend">Blend finder</button></nav>
 <div id="notice" class="notice hidden"></div>
@@ -35,30 +35,34 @@
 </main>
 <script>
 (()=>{'use strict';
-const PRODUCTS=window.FERTILIZER_PRODUCTS||[],SYSTEMS=window.FERTILIZER_SYSTEMS||[],G=3.785411784,F=1000/G,PF=.436426,KF=.830151,LEVELS=[120,140,160,180,200],KEY='growbox-fert-tool-v02';
+const PRODUCTS=window.FERTILIZER_PRODUCTS||[],SYSTEMS=window.FERTILIZER_SYSTEMS||[],G=3.785411784,F=1000/G,PF=.436426,KF=.830151,LEVELS=[120,140,160,180,200],KEY='growbox-fert-tool-v03';
 const EK=['N','P','K','Ca','Mg','S','Fe','Mn','Zn','B','Cu','Mo'];
-const fresh=()=>({view:'compare',compare:['megacrop-11-5-14','comparison-12-4-16'],systemCompare:['megacrop-2part-uploaded'],systemParts:{'megacrop-2part-uploaded':[1,1]},n:160,manual:{N:12,P2O5:4,K2O:16,Ca:7,Mg:2,S:0,Fe:.15,Mn:.05,Zn:.035,B:.02,Cu:.02,Mo:.001},blend:{mode:'label',ids:['comparison-12-4-16','mkp-0-52-34','calcium-nitrate','magnesium-sulfate'],target:{N:12,P2O5:5,K2O:16,P:2.18,K:13.28,Ca:7,Mg:2,S:2},result:null}});
+const fresh=()=>({view:'compare',compare:['megacrop-11-5-14','jacks-12-4-16','jacks-15-5-20-tap','jacks-18-8-23-outdoor'],systemCompare:['jacks-2part-5-12-26','jacks-321','athena-pro-veg','athena-pro-bloom'],systemParts:{},n:160,manual:{N:12,P2O5:4,K2O:16,Ca:7,Mg:2,S:0,Fe:.15,Mn:.05,Zn:.035,B:.02,Cu:.02,Mo:.001},blend:{mode:'label',ids:['jacks-12-4-16','jacks-5-12-26-a','jacks-15-0-0-b','jacks-epsom','mkp-0-52-34'],target:{N:12,P2O5:5,K2O:16,P:2.18,K:13.28,Ca:7,Mg:2,S:2},result:null}});
 let S;try{S=JSON.parse(sessionStorage.getItem(KEY))||fresh()}catch{S=fresh()}
-if(!Array.isArray(S.systemCompare))S.systemCompare=['megacrop-2part-uploaded'];
-if(!S.systemParts)S.systemParts={'megacrop-2part-uploaded':[1,1]};
+if(!Array.isArray(S.systemCompare))S.systemCompare=[];
+if(!S.systemParts)S.systemParts={};
 const $=id=>document.getElementById(id),num=v=>Number.isFinite(+v)?+v:0,fmt=(v,d=2)=>Number.isFinite(+v)?(+v).toFixed(d).replace(/(\.\d*?[1-9])0+$|\.0+$/,'$1'):'—',esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),prod=id=>PRODUCTS.find(p=>p.id===id),save=()=>sessionStorage.setItem(KEY,JSON.stringify(S));
 function elem(a){return{N:num(a.N),P:num(a.P2O5)*PF,K:num(a.K2O)*KF,Ca:num(a.Ca),Mg:num(a.Mg),S:num(a.S),Fe:num(a.Fe),Mn:num(a.Mn),Zn:num(a.Zn),B:num(a.B),Cu:num(a.Cu),Mo:num(a.Mo)}}
 function ppm(p,d){const e=elem(p.analysis||p),out={};EK.forEach(k=>out[k]=F*d*e[k]/100);return out}
 function doseN(p,n){const x=num((p.analysis||p).N);return x>0?n/(F*x/100):null}
+function rateMassGPerGal(p,r){if(r.gPerGal!=null)return num(r.gPerGal);if(r.mLPerGal!=null)return num(r.mLPerGal)*num(p.densityGPerMl||1);return null}
+function ppmAtRate(p,r){const g=rateMassGPerGal(p,r);return g==null?null:ppm(p,g)}
+function productDoseText(p,g){if(p.form==='liquid'&&num(p.densityGPerMl)>0)return fmt(g,3)+' g/gal ('+fmt(g/p.densityGPerMl,3)+' mL/gal)';return fmt(g,3)+' g/gal'}
 function systemMix(sys){
   const parts=(S.systemParts[sys.id]||sys.components.map(c=>c.defaultParts||1)).map(v=>Math.max(0,num(v)));
-  const total=parts.reduce((a,b)=>a+b,0)||1;
-  const weights=parts.map(v=>v/total);
-  const products=sys.components.map(c=>prod(c.productId)).filter(Boolean);
+  const products=sys.components.map(c=>prod(c.productId));
+  const massParts=parts.map((v,i)=>sys.ratioBasis==='volume'?v*num(products[i]?.densityGPerMl||1):v);
+  const totalMass=massParts.reduce((a,b)=>a+b,0)||1;
+  const weights=massParts.map(v=>v/totalMass);
   const fields=['N','P2O5','K2O','Ca','Mg','S','Fe','Mn','Zn','B','Cu','Mo'];
   const analysis={};
-  fields.forEach(k=>analysis[k]=products.reduce((sum,p,i)=>sum+weights[i]*num(p.analysis[k]),0));
-  return{sys,parts,weights,products,analysis};
+  fields.forEach(k=>analysis[k]=products.reduce((sum,p,i)=>sum+(p?weights[i]*num(p.analysis[k]):0),0));
+  return{sys,parts,massParts,weights,products,analysis};
 }
 function systemControls(){
   $('systemChecks').innerHTML=SYSTEMS.map(sys=>{
-    const mix=systemMix(sys),sel=S.systemCompare.includes(sys.id);
-    const ratio=sys.components.map((c,i)=>'<label>'+esc(c.label)+' parts <input class="spr" data-sys="'+esc(sys.id)+'" data-i="'+i+'" type="number" min="0" step=".1" value="'+fmt(mix.parts[i],3)+'"></label>').join('');
+    const mix=systemMix(sys),sel=S.systemCompare.includes(sys.id),unit=sys.ratioBasis==='volume'?'volume parts':'mass parts';
+    const ratio=sys.components.map((c,i)=>'<label>'+esc(c.label)+' '+unit+' <input class="spr" data-sys="'+esc(sys.id)+'" data-i="'+i+'" type="number" min="0" step=".1" value="'+fmt(mix.parts[i],3)+'"></label>').join('');
     return '<div class="check" style="display:block"><label style="display:flex;gap:8px;align-items:flex-start"><input class="sc" type="checkbox" value="'+esc(sys.id)+'" '+(sel?'checked':'')+'><span><b>'+esc(sys.brand+' — '+sys.name)+'</b><small>'+esc(sys.ratioNote||'')+'</small></span></label><div class="toolbar" style="margin:8px 0 0 27px">'+ratio+'</div></div>';
   }).join('');
   document.querySelectorAll('.sc').forEach(x=>x.onchange=()=>{S.systemCompare=[...document.querySelectorAll('.sc:checked')].map(y=>y.value);save();compareTables()});
@@ -69,6 +73,25 @@ function selectedCompareEntries(){
   S.systemCompare.map(id=>SYSTEMS.find(x=>x.id===id)).filter(Boolean).forEach(sys=>{const m=systemMix(sys);items.push({kind:'system',brand:sys.brand,name:sys.name,analysis:m.analysis,system:sys,mix:m,useRates:sys.useRates||[]})});
   return items;
 }
+function systemStandardDoseText(e,totalG){
+  const bits=e.mix.products.map((p,i)=>{
+    const g=totalG*e.mix.weights[i];
+    if(p.form==='liquid'&&num(p.densityGPerMl)>0)return esc(e.system.components[i].label)+' '+fmt(g/p.densityGPerMl,3)+' mL/gal';
+    return esc(e.system.components[i].label)+' '+fmt(g,3)+' g/gal';
+  });
+  return fmt(totalG,3)+' g/gal total<br><small class="muted">'+bits.join(' + ')+'</small>';
+}
+function systemRateResult(e,r){
+  let total={};EK.forEach(k=>total[k]=0);
+  let labels=[],totalG=0;
+  (r.components||[]).forEach(c=>{
+    const p=prod(c.productId);if(!p)return;
+    const g=c.gPerGal!=null?num(c.gPerGal):num(c.mLPerGal)*num(p.densityGPerMl||1);
+    const x=ppm(p,g);totalG+=g;EK.forEach(k=>total[k]+=x[k]||0);
+    labels.push(c.gPerGal!=null?esc(p.name)+' '+fmt(c.gPerGal,3)+' g/gal':esc(p.name)+' '+fmt(c.mLPerGal,3)+' mL/gal');
+  });
+  return{total,totalG,label:labels.join(' + ')};
+}
 function avg(ps,w,mode){const keys=mode==='label'?['N','P2O5','K2O','Ca','Mg','S']:['N','P','K','Ca','Mg','S'],o={};keys.forEach(k=>o[k]=0);ps.forEach((p,i)=>{const a=mode==='label'?p.analysis:elem(p.analysis);keys.forEach(k=>o[k]+=w[i]*num(a[k]))});return o}
 function simplex(v){const u=[...v].sort((a,b)=>b-a);let s=0,r=-1;for(let i=0;i<u.length;i++){s+=u[i];if(u[i]*(i+1)>s-1)r=i}if(r<0)return v.map(()=>1/v.length);const t=(u.slice(0,r+1).reduce((a,b)=>a+b,0)-1)/(r+1);return v.map(x=>Math.max(0,x-t))}
 function solveBlend(ps,target,mode){const keys=mode==='label'?['N','P2O5','K2O','Ca','Mg','S']:['N','P','K','Ca','Mg','S'],cols=ps.map(p=>mode==='label'?p.analysis:elem(p.analysis)),t=keys.map(k=>num(target[k])),sc=t.map(x=>Math.max(Math.abs(x),1));let w=ps.map(()=>1/ps.length),fro=0;keys.forEach((k,r)=>ps.forEach((p,c)=>fro+=(num(cols[c][k])/sc[r])**2));const step=1/Math.max(1e-9,2*fro);for(let it=0;it<30000;it++){const pred=keys.map(k=>ps.reduce((s,p,i)=>s+w[i]*num(cols[i][k]),0)),grad=w.map((_,c)=>keys.reduce((g,k,r)=>g+2*((pred[r]-t[r])/sc[r])*(num(cols[c][k])/sc[r]),0)),next=simplex(w.map((x,i)=>x-step*grad[i])),delta=Math.max(...next.map((x,i)=>Math.abs(x-w[i])));w=next;if(delta<1e-12)break}const la=avg(ps,w,'label'),el=avg(ps,w,'element'),basis=mode==='label'?la:el;let q=0;keys.forEach((k,i)=>q+=((basis[k]-t[i])/sc[i])**2);return{w,label:la,element:el,rms:Math.sqrt(q/keys.length)}}
@@ -78,8 +101,14 @@ function compare(){checks('compareChecks','cc',S.compare,ids=>{S.compare=ids;sav
 function compareTables(){
   const entries=selectedCompareEntries();
   $('analysisCompare').innerHTML='<thead><tr><th>Product / system</th><th>Label N-P₂O₅-K₂O</th><th>Elemental N / P / K</th><th>Ca%</th><th>Mg%</th><th>S%</th></tr></thead><tbody>'+entries.map(e=>{const x=elem(e.analysis),suffix=e.kind==='system'?' <small class="muted">(linked system)</small>':'';return'<tr><td>'+esc(e.brand+' — '+e.name)+suffix+'</td><td>'+fmt(e.analysis.N)+'-'+fmt(e.analysis.P2O5)+'-'+fmt(e.analysis.K2O)+'</td><td>'+fmt(x.N)+' / '+fmt(x.P)+' / '+fmt(x.K)+'</td><td>'+fmt(x.Ca,3)+'</td><td>'+fmt(x.Mg,3)+'</td><td>'+fmt(x.S,3)+'</td></tr>'}).join('')+'</tbody>';
-  $('nCompare').innerHTML='<thead><tr><th>Product / system</th><th>Dose at '+S.n+' ppm N</th><th>N</th><th>P</th><th>K</th><th>Ca</th><th>Mg</th><th>S</th><th>Fe</th><th>Mn</th><th>Zn</th></tr></thead><tbody>'+entries.map(e=>{const d=doseN(e.analysis,S.n);if(d===null)return'<tr><td>'+esc(e.name)+'</td><td colspan="10">No N — cannot standardize</td></tr>';const x=ppm(e.analysis,d);let doseText=fmt(d,3)+' g/gal';if(e.kind==='system'){doseText+='<br><small class="muted">'+e.mix.products.map((p,i)=>esc(e.system.components[i].label)+' '+fmt(d*e.mix.weights[i],3)).join(' + ')+' g/gal</small>'}return'<tr><td>'+esc(e.name)+'</td><td>'+doseText+'</td>'+['N','P','K','Ca','Mg','S'].map(k=>'<td>'+fmt(x[k],1)+'</td>').join('')+['Fe','Mn','Zn'].map(k=>'<td>'+fmt(x[k],3)+'</td>').join('')+'</tr>'}).join('')+'</tbody>';
-  $('rates').innerHTML=entries.map(e=>{if(e.kind==='system'&&!e.useRates.length)return'<div class="manufacturer"><b>'+esc(e.name)+'</b><br><span class="muted">No verified manufacturer A:B rate loaded. Adjust the component ratio above for comparison.</span></div>';if(!e.useRates.length)return'<div class="manufacturer"><b>'+esc(e.name)+'</b><br><span class="muted">No verified use rates loaded yet.</span></div>';return'<div class="manufacturer"><b>'+esc(e.name)+'</b><div class="table"><table><tr><th>Rate</th><th>g/gal</th><th>N</th><th>P</th><th>K</th></tr>'+e.useRates.map(r=>{const x=ppm(e.analysis,r.gPerGal);return'<tr><td>'+esc(r.label)+'</td><td>'+fmt(r.gPerGal,3)+'</td><td>'+fmt(x.N,1)+'</td><td>'+fmt(x.P,1)+'</td><td>'+fmt(x.K,1)+'</td></tr>'}).join('')+'</table></div></div>'}).join('');
+  $('nCompare').innerHTML='<thead><tr><th>Product / system</th><th>Dose at '+S.n+' ppm N</th><th>N</th><th>P</th><th>K</th><th>Ca</th><th>Mg</th><th>S</th><th>Fe</th><th>Mn</th><th>Zn</th></tr></thead><tbody>'+entries.map(e=>{const d=doseN(e.analysis,S.n);if(d===null)return'<tr><td>'+esc(e.name)+'</td><td colspan="10">No N — cannot standardize</td></tr>';const x=ppm(e.analysis,d);let doseText=e.kind==='system'?systemStandardDoseText(e,d):productDoseText(e.product,d);return'<tr><td>'+esc(e.name)+'</td><td>'+doseText+'</td>'+['N','P','K','Ca','Mg','S'].map(k=>'<td>'+fmt(x[k],1)+'</td>').join('')+['Fe','Mn','Zn'].map(k=>'<td>'+fmt(x[k],3)+'</td>').join('')+'</tr>'}).join('')+'</tbody>';
+  $('rates').innerHTML=entries.map(e=>{
+    if(!e.useRates.length)return'<div class="manufacturer"><b>'+esc(e.name)+'</b><br><span class="muted">'+(e.kind==='system'?'No verified full-system use rate loaded. Adjust the component ratio above for standardized-N comparison.':'No verified use rates loaded yet.')+'</span></div>';
+    if(e.kind==='system'){
+      return'<div class="manufacturer"><b>'+esc(e.name)+'</b><div class="table"><table><tr><th>Rate</th><th>Components</th><th>N</th><th>P</th><th>K</th><th>Ca</th><th>Mg</th><th>S</th></tr>'+e.useRates.map(r=>{const q=systemRateResult(e,r),x=q.total;return'<tr><td>'+esc(r.label)+'</td><td>'+q.label+'</td>'+['N','P','K','Ca','Mg','S'].map(k=>'<td>'+fmt(x[k],1)+'</td>').join('')+'</tr>'}).join('')+'</table></div></div>';
+    }
+    return'<div class="manufacturer"><b>'+esc(e.name)+'</b><div class="table"><table><tr><th>Rate</th><th>Dose</th><th>N</th><th>P</th><th>K</th><th>Ca</th><th>Mg</th><th>S</th></tr>'+e.useRates.map(r=>{const x=ppmAtRate(e.product,r),dose=r.gPerGal!=null?fmt(r.gPerGal,3)+' g/gal':fmt(r.mLPerGal,3)+' mL/gal';return'<tr><td>'+esc(r.label)+'</td><td>'+dose+'</td>'+['N','P','K','Ca','Mg','S'].map(k=>'<td>'+fmt(x?.[k],1)+'</td>').join('')+'</tr>'}).join('')+'</table></div></div>';
+  }).join('');
 }
 function manual(){const fs=[['N','N %'],['P2O5','P₂O₅ %'],['K2O','K₂O %'],['Ca','Ca %'],['Mg','Mg %'],['S','S %'],['Fe','Fe %'],['Mn','Mn %'],['Zn','Zn %'],['B','B %'],['Cu','Cu %'],['Mo','Mo %']];$('gaInputs').innerHTML=fs.map(([k,l])=>'<label>'+l+'<input class="gai" data-k="'+k+'" type="number" min="0" step=".001" value="'+fmt(S.manual[k],6)+'"></label>').join('');document.querySelectorAll('.gai').forEach(x=>x.oninput=()=>{S.manual[x.dataset.k]=Math.max(0,num(x.value));save();manualOut()});manualOut()}
 function manualOut(){const e=elem(S.manual);$('gaElemental').innerHTML='<thead><tr><th>Basis</th><th>N</th><th>P / P₂O₅</th><th>K / K₂O</th><th>Ca</th><th>Mg</th><th>S</th></tr></thead><tbody><tr><td>Label</td><td>'+fmt(S.manual.N,3)+'</td><td>'+fmt(S.manual.P2O5,3)+' P₂O₅</td><td>'+fmt(S.manual.K2O,3)+' K₂O</td><td>'+fmt(S.manual.Ca,3)+'</td><td>'+fmt(S.manual.Mg,3)+'</td><td>'+fmt(S.manual.S,3)+'</td></tr><tr><td>Elemental</td><td>'+fmt(e.N,3)+'</td><td>'+fmt(e.P,3)+' P</td><td>'+fmt(e.K,3)+' K</td><td>'+fmt(e.Ca,3)+'</td><td>'+fmt(e.Mg,3)+'</td><td>'+fmt(e.S,3)+'</td></tr></tbody>';$('gaFeed').innerHTML='<thead><tr><th>N target</th><th>g/gal</th><th>N</th><th>P</th><th>K</th><th>Ca</th><th>Mg</th><th>S</th></tr></thead><tbody>'+LEVELS.map(N=>{const d=doseN(S.manual,N);if(d===null)return'<tr><td>'+N+'</td><td colspan="7">N must be greater than 0%</td></tr>';const x=ppm(S.manual,d);return'<tr><td>'+N+'</td><td>'+fmt(d,3)+'</td>'+['N','P','K','Ca','Mg','S'].map(k=>'<td>'+fmt(x[k],1)+'</td>').join('')+'</tr>'}).join('')+'</tbody>'}
@@ -88,7 +117,7 @@ function renderTable(id,a,mode){const ks=mode==='label'?[['N','N'],['P2O5','P₂
 function renderBlendResult(){const r=S.blend.result;if(!r){$('blendResult').classList.add('hidden');return}const ps=r.ids.map(prod).filter(Boolean);$('blendResult').classList.remove('hidden');$('fit').textContent='Relative RMS error: '+fmt(r.rms*100,2)+'%. Lower is closer; 0% is exact.';$('weights').innerHTML=ps.map((p,i)=>'<div class="pill"><b>'+esc(p.name)+'</b><span>'+fmt(r.w[i]*100,2)+'% by mass</span></div>').join('');renderTable('labelResult',r.label,'label');renderTable('elementResult',r.element,'element');const nPct=r.element.N;$('feed').innerHTML='<thead><tr><th>N target</th>'+ps.map(p=>'<th>'+esc(p.name)+' g/gal</th>').join('')+'<th>Total</th><th>P</th><th>K</th><th>Ca</th><th>Mg</th><th>S</th></tr></thead><tbody>'+(nPct<=0?'<tr><td colspan="20">Blend contains no nitrogen.</td></tr>':LEVELS.map(N=>{const total=N/(F*nPct/100),ds=r.w.map(w=>total*w);return'<tr><td>'+N+'</td>'+ds.map(d=>'<td>'+fmt(d,3)+'</td>').join('')+'<td>'+fmt(total,3)+'</td>'+['P','K','Ca','Mg','S'].map(k=>'<td>'+fmt(F*total*r.element[k]/100,1)+'</td>').join('')+'</tr>'}).join(''))+'</tbody>'}
 function dl(name,type,text){const u=URL.createObjectURL(new Blob([text],{type})),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),500)}
 function exportJSON(){dl('growbox-fertilizer-results.json','application/json',JSON.stringify(S,null,2))}
-function exportCSV(){let rows=[];if(S.view==='analysis'){rows.push(['Target N','g/gal','N','P','K','Ca','Mg','S']);LEVELS.forEach(N=>{const d=doseN(S.manual,N),x=d===null?null:ppm(S.manual,d);rows.push([N,d,...(x?['N','P','K','Ca','Mg','S'].map(k=>x[k]):['','','','','',''])])})}else if(S.view==='blend'&&S.blend.result){const r=S.blend.result,ps=r.ids.map(prod),nPct=r.element.N;rows.push(['Target N',...ps.map(p=>p.name+' g/gal'),'Total g/gal','P','K','Ca','Mg','S']);if(nPct>0)LEVELS.forEach(N=>{const total=N/(F*nPct/100);rows.push([N,...r.w.map(w=>total*w),total,...['P','K','Ca','Mg','S'].map(k=>F*total*r.element[k]/100)])})}else{rows.push(['Product','g/gal','N','P','K','Ca','Mg','S']);S.compare.map(prod).filter(Boolean).forEach(p=>{const d=doseN(p,S.n),x=d===null?null:ppm(p,d);rows.push([p.name,d,...(x?['N','P','K','Ca','Mg','S'].map(k=>x[k]):['','','','','',''])])})}dl('growbox-fertilizer-results.csv','text/csv',rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\n'))}
+function exportCSV(){let rows=[];if(S.view==='analysis'){rows.push(['Target N','g/gal','N','P','K','Ca','Mg','S']);LEVELS.forEach(N=>{const d=doseN(S.manual,N),x=d===null?null:ppm(S.manual,d);rows.push([N,d,...(x?['N','P','K','Ca','Mg','S'].map(k=>x[k]):['','','','','',''])])})}else if(S.view==='blend'&&S.blend.result){const r=S.blend.result,ps=r.ids.map(prod),nPct=r.element.N;rows.push(['Target N',...ps.map(p=>p.name+' g/gal'),'Total g/gal','P','K','Ca','Mg','S']);if(nPct>0)LEVELS.forEach(N=>{const total=N/(F*nPct/100);rows.push([N,...r.w.map(w=>total*w),total,...['P','K','Ca','Mg','S'].map(k=>F*total*r.element[k]/100)])})}else{rows.push(['Product / system','Total g/gal','N','P','K','Ca','Mg','S']);selectedCompareEntries().forEach(e=>{const d=doseN(e.analysis,S.n),x=d===null?null:ppm(e.analysis,d);rows.push([e.name,d,...(x?['N','P','K','Ca','Mg','S'].map(k=>x[k]):['','','','','',''])])})}dl('growbox-fertilizer-results.csv','text/csv',rows.map(r=>r.map(v=>'"'+String(v??'').replace(/"/g,'""')+'"').join(',')).join('\n'))}
 $('nLevel').onchange=e=>{S.n=+e.target.value;save();compareTables()};$('labelMode').onclick=()=>{S.blend.mode='label';S.blend.result=null;save();blend()};$('elementMode').onclick=()=>{S.blend.mode='element';S.blend.result=null;save();blend()};$('solve').onclick=()=>{const ps=S.blend.ids.map(prod).filter(Boolean);if(!ps.length){$('notice').textContent='Select at least one fertilizer.';$('notice').classList.remove('hidden');return}S.blend.result={ids:ps.map(p=>p.id),...solveBlend(ps,S.blend.target,S.blend.mode)};save();renderBlendResult()};$('csv').onclick=exportCSV;$('json').onclick=exportJSON;$('reset').onclick=()=>{if(confirm('Reset this browser session?')){S=fresh();save();render()}};
 function render(){tabs();compare();manual();blend()}render();
 })();
