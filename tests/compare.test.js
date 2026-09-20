@@ -32,7 +32,7 @@ function fakeElement() {
 
 function fixture() {
   const {products, systems} = loadDatabase();
-  const ids = ['productPicker', 'compareCount', 'selectedLines', 'nLevel', 'percentView', 'ppmView', 'nControl', 'comparisonHeading', 'analysisCompare', 'ratesTable'];
+  const ids = ['productPicker', 'compareCount', 'selectedLines', 'nLevel', 'percentView', 'ppmView', 'nControl', 'comparisonHeading', 'analysisCompare'];
   const elements = Object.fromEntries(ids.map(id => [id, fakeElement()]));
   const document = {
     getElementById(id) { return elements[id]; },
@@ -73,14 +73,12 @@ test('renders grouped complete-line choices and the three default selections', (
   assert.match(view.elements.selectedLines.innerHTML, /Athena — Pro Veg/);
 });
 
-test('renders standardized elemental ppm and one selected manufacturer rate per line', () => {
+test('renders standardized elemental ppm for each selected line', () => {
   const view = fixture();
   view.component.render();
   assert.equal(view.elements.comparisonHeading.textContent, 'Elemental ppm @ 160 ppm N');
   assert.match(view.elements.analysisCompare.innerHTML, /N ppm/);
   assert.match(view.elements.analysisCompare.innerHTML, /Core [\d.]+ g\/gal/);
-  assert.match(view.elements.ratesTable.innerHTML, /class="rateSelect"/);
-  assert.match(view.elements.ratesTable.innerHTML, /EC 1\.0/);
 });
 
 test('comparison controls update mode, nitrogen target, and selection state', () => {

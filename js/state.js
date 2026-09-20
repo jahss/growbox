@@ -15,11 +15,15 @@
       systemCompare: ['athena-pro-veg'],
       systemParts: {},
       compareMode: 'ppm',
-      rateChoice: {},
       n: 160,
       manual: {
         N: 12, P2O5: 4, K2O: 16, Ca: 7, Mg: 2, S: 0,
         Fe: 0.15, Mn: 0.05, Zn: 0.035, B: 0.02, Cu: 0.02, Mo: 0.001
+      },
+      useRate: {
+        selection: 'p:jacks-12-4-16',
+        preset: 'custom',
+        doses: {'jacks-12-4-16': {amount: 1, unit: 'g/gal'}}
       },
       blend: {
         mode: 'label',
@@ -53,14 +57,37 @@
     if (!Array.isArray(state.blend.ids)) state.blend.ids = defaults.blend.ids;
     state.blend.ids = state.blend.ids.filter(id => availableProducts.some(product => product.id === id));
     if (!['label', 'element'].includes(state.blend.mode)) state.blend.mode = defaults.blend.mode;
-    if (!['compare', 'analysis', 'blend'].includes(state.view)) state.view = defaults.view;
+    if (!['compare', 'useRate', 'analysis', 'blend'].includes(state.view)) state.view = defaults.view;
+
+    state.useRate = candidate.useRate && typeof candidate.useRate === 'object' && !Array.isArray(candidate.useRate)
+      ? {...defaults.useRate, ...candidate.useRate}
+      : defaults.useRate;
+    const [useRateKind, useRateId] = String(state.useRate.selection || '').split(':');
+    const useRateSelectionExists = useRateKind === 'p'
+      ? availableProducts.some(product => product.id === useRateId && product.compareGroup === '1-part')
+      : useRateKind === 's' && availableSystems.some(system => system.id === useRateId);
+    if (!useRateSelectionExists) state.useRate.selection = defaults.useRate.selection;
+    state.useRate.preset = state.useRate.preset === 'custom' || /^\d+$/.test(String(state.useRate.preset))
+      ? String(state.useRate.preset)
+      : 'custom';
+    const supportedUnits = new Set(['g/gal', 'g/L', 'mL/gal', 'mL/L']);
+    const candidateDoses = state.useRate.doses && typeof state.useRate.doses === 'object' && !Array.isArray(state.useRate.doses)
+      ? state.useRate.doses
+      : {};
+    state.useRate.doses = {};
+    Object.keys(candidateDoses).forEach(id => {
+      const dose = candidateDoses[id];
+      if (!dose || typeof dose !== 'object' || Array.isArray(dose)) return;
+      const amount = Math.max(0, number(dose.amount));
+      const unit = supportedUnits.has(dose.unit) ? dose.unit : 'g/gal';
+      state.useRate.doses[id] = {amount, unit};
+    });
 
     if (!Array.isArray(state.systemCompare)) state.systemCompare = [];
+    delete state.rateChoice;
     if (!state.systemParts || typeof state.systemParts !== 'object' || Array.isArray(state.systemParts)) state.systemParts = {};
     else state.systemParts = {...state.systemParts};
     if (!['percent', 'ppm'].includes(state.compareMode)) state.compareMode = 'ppm';
-    if (!state.rateChoice || typeof state.rateChoice !== 'object' || Array.isArray(state.rateChoice)) state.rateChoice = {};
-    else state.rateChoice = {...state.rateChoice};
 
     state.compare = (Array.isArray(state.compare) ? state.compare : []).filter(id => {
       const product = availableProducts.find(candidate => candidate.id === id);

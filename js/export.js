@@ -49,6 +49,7 @@
 
   function currentCsvRows(state, context) {
     if (state.view === 'analysis') return analysisRows(state, context.levels, context.chemistry);
+    if (state.view === 'useRate') return context.useRateRows();
     if (state.view === 'blend' && state.blend.result) {
       return blendRows(state, context.levels, context.chemistry, context.product);
     }

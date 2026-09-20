@@ -51,6 +51,49 @@
     return ppm;
   }
 
+  function doseGramsPerLiter(product, amount, unit) {
+    const dose = number(amount);
+    if (dose < 0) throw new RangeError('Dose must be nonnegative.');
+    if (unit === 'g/L') return dose;
+    if (unit === 'g/gal') return dose / US_GALLON_LITERS;
+    if (unit === 'mL/L') return dose * requireDensity(product);
+    if (unit === 'mL/gal') return dose * requireDensity(product) / US_GALLON_LITERS;
+    throw new RangeError('Unsupported dose unit: ' + unit);
+  }
+
+  function ppmAtGramsPerLiter(productOrAnalysis, gramsPerLiter) {
+    const dose = number(gramsPerLiter);
+    if (dose < 0) throw new RangeError('Dose must be nonnegative.');
+    const elemental = elementalAnalysis(productOrAnalysis);
+    const ppm = {};
+    ELEMENT_KEYS.forEach(key => {
+      ppm[key] = dose * 10 * elemental[key];
+    });
+    return ppm;
+  }
+
+  function recipeAtDoses(lines) {
+    if (!Array.isArray(lines)) throw new TypeError('Recipe lines are required.');
+    const ppm = {};
+    const nitrogenForms = {};
+    ELEMENT_KEYS.forEach(key => { ppm[key] = 0; });
+    let totalGPerLiter = 0;
+
+    lines.forEach(line => {
+      if (!line || !line.product) throw new TypeError('Every recipe line requires a product.');
+      const gramsPerLiter = number(line.gramsPerLiter);
+      if (gramsPerLiter < 0) throw new RangeError('Dose must be nonnegative.');
+      const contribution = ppmAtGramsPerLiter(line.product, gramsPerLiter);
+      totalGPerLiter += gramsPerLiter;
+      ELEMENT_KEYS.forEach(key => { ppm[key] += contribution[key]; });
+      Object.keys(line.product.nitrogenForms || {}).forEach(key => {
+        nitrogenForms[key] = number(nitrogenForms[key]) + gramsPerLiter * 10 * number(line.product.nitrogenForms[key]);
+      });
+    });
+
+    return {ppm, nitrogenForms, totalGPerLiter};
+  }
+
   function standardizedNitrogenDose(productOrAnalysis, targetNppm) {
     const analysis = analysisOf(productOrAnalysis);
     const nitrogenPercent = number(analysis.N);
@@ -131,6 +174,9 @@
     ELEMENT_KEYS: Object.freeze([...ELEMENT_KEYS]),
     elementalAnalysis,
     ppmAtDose,
+    doseGramsPerLiter,
+    ppmAtGramsPerLiter,
+    recipeAtDoses,
     standardizedNitrogenDose,
     rateMassGPerGal,
     mixSystem

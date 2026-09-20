@@ -33,8 +33,10 @@ test('fresh state returns independent defaults', () => {
   const second = stateModule.freshState();
   first.compare.push('one-c');
   first.manual.N = 20;
+  first.useRate.doses['jacks-12-4-16'].amount = 9;
   assert.deepEqual(second.compare, ['megacrop-11-5-14', 'jacks-12-4-16']);
   assert.equal(second.manual.N, 12);
+  assert.equal(second.useRate.doses['jacks-12-4-16'].amount, 1);
   assert.equal(second.n, 160);
 });
 
@@ -50,13 +52,11 @@ test('normalization removes unavailable and non-comparable entries', () => {
     compare: ['megacrop-11-5-14', 'component-a', 'missing'],
     systemCompare: ['athena-pro-veg', 'missing-system'],
     systemParts: {},
-    compareMode: 'invalid',
-    rateChoice: null
+    compareMode: 'invalid'
   }, products, systems);
   assert.deepEqual(state.compare, ['megacrop-11-5-14']);
   assert.deepEqual(state.systemCompare, ['athena-pro-veg']);
   assert.equal(state.compareMode, 'ppm');
-  assert.deepEqual(state.rateChoice, {});
 });
 
 test('normalization restores missing nested state without discarding valid values', () => {
@@ -73,6 +73,8 @@ test('normalization restores missing nested state without discarding valid value
   assert.deepEqual(state.blend.ids, ['component-a']);
   assert.equal(state.blend.target.N, 15);
   assert.equal(state.blend.target.K2O, 16);
+  assert.equal(state.useRate.selection, 'p:jacks-12-4-16');
+  assert.equal(state.useRate.doses['jacks-12-4-16'].unit, 'g/gal');
 });
 
 test('loadState recovers when storage access is unavailable', () => {
@@ -87,8 +89,7 @@ test('normalization enforces the five-line comparison limit', () => {
     compare: ['megacrop-11-5-14', 'jacks-12-4-16', 'one-c', 'one-d'],
     systemCompare: ['athena-pro-veg', 'system-b', 'system-c'],
     systemParts: {},
-    compareMode: 'percent',
-    rateChoice: {}
+    compareMode: 'percent'
   }, products, systems);
   assert.equal(state.compare.length + state.systemCompare.length, 5);
   assert.deepEqual(state.compare, ['megacrop-11-5-14', 'jacks-12-4-16', 'one-c', 'one-d']);
@@ -104,10 +105,31 @@ test('normalization removes invalid and all-zero saved system ratios', () => {
       zero: [0, 0],
       malformed: '1:1'
     },
-    compareMode: 'ppm',
-    rateChoice: {}
+    compareMode: 'ppm'
   }, products, systems);
   assert.deepEqual(state.systemParts, {valid: [0, 2]});
+});
+
+test('normalization validates use-rate selection, presets, doses, and units', () => {
+  const state = stateModule.normalizeState({
+    useRate: {
+      selection: 'p:component-a',
+      preset: 'invalid',
+      doses: {
+        'jacks-12-4-16': {amount: -2, unit: 'ounces'},
+        'component-a': {amount: 3, unit: 'g/L'}
+      }
+    }
+  }, products, systems);
+  assert.equal(state.useRate.selection, 'p:jacks-12-4-16');
+  assert.equal(state.useRate.preset, 'custom');
+  assert.deepEqual(state.useRate.doses['jacks-12-4-16'], {amount: 0, unit: 'g/gal'});
+  assert.deepEqual(state.useRate.doses['component-a'], {amount: 3, unit: 'g/L'});
+});
+
+test('normalization removes retired manufacturer-rate comparison state', () => {
+  const state = stateModule.normalizeState({rateChoice: {'system:old': 3}}, products, systems);
+  assert.equal(Object.hasOwn(state, 'rateChoice'), false);
 });
 
 test('saveState persists the current state under the versioned key', () => {

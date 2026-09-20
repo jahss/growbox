@@ -74,8 +74,7 @@
           partCount: item.partCount || 1,
           name: item.name,
           analysis: item.analysis,
-          product: item,
-          useRates: item.useRates || []
+          product: item
         }));
 
       (Array.isArray(systemIds) ? systemIds : []).map(system).filter(Boolean).forEach(systemRecord => {
@@ -90,8 +89,7 @@
           name: systemRecord.name,
           analysis: mix.analysis,
           system: systemRecord,
-          mix,
-          useRates: systemRecord.useRates || []
+          mix
         });
       });
 

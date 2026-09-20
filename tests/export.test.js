@@ -53,6 +53,12 @@ test('builds comparison rows and leaves zero-nitrogen dose fields empty', () => 
   assert.ok(rows[2].slice(2).every(value => value === ''));
 });
 
+test('uses Recipe Analyzer rows while the Use Rate view is active', () => {
+  const expected = [['Program', 'N ppm'], ['Example', 160]];
+  const rows = exportModule.currentCsvRows({view: 'useRate'}, {useRateRows: () => expected});
+  assert.equal(rows, expected);
+});
+
 test('escapes CSV values and serializes state JSON', () => {
   assert.equal(exportModule.csvText([['A "quoted" value', 'x,y'], [null, 2]]), '"A ""quoted"" value","x,y"\n"","2"');
   assert.equal(exportModule.stateJson({n: 160}), '{\n  "n": 160\n}');

@@ -90,6 +90,28 @@ test('converts verified liquid volume rates to mass', () => {
   closeTo(chemistry.rateMassGPerGal({densityGPerMl: 1.179092}, {mLPerGal: 11}), 12.970012);
 });
 
+test('normalizes mass and density-aware volume doses to grams per liter', () => {
+  closeTo(chemistry.doseGramsPerLiter({}, 3.785411784, 'g/gal'), 1);
+  closeTo(chemistry.doseGramsPerLiter({}, 1, 'g/L'), 1);
+  closeTo(chemistry.doseGramsPerLiter({densityGPerMl: 1.2}, 2, 'mL/L'), 2.4);
+  closeTo(chemistry.doseGramsPerLiter({densityGPerMl: 1.2}, 3.785411784, 'mL/gal'), 1.2);
+  assert.throws(() => chemistry.doseGramsPerLiter({}, 1, 'mL/L'), /densityGPerMl/);
+  assert.throws(() => chemistry.doseGramsPerLiter({}, 1, 'ounces'), /Unsupported dose unit/);
+});
+
+test('calculates a recipe from canonical grams-per-liter doses', () => {
+  const recipe = chemistry.recipeAtDoses([
+    {product: {analysis: {N: 10, P2O5: 5}, nitrogenForms: {nitrateN: 8, ammoniacalN: 2}}, gramsPerLiter: 1},
+    {product: {analysis: {N: 0, K2O: 20}}, gramsPerLiter: 0.5}
+  ]);
+  closeTo(recipe.totalGPerLiter, 1.5);
+  closeTo(recipe.ppm.N, 100);
+  closeTo(recipe.ppm.P, 50 * chemistry.P_FROM_P2O5);
+  closeTo(recipe.ppm.K, 100 * chemistry.K_FROM_K2O);
+  closeTo(recipe.nitrogenForms.nitrateN, 80);
+  closeTo(recipe.nitrogenForms.ammoniacalN, 20);
+});
+
 test('handles zero nitrogen and rejects invalid negative inputs', () => {
   assert.equal(chemistry.standardizedNitrogenDose({N: 0}, 160), null);
   assert.throws(() => chemistry.standardizedNitrogenDose({N: 12}, -1), /nonnegative/);

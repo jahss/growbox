@@ -14,17 +14,22 @@
 <script src="js/export.js"></script>
 <script src="js/analysis.js"></script>
 <script src="js/compare.js"></script>
+<script src="js/use-rate.js"></script>
 <script src="js/blend.js"></script>
 </head>
 <body>
 <header class="head"><div class="wrap"><div class="eyebrow">Prototype 0.7</div><h1>Growbox Fertilizer Toolbox</h1><p class="muted">Label analysis → elemental analysis → ppm → blend feed charts.</p></div></header>
 <main class="wrap">
-<nav class="tabs"><button class="tab active" data-view="compare">Compare</button><button class="tab" data-view="analysis">Guaranteed analysis</button><button class="tab" data-view="blend">Blend finder</button></nav>
+<nav class="tabs"><button class="tab active" data-view="compare">Compare</button><button class="tab" data-view="useRate">Use rate</button><button class="tab" data-view="analysis">Guaranteed analysis</button><button class="tab" data-view="blend">Blend finder</button></nav>
 <div id="notice" class="notice hidden"></div>
 <section id="compare" class="view active">
 <div class="grid2"><div class="card"><div class="section-head"><div><h2>Compare product lines</h2><p class="muted">Add up to 5 complete nutrient lines. Ingredient salts stay in Blend Finder.</p></div><div id="compareCount" class="limit-note"></div></div><div class="picker"><select id="productPicker"><option value="">Add product line…</option></select></div><div id="selectedLines" class="selected-lines"></div><div class="toolbar" style="margin-top:12px"><div class="view-toggle"><button id="percentView" type="button">Guaranteed %</button><button id="ppmView" class="active" type="button">Elemental ppm</button></div><label id="nControl">Standardized N <select id="nLevel"><option>120</option><option>140</option><option selected>160</option><option>180</option><option>200</option></select> ppm</label></div></div><div class="card"><h2>How the comparison works</h2><p><b>Guaranteed %</b> shows the analysis printed on the label, including all listed secondary nutrients and micros.</p><p><b>Elemental ppm</b> converts P₂O₅ → P and K₂O → K, then calculates every listed nutrient at the selected standardized nitrogen level.</p></div></div>
 <div class="card"><div class="section-head"><h2 id="comparisonHeading">Elemental ppm comparison</h2></div><div class="table"><table id="analysisCompare"></table></div></div>
-<div class="card"><h2>Manufacturer suggested rates → elemental ppm</h2><p class="muted">One manufacturer rate is shown per selected line. Use the rate dropdown to inspect another EC, stage, or schedule point.</p><div class="table"><table id="ratesTable"></table></div></div>
+</section>
+<section id="useRate" class="view">
+<div class="grid2"><div class="card"><h2>Use Rate Calculator</h2><p class="muted">Choose one complete fertilizer program, enter the dose of every component, and calculate the resulting elemental ppm.</p><label>Product or program<select id="useRateProduct" class="wide-control"></select></label><label>Published rate preset<select id="useRatePreset" class="wide-control"></select></label><p id="useRatePresetNote" class="muted"></p></div><div class="card"><h2>Selected program</h2><div id="useRateIdentity" class="program-identity"></div><p class="muted">All doses are normalized internally to grams per liter of final solution. Liquid volume units require product density.</p></div></div>
+<div class="card"><h2>Component rates</h2><div id="useRateInputs" class="rate-inputs"></div></div>
+<div class="card"><h2>Elemental ppm in solution</h2><div id="useRateSummary" class="result-grid"></div><div class="table" style="margin-top:12px"><table id="useRateResult"></table></div><div id="useRateNitrogen"></div></div>
 </section>
 <section id="analysis" class="view">
 <div class="grid2"><div class="card"><h2>Enter guaranteed analysis</h2><p class="muted">Enter the label exactly as printed. P₂O₅ and K₂O are converted automatically.</p><div id="gaInputs" class="inputs"></div></div><div class="card"><h2>Elemental analysis</h2><div class="table"><table id="gaElemental"></table></div></div></div>

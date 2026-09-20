@@ -1,6 +1,6 @@
 # Growbox Fertilizer Toolbox
 
-A static HTML/CSS/JavaScript toolbox for comparing commercial fertilizer programs, converting guaranteed analyses to elemental ppm, and exploring fertilizer blends.
+A static HTML/CSS/JavaScript toolbox for comparing commercial fertilizer programs, analyzing real use-rate recipes, converting guaranteed analyses to elemental ppm, and exploring fertilizer blends.
 
 ## Current structure
 
@@ -13,9 +13,10 @@ A static HTML/CSS/JavaScript toolbox for comparing commercial fertilizer program
 - `js/blend-solver.js` — nonnegative fertilizer blend optimization
 - `js/export.js` — CSV/JSON result generation and browser downloads
 - `js/analysis.js` — Guaranteed Analysis inputs, calculations, and rendering
-- `js/compare.js` — commercial program selection, standardized comparison, and manufacturer-rate UI
+- `js/compare.js` — commercial program selection and standardized comparison
+- `js/use-rate.js` — editable product/program recipes, published rate presets, and elemental ppm results
 - `js/blend.js` — Blend Finder selection, targets, results, and feed-chart UI
-- `js/app.js` — browser state, rendering, exports, and event handling
+- `js/app.js` — page-level dependency setup, shared controls, exports, and rendering
 - `tests/*.test.js` — chemistry, product-data, and session-state regression tests
 
 ## Chemistry conventions

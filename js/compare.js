@@ -155,25 +155,6 @@
       return format(totalGrams, 3) + ' g/gal total<br><small class="muted">' + pieces.join(' + ') + '</small>';
     }
 
-    function systemRateResult(entry, rate) {
-      const total = {};
-      chemistry.ELEMENT_KEYS.forEach(key => { total[key] = 0; });
-      const labels = [];
-      let totalGrams = 0;
-      (rate.components || []).forEach(component => {
-        const item = product(component.productId);
-        if (!item) return;
-        const grams = chemistry.rateMassGPerGal(item, component);
-        const ppm = chemistry.ppmAtDose(item, grams);
-        totalGrams += grams;
-        chemistry.ELEMENT_KEYS.forEach(key => { total[key] += ppm[key] || 0; });
-        labels.push(component.gPerGal != null
-          ? escape(displayFormula(item)) + ' ' + format(component.gPerGal, 3) + ' g/gal'
-          : escape(displayFormula(item)) + ' ' + format(component.mLPerGal, 3) + ' mL/gal');
-      });
-      return {total, totalG: totalGrams, label: labels.join(' + ')};
-    }
-
     function renderTables() {
       const state = getState();
       const entries = selectedEntries();
@@ -202,39 +183,6 @@
           }).join('') + '</tbody>';
       }
 
-      const rateRows = entries.map(entry => {
-        if (!entry.useRates.length) return {entry, label: 'No verified rate loaded', doseText: '—', values: null, rateIndex: 0};
-        const key = entry.kind + ':' + entry.id;
-        let index = Number.isInteger(state.rateChoice[key]) ? state.rateChoice[key] : 0;
-        if (index < 0 || index >= entry.useRates.length) index = 0;
-        const rate = entry.useRates[index];
-        if (entry.kind === 'system') {
-          const result = systemRateResult(entry, rate);
-          return {entry, label: rate.label, doseText: result.label, values: result.total, rateIndex: index};
-        }
-        const grams = chemistry.rateMassGPerGal(entry.product, rate);
-        const values = grams === null ? null : chemistry.ppmAtDose(entry.product, grams);
-        const dose = rate.gPerGal != null ? format(rate.gPerGal, 3) + ' g/gal' : format(rate.mLPerGal, 3) + ' mL/gal';
-        return {entry, label: rate.label, doseText: dose, values, rateIndex: index};
-      });
-      const rateCalculations = rateRows.map(row => ({values: row.values || {}}));
-      element('ratesTable').innerHTML = '<thead><tr><th>Product / system</th><th>Manufacturer rate</th><th>Dose / components</th>' + PPM_COLUMNS.map(column => '<th>' + column[1] + ' ppm</th>').join('') + '</tr></thead><tbody>' +
-        rateRows.map((row, index) => {
-          const entry = row.entry;
-          const key = entry.kind + ':' + entry.id;
-          const rateCell = entry.useRates.length > 1
-            ? '<select class="rateSelect" data-key="' + escape(key) + '">' + entry.useRates.map((rate, rateIndex) => '<option value="' + rateIndex + '" ' + (rateIndex === row.rateIndex ? 'selected' : '') + '>' + escape(rate.label) + '</option>').join('') + '</select>'
-            : escape(row.label);
-          return '<tr><td>' + entryCell(entry) + '</td><td>' + rateCell + '</td><td>' + row.doseText + '</td>' +
-            PPM_COLUMNS.map(([column]) => row.values ? '<td class="' + highlightClass(rateCalculations, column, index) + '">' + format(row.values[column], MICRO_KEYS.includes(column) ? (column === 'Mo' ? 4 : 3) : 1) + '</td>' : '<td>—</td>').join('') + '</tr>';
-        }).join('') + '</tbody>';
-      document.querySelectorAll('.rateSelect').forEach(select => {
-        select.onchange = () => {
-          state.rateChoice[select.dataset.key] = Number(select.value);
-          save();
-          renderTables();
-        };
-      });
     }
 
     function render() {
