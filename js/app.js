@@ -3,21 +3,16 @@ const CHEM=window.GrowboxChemistry;
 if(!CHEM)throw new Error('Growbox chemistry engine failed to load.');
 const STATE=window.GrowboxState;
 if(!STATE)throw new Error('Growbox state module failed to load.');
+const PRODUCT_MODEL=window.GrowboxProductModel;
+if(!PRODUCT_MODEL)throw new Error('Growbox product model failed to load.');
 const PRODUCTS=window.FERTILIZER_PRODUCTS||[],SYSTEMS=window.FERTILIZER_SYSTEMS||[],F=CHEM.MG_PER_L_PER_G_PER_GAL,LEVELS=[120,140,160,180,200];
 const EK=CHEM.ELEMENT_KEYS;
 const fresh=STATE.freshState;
 let S=STATE.loadState(sessionStorage,PRODUCTS,SYSTEMS);
-const $=id=>document.getElementById(id),num=v=>Number.isFinite(+v)?+v:0,fmt=(v,d=2)=>Number.isFinite(+v)?(+v).toFixed(d).replace(/(\.\d*?[1-9])0+$|\.0+$/,'$1'):'—',esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),prod=id=>PRODUCTS.find(p=>p.id===id),save=()=>STATE.saveState(sessionStorage,S);
-function displayProgram(x){return x.program||x.name||''}
-function displayFormula(x){
-  if(x.displayFormula)return x.displayFormula;
-  if(x.analysis)return fmt(x.analysis.N)+'-'+fmt(x.analysis.P2O5)+'-'+fmt(x.analysis.K2O);
-  return x.name||'';
-}
-function displayParts(x){return (x.partCount||1)+'-part'}
-function entryTitle(x){return x.brand+' — '+displayProgram(x)}
+const $=id=>document.getElementById(id),num=v=>Number.isFinite(+v)?+v:0,fmt=(v,d=2)=>Number.isFinite(+v)?(+v).toFixed(d).replace(/(\.\d*?[1-9])0+$|\.0+$/,'$1'):'—',esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),save=()=>STATE.saveState(sessionStorage,S);
+const CATALOG=PRODUCT_MODEL.createCatalog(PRODUCTS,SYSTEMS,CHEM,fmt);
+const prod=CATALOG.product,displayProgram=CATALOG.displayProgram,displayFormula=CATALOG.displayFormula,displayParts=CATALOG.displayParts,entryTitle=CATALOG.entryTitle,exportLabel=CATALOG.exportLabel;
 function entryCell(x){return esc(entryTitle(x))+'<br><small class="muted">'+esc(displayFormula(x))+' · '+esc(displayParts(x))+'</small>'}
-function exportLabel(x){return entryTitle(x)+' | '+displayFormula(x)+' | '+displayParts(x)}
 
 const elem=CHEM.elementalAnalysis;
 const ppm=CHEM.ppmAtDose;
@@ -26,9 +21,7 @@ const rateMassGPerGal=CHEM.rateMassGPerGal;
 function ppmAtRate(p,r){const g=rateMassGPerGal(p,r);return g==null?null:ppm(p,g)}
 function productDoseText(p,g){if(p.form==='liquid'&&num(p.densityGPerMl)>0)return fmt(g,3)+' g/gal ('+fmt(g/p.densityGPerMl,3)+' mL/gal)';return fmt(g,3)+' g/gal'}
 function systemMix(sys){
-  const parts=(S.systemParts[sys.id]||sys.components.map(c=>c.defaultParts==null?1:c.defaultParts)).map(v=>Math.max(0,num(v)));
-  const products=sys.components.map(c=>prod(c.productId));
-  return{sys,products,...CHEM.mixSystem(sys,products,parts)};
+  return CATALOG.mixSystem(sys,S.systemParts[sys.id]);
 }
 function compareSelectionCount(){return S.compare.length+S.systemCompare.length}
 function addCompareItem(value){
@@ -75,18 +68,7 @@ function compareControls(){
   });
 }
 function selectedCompareEntries(){
-  const items=S.compare.map(prod).filter(p=>p&&p.compareGroup==='1-part').map(p=>({
-    kind:'product',id:p.id,brand:p.brand,program:displayProgram(p),displayFormula:displayFormula(p),partCount:p.partCount||1,
-    name:p.name,analysis:p.analysis,product:p,useRates:p.useRates||[]
-  }));
-  S.systemCompare.map(id=>SYSTEMS.find(x=>x.id===id)).filter(Boolean).forEach(sys=>{
-    const m=systemMix(sys);
-    items.push({
-      kind:'system',id:sys.id,brand:sys.brand,program:displayProgram(sys),displayFormula:displayFormula(sys),partCount:sys.partCount,
-      name:sys.name,analysis:m.analysis,system:sys,mix:m,useRates:sys.useRates||[]
-    });
-  });
-  return items.slice(0,5);
+  return CATALOG.selectedCompareEntries(S.compare,S.systemCompare,S.systemParts).slice(0,5);
 }
 function flash(message,kind=''){
   const box=$('notice');box.textContent=message;box.className='notice'+(kind?' '+kind:'');box.classList.remove('hidden');

@@ -9,6 +9,7 @@ A static HTML/CSS/JavaScript toolbox for comparing commercial fertilizer program
 - `data/products.js` — commercial products, multipart systems, ingredient salts, and source metadata
 - `js/chemistry.js` — pure chemistry and multipart calculation engine
 - `js/state.js` — session defaults, loading, normalization, and persistence
+- `js/product-model.js` — product lookup, naming, multipart composition, and comparison entries
 - `js/app.js` — browser state, rendering, exports, and event handling
 - `tests/*.test.js` — chemistry, product-data, and session-state regression tests
 
