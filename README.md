@@ -14,6 +14,7 @@ A static HTML/CSS/JavaScript toolbox for comparing commercial fertilizer program
 - `js/export.js` — CSV/JSON result generation and browser downloads
 - `js/analysis.js` — Guaranteed Analysis inputs, calculations, and rendering
 - `js/compare.js` — commercial program selection, standardized comparison, and manufacturer-rate UI
+- `js/blend.js` — Blend Finder selection, targets, results, and feed-chart UI
 - `js/app.js` — browser state, rendering, exports, and event handling
 - `tests/*.test.js` — chemistry, product-data, and session-state regression tests
 
