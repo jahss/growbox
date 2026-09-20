@@ -9,6 +9,7 @@
 :root{color-scheme:light;--bg:#f4f7f5;--card:#fff;--soft:#f8faf9;--text:#17221d;--muted:#68756e;--line:#d8e1dc;--green:#2f9d50;--green2:#e9f7ed;--blue:#315fcb;--bad:#b42318}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}.wrap{max-width:1200px;margin:auto;padding:0 14px}.head{background:var(--card);border-bottom:1px solid var(--line);padding:18px 0}.eyebrow{font-size:.74rem;text-transform:uppercase;letter-spacing:.14em;color:var(--green);font-weight:800}h1{margin:.25rem 0 .4rem;font-size:clamp(1.8rem,6vw,3rem);line-height:1}h2{font-size:1.15rem;margin:0 0 7px}h3{font-size:1rem;margin:16px 0 8px}p{margin:5px 0}.muted{color:var(--muted)}.tabs,.toolbar,.seg{display:flex;gap:8px;flex-wrap:wrap}.tabs{margin:15px 0}.tab,button,select,input{font:inherit}.tab,button{min-height:42px;border:1px solid var(--line);background:var(--card);color:var(--text);border-radius:9px;padding:8px 12px}.tab.active,.primary,.seg button.active{background:var(--green);color:#fff;border-color:var(--green)}button{cursor:pointer}.danger{color:var(--bad)}select,input{min-height:40px;border:1px solid var(--line);background:#fff;color:var(--text);border-radius:8px;padding:7px 8px}.view{display:none}.view.active{display:block}.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:13px}.grid2{display:grid;grid-template-columns:1fr 1fr;gap:13px}.checks{display:grid;gap:7px}.check{display:flex;gap:8px;padding:8px;border:1px solid var(--line);border-radius:9px;background:var(--soft);align-items:flex-start}.check input{width:19px;height:19px;min-height:0;margin-top:2px;accent-color:var(--green)}.check small{display:block;color:var(--muted)}.table{overflow:auto;border:1px solid var(--line);border-radius:10px}table{border-collapse:collapse;width:100%;font-variant-numeric:tabular-nums}th,td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}th:first-child,td:first-child{text-align:left}th{background:var(--soft)}.inputs{display:grid;grid-template-columns:repeat(3,minmax(95px,1fr));gap:8px}.inputs label{font-size:.78rem;color:var(--muted)}.inputs input{width:100%;display:block;margin-top:3px}.result-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:8px}.pill{border:1px solid var(--line);background:var(--soft);border-radius:9px;padding:9px}.pill b{display:block}.notice{padding:9px 10px;border-left:4px solid var(--green);background:var(--green2);border-radius:8px;margin-bottom:12px}.hidden{display:none}.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}.manufacturer{padding:9px;background:var(--soft);border-radius:8px;margin-top:6px}.picker{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.picker select{flex:1;min-width:220px}.selected-lines{display:grid;gap:8px;margin-top:10px}.selected-line{border:1px solid var(--line);border-radius:9px;background:var(--soft);padding:9px}.selected-line-head{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}.selected-line button{min-height:32px;padding:4px 8px}.selected-line details{margin-top:6px}.selected-line summary{cursor:pointer;color:var(--muted);font-size:.82rem}.view-toggle{display:flex;gap:6px;flex-wrap:wrap}.view-toggle button{min-height:36px;padding:6px 10px}.view-toggle button.active{background:var(--green);color:#fff;border-color:var(--green)}.compare-group{margin-top:14px}.compare-group:first-child{margin-top:0}.group-title{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:6px}.group-title h3{margin:0}.limit-note{font-size:.78rem;color:var(--muted)}.hi{background:#e8f7ed!important;color:#166534;font-weight:700}.lo{background:#fff4dc!important;color:#8a4b08;font-weight:700}.nutrient-toggle{display:flex;gap:6px;flex-wrap:wrap}.nutrient-toggle button{min-height:36px;padding:6px 10px}.nutrient-toggle button.active{background:var(--green);color:#fff;border-color:var(--green)}.footer{padding:20px 0 28px;color:var(--muted);font-size:.82rem}@media(max-width:800px){.grid2{grid-template-columns:1fr}}@media(max-width:560px){.inputs{grid-template-columns:repeat(2,1fr)}.tabs{display:grid;grid-template-columns:1fr 1fr}.tab{width:100%}.wrap{padding:0 10px}th,td{padding:6px}}
 </style>
 <script src="data/products.js"></script>
+<script src="js/chemistry.js"></script>
 </head>
 <body>
 <header class="head"><div class="wrap"><div class="eyebrow">Prototype 0.7</div><h1>Growbox Fertilizer Toolbox</h1><p class="muted">Label analysis → elemental analysis → ppm → blend feed charts.</p></div></header>
@@ -34,8 +35,10 @@
 </main>
 <script>
 (()=>{'use strict';
-const PRODUCTS=window.FERTILIZER_PRODUCTS||[],SYSTEMS=window.FERTILIZER_SYSTEMS||[],G=3.785411784,F=1000/G,PF=.436426,KF=.830151,LEVELS=[120,140,160,180,200],KEY='growbox-fert-tool-v07';
-const EK=['N','P','K','Ca','Mg','S','Fe','Mn','Zn','B','Cu','Mo'];
+const CHEM=window.GrowboxChemistry;
+if(!CHEM)throw new Error('Growbox chemistry engine failed to load.');
+const PRODUCTS=window.FERTILIZER_PRODUCTS||[],SYSTEMS=window.FERTILIZER_SYSTEMS||[],F=CHEM.MG_PER_L_PER_G_PER_GAL,LEVELS=[120,140,160,180,200],KEY='growbox-fert-tool-v07';
+const EK=CHEM.ELEMENT_KEYS;
 const fresh=()=>({view:'compare',compare:['megacrop-11-5-14','jacks-12-4-16'],systemCompare:['athena-pro-veg'],systemParts:{},compareMode:'ppm',rateChoice:{},n:160,manual:{N:12,P2O5:4,K2O:16,Ca:7,Mg:2,S:0,Fe:.15,Mn:.05,Zn:.035,B:.02,Cu:.02,Mo:.001},blend:{mode:'label',ids:['jacks-12-4-16','jacks-5-12-26-a','jacks-15-0-0-b','jacks-epsom','mkp-0-52-34'],target:{N:12,P2O5:5,K2O:16,P:2.18,K:13.28,Ca:7,Mg:2,S:2},result:null}});
 let S;try{S=JSON.parse(sessionStorage.getItem(KEY))||fresh()}catch{S=fresh()}
 if(!Array.isArray(S.systemCompare))S.systemCompare=[];
@@ -46,6 +49,10 @@ S.compare=(S.compare||[]).filter(id=>{const p=PRODUCTS.find(x=>x.id===id);return
 S.systemCompare=(S.systemCompare||[]).filter(id=>SYSTEMS.some(x=>x.id===id));
 while(S.compare.length+S.systemCompare.length>5){if(S.systemCompare.length)S.systemCompare.pop();else S.compare.pop()}
 const $=id=>document.getElementById(id),num=v=>Number.isFinite(+v)?+v:0,fmt=(v,d=2)=>Number.isFinite(+v)?(+v).toFixed(d).replace(/(\.\d*?[1-9])0+$|\.0+$/,'$1'):'—',esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),prod=id=>PRODUCTS.find(p=>p.id===id),save=()=>sessionStorage.setItem(KEY,JSON.stringify(S));
+Object.keys(S.systemParts).forEach(id=>{
+  const parts=S.systemParts[id];
+  if(!Array.isArray(parts)||!parts.some(value=>num(value)>0))delete S.systemParts[id];
+});
 function displayProgram(x){return x.program||x.name||''}
 function displayFormula(x){
   if(x.displayFormula)return x.displayFormula;
@@ -57,22 +64,16 @@ function entryTitle(x){return x.brand+' — '+displayProgram(x)}
 function entryCell(x){return esc(entryTitle(x))+'<br><small class="muted">'+esc(displayFormula(x))+' · '+esc(displayParts(x))+'</small>'}
 function exportLabel(x){return entryTitle(x)+' | '+displayFormula(x)+' | '+displayParts(x)}
 
-function elem(a){return{N:num(a.N),P:num(a.P2O5)*PF,K:num(a.K2O)*KF,Ca:num(a.Ca),Mg:num(a.Mg),S:num(a.S),Fe:num(a.Fe),Mn:num(a.Mn),Zn:num(a.Zn),B:num(a.B),Cu:num(a.Cu),Mo:num(a.Mo)}}
-function ppm(p,d){const e=elem(p.analysis||p),out={};EK.forEach(k=>out[k]=F*d*e[k]/100);return out}
-function doseN(p,n){const x=num((p.analysis||p).N);return x>0?n/(F*x/100):null}
-function rateMassGPerGal(p,r){if(r.gPerGal!=null)return num(r.gPerGal);if(r.mLPerGal!=null)return num(r.mLPerGal)*num(p.densityGPerMl||1);return null}
+const elem=CHEM.elementalAnalysis;
+const ppm=CHEM.ppmAtDose;
+const doseN=CHEM.standardizedNitrogenDose;
+const rateMassGPerGal=CHEM.rateMassGPerGal;
 function ppmAtRate(p,r){const g=rateMassGPerGal(p,r);return g==null?null:ppm(p,g)}
 function productDoseText(p,g){if(p.form==='liquid'&&num(p.densityGPerMl)>0)return fmt(g,3)+' g/gal ('+fmt(g/p.densityGPerMl,3)+' mL/gal)';return fmt(g,3)+' g/gal'}
 function systemMix(sys){
-  const parts=(S.systemParts[sys.id]||sys.components.map(c=>c.defaultParts||1)).map(v=>Math.max(0,num(v)));
+  const parts=(S.systemParts[sys.id]||sys.components.map(c=>c.defaultParts==null?1:c.defaultParts)).map(v=>Math.max(0,num(v)));
   const products=sys.components.map(c=>prod(c.productId));
-  const massParts=parts.map((v,i)=>sys.ratioBasis==='volume'?v*num(products[i]?.densityGPerMl||1):v);
-  const totalMass=massParts.reduce((a,b)=>a+b,0)||1;
-  const weights=massParts.map(v=>v/totalMass);
-  const fields=['N','P2O5','K2O','Ca','Mg','S','Fe','Mn','Zn','B','Cu','Mo'];
-  const analysis={};
-  fields.forEach(k=>analysis[k]=products.reduce((sum,p,i)=>sum+(p?weights[i]*num(p.analysis[k]):0),0));
-  return{sys,parts,massParts,weights,products,analysis};
+  return{sys,products,...CHEM.mixSystem(sys,products,parts)};
 }
 function compareSelectionCount(){return S.compare.length+S.systemCompare.length}
 function addCompareItem(value){
@@ -112,8 +113,10 @@ function compareControls(){
   document.querySelectorAll('.removeLine').forEach(b=>b.onclick=()=>removeCompareItem(b.dataset.kind,b.dataset.id));
   document.querySelectorAll('.spr').forEach(x=>x.oninput=()=>{
     const sys=SYSTEMS.find(y=>y.id===x.dataset.sys);if(!sys)return;
-    if(!S.systemParts[sys.id])S.systemParts[sys.id]=sys.components.map(c=>c.defaultParts||1);
-    S.systemParts[sys.id][+x.dataset.i]=Math.max(0,num(x.value));save();compareTables();
+    const current=S.systemParts[sys.id]||sys.components.map(c=>c.defaultParts==null?1:c.defaultParts);
+    const next=[...current];next[+x.dataset.i]=Math.max(0,num(x.value));
+    if(!next.some(value=>value>0)){x.value=fmt(current[+x.dataset.i],3);flash('At least one system part must be greater than zero.','warn');return}
+    S.systemParts[sys.id]=next;save();compareTables();
   });
 }
 function selectedCompareEntries(){
@@ -147,7 +150,7 @@ function systemRateResult(e,r){
   const labels=[];let totalG=0;
   (r.components||[]).forEach(c=>{
     const p=prod(c.productId);if(!p)return;
-    const g=c.gPerGal!=null?num(c.gPerGal):num(c.mLPerGal)*num(p.densityGPerMl||1);
+    const g=rateMassGPerGal(p,c);
     const x=ppm(p,g);totalG+=g;EK.forEach(k=>total[k]+=x[k]||0);
     labels.push(c.gPerGal!=null?esc(displayFormula(p))+' '+fmt(c.gPerGal,3)+' g/gal':esc(displayFormula(p))+' '+fmt(c.mLPerGal,3)+' mL/gal');
   });

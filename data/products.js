@@ -68,7 +68,7 @@ window.FERTILIZER_PRODUCTS = [
     source:{url:'https://hydrobuilder.com/media/pdf/specs/Athena-Pro-Grow-Product-Label.pdf',checked:'2026-09-19'}
   },
   {
-    id:'athena-pro-bloom', compareGroup:'component', manufacturer:'Athena Ag', brand:'Athena', displayFormula:'0-12-24 (Bloom)', componentName:'Bloom', name:'Pro Bloom 0-12-24', form:'dry',
+    id:'athena-pro-bloom-component', compareGroup:'component', manufacturer:'Athena Ag', brand:'Athena', displayFormula:'0-12-24 (Bloom)', componentName:'Bloom', name:'Pro Bloom 0-12-24', form:'dry',
     analysis:{N:0,P2O5:12,K2O:24,Ca:0,Mg:3,S:9,Fe:.1,Mn:0,Zn:0,B:0,Cu:0,Mo:0},
     useRates:[],
     source:{url:'https://www.athenaag.com/',checked:'2026-09-19'}
@@ -174,9 +174,9 @@ window.FERTILIZER_SYSTEMS = [
     id:'athena-pro-bloom', partCount:2, manufacturer:'Athena Ag', brand:'Athena', program:'Pro Bloom', displayFormula:'14-0-0 (Core) + 0-12-24 (Bloom)', name:'Pro Line — Flower (Core + Bloom)',
     ratioBasis:'mass', components:[
       {productId:'athena-pro-core',label:'Core',defaultParts:.6},
-      {productId:'athena-pro-bloom',label:'Bloom',defaultParts:1}
+      {productId:'athena-pro-bloom-component',label:'Bloom',defaultParts:1}
     ],
-    ratioNote:'Manufacturer dry-weight relationship is approximately 0.6 g Core for every 1 g Pro Bloom across the dosage guide.', useRates:[{label:'EC 1.0',components:[{productId:'athena-pro-core',gPerGal:1.4},{productId:'athena-pro-bloom',gPerGal:2.3}]},{label:'EC 1.5',components:[{productId:'athena-pro-core',gPerGal:2.1},{productId:'athena-pro-bloom',gPerGal:3.6}]},{label:'EC 2.0',components:[{productId:'athena-pro-core',gPerGal:2.9},{productId:'athena-pro-bloom',gPerGal:4.9}]},{label:'EC 2.5',components:[{productId:'athena-pro-core',gPerGal:3.8},{productId:'athena-pro-bloom',gPerGal:6.3}]},{label:'EC 3.0',components:[{productId:'athena-pro-core',gPerGal:4.6},{productId:'athena-pro-bloom',gPerGal:7.7}]},{label:'EC 3.5',components:[{productId:'athena-pro-core',gPerGal:5.5},{productId:'athena-pro-bloom',gPerGal:9.1}]},{label:'EC 4.0',components:[{productId:'athena-pro-core',gPerGal:6.4},{productId:'athena-pro-bloom',gPerGal:10.6}]}]
+    ratioNote:'Manufacturer dry-weight relationship is approximately 0.6 g Core for every 1 g Pro Bloom across the dosage guide.', useRates:[{label:'EC 1.0',components:[{productId:'athena-pro-core',gPerGal:1.4},{productId:'athena-pro-bloom-component',gPerGal:2.3}]},{label:'EC 1.5',components:[{productId:'athena-pro-core',gPerGal:2.1},{productId:'athena-pro-bloom-component',gPerGal:3.6}]},{label:'EC 2.0',components:[{productId:'athena-pro-core',gPerGal:2.9},{productId:'athena-pro-bloom-component',gPerGal:4.9}]},{label:'EC 2.5',components:[{productId:'athena-pro-core',gPerGal:3.8},{productId:'athena-pro-bloom-component',gPerGal:6.3}]},{label:'EC 3.0',components:[{productId:'athena-pro-core',gPerGal:4.6},{productId:'athena-pro-bloom-component',gPerGal:7.7}]},{label:'EC 3.5',components:[{productId:'athena-pro-core',gPerGal:5.5},{productId:'athena-pro-bloom-component',gPerGal:9.1}]},{label:'EC 4.0',components:[{productId:'athena-pro-core',gPerGal:6.4},{productId:'athena-pro-bloom-component',gPerGal:10.6}]}]
   },
   {
     id:'athena-blended-veg', partCount:2, manufacturer:'Athena Ag', brand:'Athena', program:'Blended Veg', displayFormula:'4-0-1 (Grow A) + 1-3-5 (Grow B)', name:'Blended Line — Veg (Grow A + Grow B)',
