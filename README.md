@@ -4,9 +4,11 @@ A static HTML/CSS/JavaScript toolbox for comparing commercial fertilizer program
 
 ## Current structure
 
-- `index.html` — application markup and the current browser controller
+- `index.html` — application markup and asset loading
+- `css/app.css` — application styles
 - `data/products.js` — commercial products, multipart systems, ingredient salts, and source metadata
 - `js/chemistry.js` — pure chemistry and multipart calculation engine
+- `js/app.js` — browser state, rendering, exports, and event handling
 - `tests/chemistry.test.js` — regression and validation tests
 
 ## Chemistry conventions
