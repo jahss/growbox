@@ -8,8 +8,9 @@ A static HTML/CSS/JavaScript toolbox for comparing commercial fertilizer program
 - `css/app.css` — application styles
 - `data/products.js` — commercial products, multipart systems, ingredient salts, and source metadata
 - `js/chemistry.js` — pure chemistry and multipart calculation engine
+- `js/state.js` — session defaults, loading, normalization, and persistence
 - `js/app.js` — browser state, rendering, exports, and event handling
-- `tests/chemistry.test.js` — regression and validation tests
+- `tests/*.test.js` — chemistry, product-data, and session-state regression tests
 
 ## Chemistry conventions
 
@@ -20,7 +21,7 @@ A static HTML/CSS/JavaScript toolbox for comparing commercial fertilizer program
 - 1 g/US gal = 264.172052 mg/L.
 - Liquid volume calculations require a verified density; the engine does not assume 1 mL = 1 g.
 
-Run the chemistry tests with:
+Run all tests with:
 
 ```sh
 node --test tests/*.test.js

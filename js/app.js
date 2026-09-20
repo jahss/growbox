@@ -1,22 +1,13 @@
 (()=>{'use strict';
 const CHEM=window.GrowboxChemistry;
 if(!CHEM)throw new Error('Growbox chemistry engine failed to load.');
-const PRODUCTS=window.FERTILIZER_PRODUCTS||[],SYSTEMS=window.FERTILIZER_SYSTEMS||[],F=CHEM.MG_PER_L_PER_G_PER_GAL,LEVELS=[120,140,160,180,200],KEY='growbox-fert-tool-v07';
+const STATE=window.GrowboxState;
+if(!STATE)throw new Error('Growbox state module failed to load.');
+const PRODUCTS=window.FERTILIZER_PRODUCTS||[],SYSTEMS=window.FERTILIZER_SYSTEMS||[],F=CHEM.MG_PER_L_PER_G_PER_GAL,LEVELS=[120,140,160,180,200];
 const EK=CHEM.ELEMENT_KEYS;
-const fresh=()=>({view:'compare',compare:['megacrop-11-5-14','jacks-12-4-16'],systemCompare:['athena-pro-veg'],systemParts:{},compareMode:'ppm',rateChoice:{},n:160,manual:{N:12,P2O5:4,K2O:16,Ca:7,Mg:2,S:0,Fe:.15,Mn:.05,Zn:.035,B:.02,Cu:.02,Mo:.001},blend:{mode:'label',ids:['jacks-12-4-16','jacks-5-12-26-a','jacks-15-0-0-b','jacks-epsom','mkp-0-52-34'],target:{N:12,P2O5:5,K2O:16,P:2.18,K:13.28,Ca:7,Mg:2,S:2},result:null}});
-let S;try{S=JSON.parse(sessionStorage.getItem(KEY))||fresh()}catch{S=fresh()}
-if(!Array.isArray(S.systemCompare))S.systemCompare=[];
-if(!S.systemParts)S.systemParts={};
-if(!['percent','ppm'].includes(S.compareMode))S.compareMode='ppm';
-if(!S.rateChoice)S.rateChoice={};
-S.compare=(S.compare||[]).filter(id=>{const p=PRODUCTS.find(x=>x.id===id);return p&&p.compareGroup==='1-part'});
-S.systemCompare=(S.systemCompare||[]).filter(id=>SYSTEMS.some(x=>x.id===id));
-while(S.compare.length+S.systemCompare.length>5){if(S.systemCompare.length)S.systemCompare.pop();else S.compare.pop()}
-const $=id=>document.getElementById(id),num=v=>Number.isFinite(+v)?+v:0,fmt=(v,d=2)=>Number.isFinite(+v)?(+v).toFixed(d).replace(/(\.\d*?[1-9])0+$|\.0+$/,'$1'):'—',esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),prod=id=>PRODUCTS.find(p=>p.id===id),save=()=>sessionStorage.setItem(KEY,JSON.stringify(S));
-Object.keys(S.systemParts).forEach(id=>{
-  const parts=S.systemParts[id];
-  if(!Array.isArray(parts)||!parts.some(value=>num(value)>0))delete S.systemParts[id];
-});
+const fresh=STATE.freshState;
+let S=STATE.loadState(sessionStorage,PRODUCTS,SYSTEMS);
+const $=id=>document.getElementById(id),num=v=>Number.isFinite(+v)?+v:0,fmt=(v,d=2)=>Number.isFinite(+v)?(+v).toFixed(d).replace(/(\.\d*?[1-9])0+$|\.0+$/,'$1'):'—',esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),prod=id=>PRODUCTS.find(p=>p.id===id),save=()=>STATE.saveState(sessionStorage,S);
 function displayProgram(x){return x.program||x.name||''}
 function displayFormula(x){
   if(x.displayFormula)return x.displayFormula;
