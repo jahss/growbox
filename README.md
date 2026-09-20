@@ -12,6 +12,7 @@ A static HTML/CSS/JavaScript toolbox for comparing commercial fertilizer program
 - `js/product-model.js` — product lookup, naming, multipart composition, and comparison entries
 - `js/blend-solver.js` — nonnegative fertilizer blend optimization
 - `js/export.js` — CSV/JSON result generation and browser downloads
+- `js/analysis.js` — Guaranteed Analysis inputs, calculations, and rendering
 - `js/app.js` — browser state, rendering, exports, and event handling
 - `tests/*.test.js` — chemistry, product-data, and session-state regression tests
 
