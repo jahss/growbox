@@ -86,3 +86,15 @@ test("affected Jack's records use official current sources without inventing a 0
   assert.equal(zeroSystem.useRates.length, 0);
   assert.equal(zeroSystem.ratioSource.type, 'user-supplied-manufacturer-label');
 });
+
+test('comparison profiles have unique IDs and valid component-part arrays', () => {
+  systems.filter(system => (system.profiles || []).length).forEach(system => {
+    const ids = system.profiles.map(profile => profile.id);
+    assert.equal(new Set(ids).size, ids.length, `${system.id} profile IDs must be unique`);
+    assert.ok(ids.includes(system.defaultProfile), `${system.id} defaultProfile must resolve`);
+    system.profiles.forEach(profile => {
+      assert.equal(profile.parts.length, system.components.length, `${system.id}/${profile.id} parts mismatch`);
+      assert.ok(profile.parts.some(value => value > 0), `${system.id}/${profile.id} must have a positive part`);
+    });
+  });
+});

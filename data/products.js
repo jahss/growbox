@@ -149,10 +149,14 @@ window.FERTILIZER_SYSTEMS = [
       {productId:'jacks-5-12-26-a',label:'Part A',defaultParts:3.8},
       {productId:'jacks-15-0-0-b',label:'Part B',defaultParts:2.5}
     ],
-    ratioNote:'Default comparison balance is Jack’s Fast Track Veg rate, 3.80:2.50 g/gal. The official Flower rate is 5.68:2.50 g/gal and is available as a Use Rate preset.',
+    defaultProfile:'veg', profiles:[
+      {id:'veg',label:'Veg',parts:[3.8,2.5]},
+      {id:'flower',label:'Flower',parts:[5.68,2.5]}
+    ],
+    ratioNote:'Default comparison profile is Jack’s Fast Track Veg rate, 3.80:2.50 g/gal. Choose Flower for the official 5.68:2.50 g/gal profile; both are also available as Use Rate presets.',
     useRates:[
-      {label:'Official Fast Track — Veg',components:[{productId:'jacks-5-12-26-a',gPerGal:3.8},{productId:'jacks-15-0-0-b',gPerGal:2.5}]},
-      {label:'Official Fast Track — Flower',components:[{productId:'jacks-5-12-26-a',gPerGal:5.68},{productId:'jacks-15-0-0-b',gPerGal:2.5}]}
+      {profileId:'veg',label:'Official Fast Track — Veg',components:[{productId:'jacks-5-12-26-a',gPerGal:3.8},{productId:'jacks-15-0-0-b',gPerGal:2.5}]},
+      {profileId:'flower',label:'Official Fast Track — Flower',components:[{productId:'jacks-5-12-26-a',gPerGal:5.68},{productId:'jacks-15-0-0-b',gPerGal:2.5}]}
     ],
     source:{url:'https://www.jacksnutrients.com/_files/ugd/3230c0_2c6597e4cf9349dbafb03283e8db4a2d.pdf',type:'official-feed-chart',checked:'2026-09-21',original:'Veg: Part A 3.80 + Part B 2.50 g/US gal; Flower: Part A 5.68 + Part B 2.50 g/US gal'}
   },
@@ -174,8 +178,11 @@ window.FERTILIZER_SYSTEMS = [
       {productId:'jacks-15-0-0-b',label:'Part B',defaultParts:2.4},
       {productId:'jacks-epsom',label:'Part C',defaultParts:1.1}
     ],
+    defaultProfile:'all-stages', profiles:[
+      {id:'all-stages',label:'All stages',parts:[3.6,2.4,1.1]}
+    ],
     ratioNote:'Jack’s published mixing lesson uses 3.6 g/gal Part A, 1.1 g/gal Epsom, then 2.4 g/gal Part B; displayed as A/B/C here.',
-    useRates:[{label:"Jack's 3-2-1",components:[{productId:'jacks-5-12-26-a',gPerGal:3.6},{productId:'jacks-15-0-0-b',gPerGal:2.4},{productId:'jacks-epsom',gPerGal:1.1}]}],
+    useRates:[{profileId:'all-stages',label:"Jack's 3-2-1 — All stages",components:[{productId:'jacks-5-12-26-a',gPerGal:3.6},{productId:'jacks-15-0-0-b',gPerGal:2.4},{productId:'jacks-epsom',gPerGal:1.1}]}],
     source:{url:'https://www.jacksnutrients.com/post/how-do-i-mix-jack-s-321',type:'official-mixing-guide',checked:'2026-09-21',original:'3.6 g/gal Part A + 1.1 g/gal Epsom + 2.4 g/gal Part B'}
   },
   {

@@ -14,6 +14,7 @@
       compare: ['megacrop-11-5-14', 'jacks-12-4-16'],
       systemCompare: ['athena-pro-veg'],
       systemParts: {},
+      systemProfiles: {},
       compareMode: 'ppm',
       n: 160,
       manual: {
@@ -87,6 +88,8 @@
     delete state.rateChoice;
     if (!state.systemParts || typeof state.systemParts !== 'object' || Array.isArray(state.systemParts)) state.systemParts = {};
     else state.systemParts = {...state.systemParts};
+    if (!state.systemProfiles || typeof state.systemProfiles !== 'object' || Array.isArray(state.systemProfiles)) state.systemProfiles = {};
+    else state.systemProfiles = {...state.systemProfiles};
     if (!['percent', 'ppm'].includes(state.compareMode)) state.compareMode = 'ppm';
 
     state.compare = (Array.isArray(state.compare) ? state.compare : []).filter(id => {
@@ -103,6 +106,18 @@
     Object.keys(state.systemParts).forEach(id => {
       const parts = state.systemParts[id];
       if (!Array.isArray(parts) || !parts.some(value => number(value) > 0)) delete state.systemParts[id];
+    });
+    Object.keys(state.systemProfiles).forEach(id => {
+      const system = availableSystems.find(item => item.id === id);
+      const profileId = state.systemProfiles[id];
+      if (!system || (profileId !== 'custom' && !(system.profiles || []).some(profile => profile.id === profileId))) {
+        delete state.systemProfiles[id];
+      }
+    });
+    availableSystems.forEach(system => {
+      if ((system.profiles || []).length && state.systemParts[system.id] && !state.systemProfiles[system.id]) {
+        state.systemProfiles[system.id] = 'custom';
+      }
     });
 
     return state;

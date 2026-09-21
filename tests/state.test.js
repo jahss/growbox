@@ -14,7 +14,7 @@ const products = [
 
 const systems = [
   {id: 'athena-pro-veg'},
-  {id: 'system-b'},
+  {id: 'system-b', defaultProfile: 'veg', profiles: [{id: 'veg'}, {id: 'flower'}]},
   {id: 'system-c'}
 ];
 
@@ -34,9 +34,11 @@ test('fresh state returns independent defaults', () => {
   first.compare.push('one-c');
   first.manual.N = 20;
   first.useRate.doses['jacks-12-4-16'].amount = 9;
+  first.systemProfiles['system-b'] = 'flower';
   assert.deepEqual(second.compare, ['megacrop-11-5-14', 'jacks-12-4-16']);
   assert.equal(second.manual.N, 12);
   assert.equal(second.useRate.doses['jacks-12-4-16'].amount, 1);
+  assert.deepEqual(second.systemProfiles, {});
   assert.equal(second.n, 160);
 });
 
@@ -108,6 +110,18 @@ test('normalization removes invalid and all-zero saved system ratios', () => {
     compareMode: 'ppm'
   }, products, systems);
   assert.deepEqual(state.systemParts, {valid: [0, 2]});
+});
+
+test('normalization validates profiles and migrates saved profile-system parts to Custom', () => {
+  const explicit = stateModule.normalizeState({
+    systemProfiles: {'system-b': 'flower', missing: 'veg', 'system-c': 'flower'}
+  }, products, systems);
+  assert.deepEqual(explicit.systemProfiles, {'system-b': 'flower'});
+
+  const migrated = stateModule.normalizeState({
+    systemParts: {'system-b': [2, 1]}
+  }, products, systems);
+  assert.equal(migrated.systemProfiles['system-b'], 'custom');
 });
 
 test('normalization validates use-rate selection, presets, doses, and units', () => {

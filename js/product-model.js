@@ -50,18 +50,31 @@
       return entryTitle(item) + ' | ' + displayFormula(item) + ' | ' + displayParts(item);
     }
 
-    function mixSystem(systemRecord, customParts) {
-      const parts = (customParts || systemRecord.components.map(component => component.defaultParts == null ? 1 : component.defaultParts))
+    function systemProfile(systemRecord, profileId) {
+      if (!systemRecord || profileId === 'custom') return null;
+      const profiles = Array.isArray(systemRecord.profiles) ? systemRecord.profiles : [];
+      const selectedId = profileId || systemRecord.defaultProfile;
+      return profiles.find(profile => profile.id === selectedId) || (!profileId ? profiles[0] : null) || null;
+    }
+
+    function mixSystem(systemRecord, customParts, profileId) {
+      const profile = systemProfile(systemRecord, profileId);
+      const useCustomParts = profileId === 'custom' || (!profileId && Array.isArray(customParts));
+      const chosenParts = useCustomParts && Array.isArray(customParts)
+        ? customParts
+        : (profile ? profile.parts : systemRecord.components.map(component => component.defaultParts == null ? 1 : component.defaultParts));
+      const parts = chosenParts
         .map(value => Math.max(0, Number.isFinite(Number(value)) ? Number(value) : 0));
       const componentProducts = systemRecord.components.map(component => product(component.productId));
       return {
         sys: systemRecord,
+        profile,
         products: componentProducts,
         ...chemistry.mixSystem(systemRecord, componentProducts, parts)
       };
     }
 
-    function selectedCompareEntries(productIds, systemIds, systemParts) {
+    function selectedCompareEntries(productIds, systemIds, systemParts, systemProfiles) {
       const entries = (Array.isArray(productIds) ? productIds : [])
         .map(product)
         .filter(item => item && item.compareGroup === '1-part')
@@ -78,7 +91,8 @@
         }));
 
       (Array.isArray(systemIds) ? systemIds : []).map(system).filter(Boolean).forEach(systemRecord => {
-        const mix = mixSystem(systemRecord, systemParts && systemParts[systemRecord.id]);
+        const profileId = systemProfiles && systemProfiles[systemRecord.id];
+        const mix = mixSystem(systemRecord, systemParts && systemParts[systemRecord.id], profileId);
         entries.push({
           kind: 'system',
           id: systemRecord.id,
@@ -89,7 +103,9 @@
           name: systemRecord.name,
           analysis: mix.analysis,
           system: systemRecord,
-          mix
+          mix,
+          profileId: mix.profile ? mix.profile.id : (profileId === 'custom' ? 'custom' : null),
+          profileLabel: mix.profile ? mix.profile.label : (profileId === 'custom' ? 'Custom' : '')
         });
       });
 
@@ -104,6 +120,7 @@
       displayParts,
       entryTitle,
       exportLabel,
+      systemProfile,
       mixSystem,
       selectedCompareEntries
     });

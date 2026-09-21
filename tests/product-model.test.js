@@ -53,6 +53,20 @@ test('resolves and combines multipart systems using default or custom parts', ()
   assert.equal(custom.analysis.N, 10);
 });
 
+test('resolves optional comparison profiles separately from custom balances', () => {
+  const system = catalog.system('jacks-2part-5-12-26');
+  const veg = catalog.mixSystem(system, undefined, 'veg');
+  const flower = catalog.mixSystem(system, undefined, 'flower');
+  const custom = catalog.mixSystem(system, [1, 1], 'custom');
+  assert.deepEqual(Array.from(veg.parts), [3.8, 2.5]);
+  assert.deepEqual(Array.from(flower.parts), [5.68, 2.5]);
+  assert.deepEqual(Array.from(custom.parts), [1, 1]);
+  assert.equal(veg.profile.label, 'Veg');
+  assert.equal(flower.profile.label, 'Flower');
+  assert.equal(custom.profile, null);
+  assert.notEqual(veg.analysis.P2O5, flower.analysis.P2O5);
+});
+
 test('volume-ratio systems retain density-based mass weighting', () => {
   const mix = catalog.mixSystem(catalog.system('athena-blended-veg'));
   assert.deepEqual(Array.from(mix.parts), [1, 1]);
@@ -71,4 +85,11 @@ test('builds comparison entries in selected product-then-system order', () => {
   assert.equal(entries[0].kind, 'product');
   assert.equal(entries[1].kind, 'system');
   assert.equal(entries[1].mix.products.length, 2);
+});
+
+test('comparison entries retain the selected system profile identity', () => {
+  const entries = catalog.selectedCompareEntries([], ['jacks-2part-5-12-26'], {}, {'jacks-2part-5-12-26': 'flower'});
+  assert.equal(entries[0].profileId, 'flower');
+  assert.equal(entries[0].profileLabel, 'Flower');
+  assert.deepEqual(Array.from(entries[0].mix.parts), [5.68, 2.5]);
 });

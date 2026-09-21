@@ -58,7 +58,8 @@
     const displayParts = catalog.displayParts;
 
     function entryCell(entry) {
-      return escape(catalog.entryTitle(entry)) + '<br><small class="muted">' + escape(displayFormula(entry)) + ' · ' + escape(displayParts(entry)) + '</small>';
+      const profile = entry.profileLabel ? ' · ' + entry.profileLabel + ' profile' : '';
+      return escape(catalog.entryTitle(entry)) + '<br><small class="muted">' + escape(displayFormula(entry)) + ' · ' + escape(displayParts(entry)) + escape(profile) + '</small>';
     }
 
     function selectionCount() {
@@ -92,7 +93,24 @@
     }
 
     function systemMix(system) {
-      return catalog.mixSystem(system, getState().systemParts[system.id]);
+      const state = getState();
+      return catalog.mixSystem(system, state.systemParts[system.id], state.systemProfiles[system.id]);
+    }
+
+    function setSystemProfile(systemId, profileId) {
+      const state = getState();
+      const system = systems.find(item => item.id === systemId);
+      if (!system) return false;
+      const valid = profileId === 'custom' || (system.profiles || []).some(profile => profile.id === profileId);
+      if (!valid) return false;
+      if (profileId === 'custom' && !state.systemParts[system.id]) {
+        state.systemParts[system.id] = [...systemMix(system).parts];
+      }
+      state.systemProfiles[system.id] = profileId;
+      save();
+      renderControls();
+      renderTables();
+      return true;
     }
 
     function renderControls() {
@@ -115,16 +133,29 @@
       state.systemCompare.map(catalog.system).filter(Boolean).forEach(system => {
         const mix = systemMix(system);
         const unit = system.ratioBasis === 'volume' ? 'volume' : 'mass';
-        const controls = system.components.map((component, index) => '<label>' + escape(component.label) + ' <input class="spr" data-sys="' + escape(system.id) + '" data-i="' + index + '" type="number" min="0" step=".1" value="' + format(mix.parts[index], 3) + '"> ' + unit + ' parts</label>').join('');
+        const profiles = system.profiles || [];
+        const selectedProfile = state.systemProfiles[system.id] || system.defaultProfile || (profiles[0] && profiles[0].id) || 'custom';
+        const profileControl = profiles.length
+          ? '<label>Comparison profile <select class="sysProfile" data-sys="' + escape(system.id) + '">' + profiles.map(profile => '<option value="' + escape(profile.id) + '" ' + (profile.id === selectedProfile ? 'selected' : '') + '>' + escape(profile.label) + '</option>').join('') + '<option value="custom" ' + (selectedProfile === 'custom' ? 'selected' : '') + '>Custom</option></select></label>'
+          : '';
+        const partControls = (!profiles.length || selectedProfile === 'custom')
+          ? system.components.map((component, index) => '<label>' + escape(component.label) + ' <input class="spr" data-sys="' + escape(system.id) + '" data-i="' + index + '" type="number" min="0" step=".1" value="' + format(mix.parts[index], 3) + '"> ' + unit + ' parts</label>').join('')
+          : '';
+        const controls = profileControl + (partControls ? '<div class="toolbar" style="margin-top:7px">' + partControls + '</div>' : '');
         const nitrogenSourceIndex = soleNitrogenSourceIndex(mix.products);
         const constraintNote = nitrogenSourceIndex < 0 ? '' : 'In Elemental ppm mode, ' + displayFormula(mix.products[nitrogenSourceIndex]) + ' is the only nitrogen source. Its dose is fixed by the selected N target; changing the balance adjusts the other component doses. Use the Use Rate tool to set every dose independently.';
-        selected.push({kind: 'system', id: system.id, brand: system.brand, program: displayProgram(system), formula: displayFormula(system), parts: displayParts(system), controls, constraintNote, ratioNote: system.ratioNote || ''});
+        const profileLabel = mix.profile ? mix.profile.label : (profiles.length && selectedProfile === 'custom' ? 'Custom' : '');
+        const partsLabel = displayParts(system) + (profileLabel ? ' · ' + profileLabel + ' profile' : '');
+        selected.push({kind: 'system', id: system.id, brand: system.brand, program: displayProgram(system), formula: displayFormula(system), parts: partsLabel, controls, constraintNote, ratioNote: system.ratioNote || '', settingsLabel: profiles.length ? 'Comparison profile and balance' : 'Adjust component balance'});
       });
 
-      element('selectedLines').innerHTML = selected.map(item => '<div class="selected-line"><div class="selected-line-head"><div><b>' + escape(item.brand + ' — ' + item.program) + '</b><div>' + escape(item.formula) + '</div><div class="muted">' + escape(item.parts) + '</div></div><button class="removeLine" data-kind="' + item.kind + '" data-id="' + escape(item.id) + '" type="button">Remove</button></div>' + (item.controls ? '<details><summary>Adjust component balance</summary><div class="toolbar" style="margin-top:7px">' + item.controls + '</div>' + (item.ratioNote ? '<p class="muted ratio-note">' + escape(item.ratioNote) + '</p>' : '') + (item.constraintNote ? '<p class="muted ratio-note"><b>Fixed-N behavior:</b> ' + escape(item.constraintNote) + '</p>' : '') + '</details>' : '') + '</div>').join('');
+      element('selectedLines').innerHTML = selected.map(item => '<div class="selected-line"><div class="selected-line-head"><div><b>' + escape(item.brand + ' — ' + item.program) + '</b><div>' + escape(item.formula) + '</div><div class="muted">' + escape(item.parts) + '</div></div><button class="removeLine" data-kind="' + item.kind + '" data-id="' + escape(item.id) + '" type="button">Remove</button></div>' + (item.controls ? '<details><summary>' + escape(item.settingsLabel) + '</summary><div style="margin-top:7px">' + item.controls + '</div>' + (item.ratioNote ? '<p class="muted ratio-note">' + escape(item.ratioNote) + '</p>' : '') + (item.constraintNote ? '<p class="muted ratio-note"><b>Fixed-N behavior:</b> ' + escape(item.constraintNote) + '</p>' : '') + '</details>' : '') + '</div>').join('');
 
       document.querySelectorAll('.removeLine').forEach(button => {
         button.onclick = () => removeItem(button.dataset.kind, button.dataset.id);
+      });
+      document.querySelectorAll('.sysProfile').forEach(select => {
+        select.onchange = () => setSystemProfile(select.dataset.sys, select.value);
       });
       document.querySelectorAll('.spr').forEach(input => {
         input.oninput = () => {
@@ -139,6 +170,7 @@
             return;
           }
           state.systemParts[system.id] = next;
+          if ((system.profiles || []).length) state.systemProfiles[system.id] = 'custom';
           save();
           renderTables();
         };
@@ -147,7 +179,7 @@
 
     function selectedEntries() {
       const state = getState();
-      return catalog.selectedCompareEntries(state.compare, state.systemCompare, state.systemParts).slice(0, 5);
+      return catalog.selectedCompareEntries(state.compare, state.systemCompare, state.systemParts, state.systemProfiles).slice(0, 5);
     }
 
     function productDoseText(item, grams) {
@@ -226,7 +258,7 @@
       renderTables();
     }
 
-    return Object.freeze({render, renderControls, renderTables, selectedEntries, addItem, removeItem});
+    return Object.freeze({render, renderControls, renderTables, selectedEntries, addItem, removeItem, setSystemProfile});
   }
 
   return Object.freeze({highlightClass, soleNitrogenSourceIndex, createComponent});

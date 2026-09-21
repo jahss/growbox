@@ -135,3 +135,35 @@ test('Part B dose is invariant when a zero-nitrogen Part A balance changes at fi
   });
   assert.ok(Math.abs(partBDoses[0] - partBDoses[1]) < 1e-12);
 });
+
+test('switches Fast Track between Veg, Flower, and Custom comparison profiles', () => {
+  const view = fixture();
+  view.state.compare = [];
+  view.state.systemCompare = ['jacks-2part-5-12-26'];
+  view.component.render();
+  assert.match(view.elements.selectedLines.innerHTML, /Comparison profile/);
+  assert.match(view.elements.selectedLines.innerHTML, /2-part · Veg profile/);
+  assert.match(view.elements.selectedLines.innerHTML, />Veg<\/option>/);
+  assert.match(view.elements.selectedLines.innerHTML, />Flower<\/option>/);
+  assert.equal(view.component.selectedEntries()[0].profileLabel, 'Veg');
+
+  assert.equal(view.component.setSystemProfile('jacks-2part-5-12-26', 'flower'), true);
+  assert.equal(view.state.systemProfiles['jacks-2part-5-12-26'], 'flower');
+  assert.deepEqual(Array.from(view.component.selectedEntries()[0].mix.parts), [5.68, 2.5]);
+  assert.match(view.elements.selectedLines.innerHTML, /2-part · Flower profile/);
+  assert.match(view.elements.analysisCompare.innerHTML, /Flower profile/);
+
+  assert.equal(view.component.setSystemProfile('jacks-2part-5-12-26', 'custom'), true);
+  assert.equal(view.state.systemProfiles['jacks-2part-5-12-26'], 'custom');
+  assert.deepEqual(view.state.systemParts['jacks-2part-5-12-26'], [5.68, 2.5]);
+  assert.match(view.elements.selectedLines.innerHTML, /class="spr"/);
+});
+
+test('labels the unchanged 3-2-1 recipe as an All stages profile', () => {
+  const view = fixture();
+  view.state.compare = [];
+  view.state.systemCompare = ['jacks-321'];
+  view.component.render();
+  assert.match(view.elements.selectedLines.innerHTML, />All stages<\/option>/);
+  assert.equal(view.component.selectedEntries()[0].profileLabel, 'All stages');
+});

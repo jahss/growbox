@@ -37,3 +37,7 @@ node --test tests/*.test.js
 ## Product data policy
 
 Prefer official manufacturer labels, technical sheets, and feed charts. Commercial records should eventually include a source URL, source type, date checked, original rate wording and units, formula/version or region when relevant, and liquid density provenance. Unverified ratios, rates, or densities should not be presented as manufacturer recommendations.
+
+## Comparison profiles
+
+Multipart programs may define named comparison profiles when an official recipe changes the component balance, such as Jack's Fast Track Veg and Flower. Programs that use the same component balance throughout the crop cycle remain a single profile instead of being duplicated by stage. Users can switch a profiled program to Custom to edit its component balance directly.
