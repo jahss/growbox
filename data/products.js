@@ -31,21 +31,27 @@ window.FERTILIZER_PRODUCTS = [
     id:'jacks-5-12-26-a', compareGroup:'component', manufacturer:'JR Peters', brand:"Jack's Nutrients", displayFormula:'5-12-26 (A)', componentName:'A', name:'5-12-26 Part A', form:'dry',
     analysis:{N:5,P2O5:12,K2O:26,Ca:0,Mg:6.3,S:8.5,Fe:.30,Mn:.05,Zn:.015,B:.05,Cu:.015,Mo:.019},
     nitrogenForms:{nitrateN:5},
-    useRates:[{label:'Part A label reference — 50 ppm N',gPerGal:3.685,note:'13 dry oz per 100 US gal.'}],
-    source:{url:'https://www.griffins.com/images/pdf/cea/qr/Jacks%20Nutrients%20labels.pdf',checked:'2026-09-19'}
+    useRates:[{label:'Official Fast Track — 50 ppm N',gPerGal:3.8,note:'Current Jack’s A + B Fast Track schedule: 3.80 g/US gal.'}],
+    source:{url:'https://www.jacksnutrients.com/online-store/5-12-26-Part-A-p101272607',type:'official-product-page',checked:'2026-09-21'},
+    analysisSource:{type:'user-supplied-manufacturer-label',checked:'2026-09-19'},
+    rateSource:{url:'https://www.jacksnutrients.com/_files/ugd/3230c0_2c6597e4cf9349dbafb03283e8db4a2d.pdf',type:'official-feed-chart',checked:'2026-09-21',original:'3.80 g/US gal; 50 ppm N'}
   },
   {
     id:'jacks-0-12-26-a', compareGroup:'component', manufacturer:'JR Peters', brand:"Jack's Nutrients", displayFormula:'0-12-26 (A)', componentName:'A', name:'0-12-26 Part A', form:'dry',
     analysis:{N:0,P2O5:12,K2O:26,Ca:0,Mg:6,S:13,Fe:.30,Mn:.05,Zn:.015,B:.05,Cu:.015,Mo:.009},
-    useRates:[{label:'Part A label reference',gPerGal:3.7,note:'120 ppm P₂O₅ at 3.7 g/gal.'}],
-    source:{url:'https://www.bfgsupply.com/img/product/documents/JRP79230/JRP79230_PRODUCT%20LABEL.pdf',checked:'2026-09-19'}
+    useRates:[],
+    source:{url:'https://www.jacksnutrients.com/online-store/0-12-26-Part-A-p571478747',type:'official-product-page',checked:'2026-09-21'},
+    analysisSource:{type:'user-supplied-manufacturer-label',checked:'2026-09-19'},
+    notes:'Jack’s identifies this as a zero-nitrogen Part A paired with Cal Nit Part B. No product-specific rate is published on the official product page, so no manufacturer preset is loaded.'
   },
   {
     id:'jacks-15-0-0-b', compareGroup:'component', manufacturer:'JR Peters', brand:"Jack's Nutrients", displayFormula:'15-0-0 (B)', componentName:'B', name:'15-0-0 Cal Nit Part B', form:'dry',
     analysis:{N:15,P2O5:0,K2O:0,Ca:18,Mg:0,S:0,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0},
     nitrogenForms:{nitrateN:15},
-    useRates:[{label:'Part B label reference — 100 ppm N',gPerGal:2.438,note:'8.6 dry oz per 100 US gal.'}],
-    source:{url:'https://www.griffins.com/images/pdf/cea/qr/Jacks%20Nutrients%20labels.pdf',checked:'2026-09-19'}
+    useRates:[{label:'Official schedule — 100 ppm N',gPerGal:2.5,note:'Current Jack’s A + B Fast Track schedule: 2.50 g/US gal.'}],
+    source:{url:'https://www.jacksnutrients.com/online-store/Cal-Nit-Part-B-p101272606',type:'official-product-page',checked:'2026-09-21'},
+    analysisSource:{type:'user-supplied-manufacturer-label',checked:'2026-09-19'},
+    rateSource:{url:'https://www.jacksnutrients.com/_files/ugd/3230c0_2c6597e4cf9349dbafb03283e8db4a2d.pdf',type:'official-feed-chart',checked:'2026-09-21',original:'2.50 g/US gal; 100 ppm N'}
   },
   {
     id:'jacks-epsom', compareGroup:'component', manufacturer:'JR Peters', brand:"Jack's Nutrients", displayFormula:'Magnesium Sulfate (C)', componentName:'C', name:'Magnesium Sulfate (Epsom) Part C', form:'dry',
@@ -137,11 +143,12 @@ window.FERTILIZER_SYSTEMS = [
   {
     id:'jacks-2part-5-12-26', partCount:2, manufacturer:'JR Peters', brand:"Jack's Nutrients", program:'A/B Fast Track', displayFormula:'5-12-26 (A) + 15-0-0 (B)', name:'2-Part — 5-12-26 A + Cal Nit B',
     ratioBasis:'mass', components:[
-      {productId:'jacks-5-12-26-a',label:'Part A',defaultParts:3.6},
-      {productId:'jacks-15-0-0-b',label:'Part B',defaultParts:2.4}
+      {productId:'jacks-5-12-26-a',label:'Part A',defaultParts:3.8},
+      {productId:'jacks-15-0-0-b',label:'Part B',defaultParts:2.5}
     ],
-    ratioNote:'Default 3.6:2.4 g/gal follows Jack’s published 3-2-1 base A:B relationship.',
-    useRates:[{label:'A+B reference',components:[{productId:'jacks-5-12-26-a',gPerGal:3.6},{productId:'jacks-15-0-0-b',gPerGal:2.4}]}]
+    ratioNote:'Default 3.80:2.50 g/gal follows Jack’s current A + B Fast Track schedule.',
+    useRates:[{label:'Official Fast Track — Veg',components:[{productId:'jacks-5-12-26-a',gPerGal:3.8},{productId:'jacks-15-0-0-b',gPerGal:2.5}]}],
+    source:{url:'https://www.jacksnutrients.com/_files/ugd/3230c0_2c6597e4cf9349dbafb03283e8db4a2d.pdf',type:'official-feed-chart',checked:'2026-09-21',original:'Part A 3.80 g/US gal; Part B 2.50 g/US gal'}
   },
   {
     id:'jacks-2part-0-12-26', partCount:2, manufacturer:'JR Peters', brand:"Jack's Nutrients", program:'A/B 0-12-26', displayFormula:'0-12-26 (A) + 15-0-0 (B)', name:'2-Part — 0-12-26 A + Cal Nit B',
@@ -149,8 +156,10 @@ window.FERTILIZER_SYSTEMS = [
       {productId:'jacks-0-12-26-a',label:'Part A',defaultParts:3.7},
       {productId:'jacks-15-0-0-b',label:'Part B',defaultParts:2.438}
     ],
-    ratioNote:'Defaults follow the current 0-12-26 label reference rates.',
-    useRates:[{label:'Label reference',components:[{productId:'jacks-0-12-26-a',gPerGal:3.7},{productId:'jacks-15-0-0-b',gPerGal:2.438}]}]
+    ratioNote:'Starting balance comes from the supplied label references. Jack’s confirms 0-12-26 is paired with Part B but does not publish a product-specific A:B rate on the official product page.',
+    useRates:[],
+    source:{url:'https://www.jacksnutrients.com/online-store/0-12-26-Part-A-p571478747',type:'official-product-page',checked:'2026-09-21'},
+    ratioSource:{type:'user-supplied-manufacturer-label',checked:'2026-09-19'}
   },
   {
     id:'jacks-321', partCount:3, manufacturer:'JR Peters', brand:"Jack's Nutrients", program:'3-2-1', displayFormula:'5-12-26 (A) + 15-0-0 (B) + Magnesium Sulfate (C)', name:'3-Part 3-2-1 — A + B + Magnesium Sulfate C',
@@ -160,7 +169,8 @@ window.FERTILIZER_SYSTEMS = [
       {productId:'jacks-epsom',label:'Part C',defaultParts:1.1}
     ],
     ratioNote:'Jack’s published mixing lesson uses 3.6 g/gal Part A, 1.1 g/gal Epsom, then 2.4 g/gal Part B; displayed as A/B/C here.',
-    useRates:[{label:"Jack's 3-2-1",components:[{productId:'jacks-5-12-26-a',gPerGal:3.6},{productId:'jacks-15-0-0-b',gPerGal:2.4},{productId:'jacks-epsom',gPerGal:1.1}]}]
+    useRates:[{label:"Jack's 3-2-1",components:[{productId:'jacks-5-12-26-a',gPerGal:3.6},{productId:'jacks-15-0-0-b',gPerGal:2.4},{productId:'jacks-epsom',gPerGal:1.1}]}],
+    source:{url:'https://www.jacksnutrients.com/post/how-do-i-mix-jack-s-321',type:'official-mixing-guide',checked:'2026-09-21',original:'3.6 g/gal Part A + 1.1 g/gal Epsom + 2.4 g/gal Part B'}
   },
   {
     id:'athena-pro-veg', partCount:2, manufacturer:'Athena Ag', brand:'Athena', program:'Pro Veg', displayFormula:'14-0-0 (Core) + 2-8-20 (Grow)', name:'Pro Line — Veg (Core + Grow)',

@@ -52,7 +52,7 @@ function fixture() {
     save: () => { saves += 1; },
     notify: (...args) => notices.push(args)
   });
-  return {products, systems, elements, component, get state() { return state; }, set state(value) { state = value; }, get saves() { return saves; }, notices};
+  return {products, systems, catalog, elements, component, get state() { return state; }, set state(value) { state = value; }, get saves() { return saves; }, notices};
 }
 
 test('highlights unequal extrema but not an all-equal column', () => {
@@ -60,6 +60,15 @@ test('highlights unequal extrema but not an all-equal column', () => {
   assert.equal(compareModule.highlightClass(rows, 'N', 0), 'lo');
   assert.equal(compareModule.highlightClass(rows, 'N', 1), 'hi');
   assert.equal(compareModule.highlightClass([{values: {N: 2}}, {values: {N: 2}}], 'N', 0), '');
+});
+
+test('identifies a sole nitrogen-bearing component', () => {
+  assert.equal(compareModule.soleNitrogenSourceIndex([
+    {analysis: {N: 0}}, {analysis: {N: 15}}
+  ]), 1);
+  assert.equal(compareModule.soleNitrogenSourceIndex([
+    {analysis: {N: 5}}, {analysis: {N: 15}}
+  ]), -1);
 });
 
 test('renders grouped complete-line choices and the three default selections', () => {
@@ -104,4 +113,25 @@ test('selectedEntries exposes complete programs for exports', () => {
   const entries = view.component.selectedEntries();
   assert.deepEqual(entries.map(entry => entry.id), ['megacrop-11-5-14', 'jacks-12-4-16', 'athena-pro-veg']);
   assert.equal(entries[2].mix.products.length, 2);
+});
+
+test('explains why Part B stays fixed for zero-nitrogen Part A systems', () => {
+  const view = fixture();
+  view.state.compare = [];
+  view.state.systemCompare = ['jacks-2part-0-12-26'];
+  view.component.render();
+  assert.match(view.elements.selectedLines.innerHTML, /only nitrogen source/);
+  assert.match(view.elements.selectedLines.innerHTML, /fixed by the selected N target/);
+  assert.match(view.elements.analysisCompare.innerHTML, /Part B [\d.]+ g\/gal \(sets N target\)/);
+});
+
+test('Part B dose is invariant when a zero-nitrogen Part A balance changes at fixed N', () => {
+  const view = fixture();
+  const system = view.systems.find(item => item.id === 'jacks-2part-0-12-26');
+  const partBDoses = [[3.7, 1], [3.7, 5]].map(parts => {
+    const mix = view.catalog.mixSystem(system, parts);
+    const totalDose = chemistry.standardizedNitrogenDose(mix.analysis, 160);
+    return totalDose * mix.weights[1];
+  });
+  assert.ok(Math.abs(partBDoses[0] - partBDoses[1]) < 1e-12);
 });

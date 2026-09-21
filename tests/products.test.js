@@ -65,3 +65,21 @@ test('volume-ratio systems have verified positive component densities', () => {
     });
   });
 });
+
+test("affected Jack's records use official current sources without inventing a 0-12-26 preset", () => {
+  const byId = new Map(products.map(product => [product.id, product]));
+  const systemsById = new Map(systems.map(system => [system.id, system]));
+  const zeroPartA = byId.get('jacks-0-12-26-a');
+  const partB = byId.get('jacks-15-0-0-b');
+  const fastTrack = systemsById.get('jacks-2part-5-12-26');
+  const zeroSystem = systemsById.get('jacks-2part-0-12-26');
+
+  assert.match(zeroPartA.source.url, /^https:\/\/www\.jacksnutrients\.com\//);
+  assert.equal(zeroPartA.useRates.length, 0);
+  assert.equal(partB.useRates[0].gPerGal, 2.5);
+  assert.equal(partB.rateSource.type, 'official-feed-chart');
+  assert.deepEqual(Array.from(fastTrack.components, component => component.defaultParts), [3.8, 2.5]);
+  assert.equal(fastTrack.source.type, 'official-feed-chart');
+  assert.equal(zeroSystem.useRates.length, 0);
+  assert.equal(zeroSystem.ratioSource.type, 'user-supplied-manufacturer-label');
+});

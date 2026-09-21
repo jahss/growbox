@@ -32,6 +32,13 @@
     return '';
   }
 
+  function soleNitrogenSourceIndex(products) {
+    const sources = products
+      .map((product, index) => ({product, index}))
+      .filter(item => number(item.product && item.product.analysis && item.product.analysis.N) > 0);
+    return sources.length === 1 ? sources[0].index : -1;
+  }
+
   function createComponent(options) {
     const document = options.document;
     const products = options.products;
@@ -109,10 +116,12 @@
         const mix = systemMix(system);
         const unit = system.ratioBasis === 'volume' ? 'volume' : 'mass';
         const controls = system.components.map((component, index) => '<label>' + escape(component.label) + ' <input class="spr" data-sys="' + escape(system.id) + '" data-i="' + index + '" type="number" min="0" step=".1" value="' + format(mix.parts[index], 3) + '"> ' + unit + ' parts</label>').join('');
-        selected.push({kind: 'system', id: system.id, brand: system.brand, program: displayProgram(system), formula: displayFormula(system), parts: displayParts(system), controls});
+        const nitrogenSourceIndex = soleNitrogenSourceIndex(mix.products);
+        const constraintNote = nitrogenSourceIndex < 0 ? '' : 'In Elemental ppm mode, ' + displayFormula(mix.products[nitrogenSourceIndex]) + ' is the only nitrogen source. Its dose is fixed by the selected N target; changing the balance adjusts the other component doses. Use the Use Rate tool to set every dose independently.';
+        selected.push({kind: 'system', id: system.id, brand: system.brand, program: displayProgram(system), formula: displayFormula(system), parts: displayParts(system), controls, constraintNote, ratioNote: system.ratioNote || ''});
       });
 
-      element('selectedLines').innerHTML = selected.map(item => '<div class="selected-line"><div class="selected-line-head"><div><b>' + escape(item.brand + ' — ' + item.program) + '</b><div>' + escape(item.formula) + '</div><div class="muted">' + escape(item.parts) + '</div></div><button class="removeLine" data-kind="' + item.kind + '" data-id="' + escape(item.id) + '" type="button">Remove</button></div>' + (item.controls ? '<details><summary>Adjust part ratio</summary><div class="toolbar" style="margin-top:7px">' + item.controls + '</div></details>' : '') + '</div>').join('');
+      element('selectedLines').innerHTML = selected.map(item => '<div class="selected-line"><div class="selected-line-head"><div><b>' + escape(item.brand + ' — ' + item.program) + '</b><div>' + escape(item.formula) + '</div><div class="muted">' + escape(item.parts) + '</div></div><button class="removeLine" data-kind="' + item.kind + '" data-id="' + escape(item.id) + '" type="button">Remove</button></div>' + (item.controls ? '<details><summary>Adjust component balance</summary><div class="toolbar" style="margin-top:7px">' + item.controls + '</div>' + (item.ratioNote ? '<p class="muted ratio-note">' + escape(item.ratioNote) + '</p>' : '') + (item.constraintNote ? '<p class="muted ratio-note"><b>Fixed-N behavior:</b> ' + escape(item.constraintNote) + '</p>' : '') + '</details>' : '') + '</div>').join('');
 
       document.querySelectorAll('.removeLine').forEach(button => {
         button.onclick = () => removeItem(button.dataset.kind, button.dataset.id);
@@ -147,10 +156,12 @@
     }
 
     function systemStandardDoseText(entry, totalGrams) {
+      const nitrogenSourceIndex = soleNitrogenSourceIndex(entry.mix.products);
       const pieces = entry.mix.products.map((item, index) => {
         const grams = totalGrams * entry.mix.weights[index];
-        if (item.form === 'liquid' && number(item.densityGPerMl) > 0) return escape(entry.system.components[index].label) + ' ' + format(grams / item.densityGPerMl, 3) + ' mL/gal';
-        return escape(entry.system.components[index].label) + ' ' + format(grams, 3) + ' g/gal';
+        const constraint = index === nitrogenSourceIndex ? ' (sets N target)' : '';
+        if (item.form === 'liquid' && number(item.densityGPerMl) > 0) return escape(entry.system.components[index].label) + ' ' + format(grams / item.densityGPerMl, 3) + ' mL/gal' + constraint;
+        return escape(entry.system.components[index].label) + ' ' + format(grams, 3) + ' g/gal' + constraint;
       });
       return format(totalGrams, 3) + ' g/gal total<br><small class="muted">' + pieces.join(' + ') + '</small>';
     }
@@ -218,5 +229,5 @@
     return Object.freeze({render, renderControls, renderTables, selectedEntries, addItem, removeItem});
   }
 
-  return Object.freeze({highlightClass, createComponent});
+  return Object.freeze({highlightClass, soleNitrogenSourceIndex, createComponent});
 });
