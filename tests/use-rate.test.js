@@ -69,6 +69,19 @@ test('turns published system rates into editable component doses', () => {
   });
 });
 
+test('provides distinct official Fast Track Veg and Flower presets', () => {
+  const view = fixture();
+  const entry = useRateModule.resolveEntry('s:jacks-2part-5-12-26', view.catalog);
+  assert.deepEqual(useRateModule.presetDoses(entry, entry.useRates[0]), {
+    'jacks-5-12-26-a': {amount: 3.8, unit: 'g/gal'},
+    'jacks-15-0-0-b': {amount: 2.5, unit: 'g/gal'}
+  });
+  assert.deepEqual(useRateModule.presetDoses(entry, entry.useRates[1]), {
+    'jacks-5-12-26-a': {amount: 5.68, unit: 'g/gal'},
+    'jacks-15-0-0-b': {amount: 2.5, unit: 'g/gal'}
+  });
+});
+
 test('calculates multipart recipes from actual component doses', () => {
   const view = fixture();
   const entry = useRateModule.resolveEntry('s:jacks-321', view.catalog);

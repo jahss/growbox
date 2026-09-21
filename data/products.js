@@ -31,10 +31,13 @@ window.FERTILIZER_PRODUCTS = [
     id:'jacks-5-12-26-a', compareGroup:'component', manufacturer:'JR Peters', brand:"Jack's Nutrients", displayFormula:'5-12-26 (A)', componentName:'A', name:'5-12-26 Part A', form:'dry',
     analysis:{N:5,P2O5:12,K2O:26,Ca:0,Mg:6.3,S:8.5,Fe:.30,Mn:.05,Zn:.015,B:.05,Cu:.015,Mo:.019},
     nitrogenForms:{nitrateN:5},
-    useRates:[{label:'Official Fast Track — 50 ppm N',gPerGal:3.8,note:'Current Jack’s A + B Fast Track schedule: 3.80 g/US gal.'}],
+    useRates:[
+      {label:'Official Fast Track — Veg · 50 ppm N',gPerGal:3.8,note:'Jack’s A + B Fast Track Veg rate: 3.80 g/US gal.'},
+      {label:'Official Fast Track — Flower · 75 ppm N',gPerGal:5.68,note:'Jack’s A + B Fast Track Flower rate: 5.68 g/US gal.'}
+    ],
     source:{url:'https://www.jacksnutrients.com/online-store/5-12-26-Part-A-p101272607',type:'official-product-page',checked:'2026-09-21'},
     analysisSource:{type:'user-supplied-manufacturer-label',checked:'2026-09-19'},
-    rateSource:{url:'https://www.jacksnutrients.com/_files/ugd/3230c0_2c6597e4cf9349dbafb03283e8db4a2d.pdf',type:'official-feed-chart',checked:'2026-09-21',original:'3.80 g/US gal; 50 ppm N'}
+    rateSource:{url:'https://www.jacksnutrients.com/_files/ugd/3230c0_2c6597e4cf9349dbafb03283e8db4a2d.pdf',type:'official-feed-chart',checked:'2026-09-21',original:'Veg: 3.80 g/US gal, 50 ppm N; Flower: 5.68 g/US gal, 75 ppm N'}
   },
   {
     id:'jacks-0-12-26-a', compareGroup:'component', manufacturer:'JR Peters', brand:"Jack's Nutrients", displayFormula:'0-12-26 (A)', componentName:'A', name:'0-12-26 Part A', form:'dry',
@@ -146,9 +149,12 @@ window.FERTILIZER_SYSTEMS = [
       {productId:'jacks-5-12-26-a',label:'Part A',defaultParts:3.8},
       {productId:'jacks-15-0-0-b',label:'Part B',defaultParts:2.5}
     ],
-    ratioNote:'Default 3.80:2.50 g/gal follows Jack’s current A + B Fast Track schedule.',
-    useRates:[{label:'Official Fast Track — Veg',components:[{productId:'jacks-5-12-26-a',gPerGal:3.8},{productId:'jacks-15-0-0-b',gPerGal:2.5}]}],
-    source:{url:'https://www.jacksnutrients.com/_files/ugd/3230c0_2c6597e4cf9349dbafb03283e8db4a2d.pdf',type:'official-feed-chart',checked:'2026-09-21',original:'Part A 3.80 g/US gal; Part B 2.50 g/US gal'}
+    ratioNote:'Default comparison balance is Jack’s Fast Track Veg rate, 3.80:2.50 g/gal. The official Flower rate is 5.68:2.50 g/gal and is available as a Use Rate preset.',
+    useRates:[
+      {label:'Official Fast Track — Veg',components:[{productId:'jacks-5-12-26-a',gPerGal:3.8},{productId:'jacks-15-0-0-b',gPerGal:2.5}]},
+      {label:'Official Fast Track — Flower',components:[{productId:'jacks-5-12-26-a',gPerGal:5.68},{productId:'jacks-15-0-0-b',gPerGal:2.5}]}
+    ],
+    source:{url:'https://www.jacksnutrients.com/_files/ugd/3230c0_2c6597e4cf9349dbafb03283e8db4a2d.pdf',type:'official-feed-chart',checked:'2026-09-21',original:'Veg: Part A 3.80 + Part B 2.50 g/US gal; Flower: Part A 5.68 + Part B 2.50 g/US gal'}
   },
   {
     id:'jacks-2part-0-12-26', partCount:2, manufacturer:'JR Peters', brand:"Jack's Nutrients", program:'A/B 0-12-26', displayFormula:'0-12-26 (A) + 15-0-0 (B)', name:'2-Part — 0-12-26 A + Cal Nit B',

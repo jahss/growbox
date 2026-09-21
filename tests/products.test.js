@@ -79,6 +79,9 @@ test("affected Jack's records use official current sources without inventing a 0
   assert.equal(partB.useRates[0].gPerGal, 2.5);
   assert.equal(partB.rateSource.type, 'official-feed-chart');
   assert.deepEqual(Array.from(fastTrack.components, component => component.defaultParts), [3.8, 2.5]);
+  assert.deepEqual(Array.from(fastTrack.useRates, rate => Array.from(rate.components, component => component.gPerGal)), [[3.8, 2.5], [5.68, 2.5]]);
+  assert.match(fastTrack.useRates[0].label, /Veg/);
+  assert.match(fastTrack.useRates[1].label, /Flower/);
   assert.equal(fastTrack.source.type, 'official-feed-chart');
   assert.equal(zeroSystem.useRates.length, 0);
   assert.equal(zeroSystem.ratioSource.type, 'user-supplied-manufacturer-label');
