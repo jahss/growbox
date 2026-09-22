@@ -54,3 +54,7 @@
 .pill.unused{opacity:.55}
 #blendLevelControl{display:block;margin-top:8px}
 #blendLevelControl.hidden{display:none}
+.custom-form{border:1px solid var(--line);border-radius:10px;padding:10px;margin:4px 0 10px;background:var(--soft)}
+.custom-form input{display:block;width:100%;margin-top:3px}
+.custom-form .wide-control{margin:0 0 8px;font-size:.78rem;color:var(--muted)}
+#blendCustomToggle.hidden,#blendCustomForm.hidden{display:none}

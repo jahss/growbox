@@ -200,7 +200,7 @@
         ? '<optgroup label="' + label + '">' + items.map(item => '<option value="' + prefix + ':' + escape(item.id) + '">' + escape(item.brand + ' — ' + displayProgram(item) + ' · ' + displayFormula(item) + ' · ' + displayParts(item)) + '</option>').join('') + '</optgroup>'
         : '';
 
-      element('productPicker').innerHTML = '<option value="">Add product line…</option>' + group('Custom (from Label → ppm)', custom, 'p') + group('1-Part', onePart, 'p') + group('2-Part', twoPart, 's') + group('3-Part', threePart, 's');
+      element('productPicker').innerHTML = '<option value="">Add product line…</option>' + group('Your custom products', custom, 'p') + group('1-Part', onePart, 'p') + group('2-Part', twoPart, 's') + group('3-Part', threePart, 's');
       element('productPicker').disabled = selectionCount() >= MAX_LINES;
       element('compareCount').textContent = selectionCount() + ' / ' + MAX_LINES + ' selected';
 

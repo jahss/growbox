@@ -187,6 +187,25 @@
     storage.setItem(STORAGE_KEY, JSON.stringify(state));
   }
 
+  // Save a custom product into `state.customProducts`; the same name (any case)
+  // updates the existing one. Returns {record, updated}, or {error: 'limit'} when full.
+  function saveCustomProduct(state, input) {
+    const name = String(input.name || '').trim().slice(0, 60);
+    const existing = state.customProducts.find(item => item.name.toLowerCase() === name.toLowerCase());
+    if (!existing && state.customProducts.length >= MAX_CUSTOM_PRODUCTS) return {error: 'limit'};
+    const used = state.customProducts.map(item => parseInt(String(item.id).slice(7), 36)).filter(Number.isFinite);
+    const record = {
+      id: existing ? existing.id : 'custom-' + ((used.length ? Math.max(...used) : 0) + 1).toString(36),
+      name,
+      analysis: Object.fromEntries(CUSTOM_ANALYSIS_KEYS.map(key => [key, Math.max(0, number(input.analysis && input.analysis[key]))])),
+      densityGPerMl: Math.max(0, number(input.densityGPerMl))
+    };
+    state.customProducts = existing
+      ? state.customProducts.map(item => item.id === existing.id ? record : item)
+      : [...state.customProducts, record];
+    return {record, updated: Boolean(existing)};
+  }
+
   return Object.freeze({
     STORAGE_KEY,
     MAX_COMPARE_LINES,
@@ -194,6 +213,7 @@
     freshState,
     normalizeState,
     loadState,
-    saveState
+    saveState,
+    saveCustomProduct
   });
 });

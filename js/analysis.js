@@ -77,16 +77,12 @@
     const onCustomProducts = options.onCustomProducts || (() => {});
     const maxLines = options.maxCompareLines || 10;
     const maxCustom = options.maxCustomProducts || 20;
+    const saveCustomProduct = options.saveCustomProduct;
     const escape = options.escape || (value => String(value));
     const element = id => document.getElementById(id);
 
     function labelFormula(analysis) {
       return [analysis.N, analysis.P2O5, analysis.K2O].map(value => format(number(value), 3)).join('-');
-    }
-
-    function nextCustomId(saved) {
-      const used = saved.map(item => parseInt(String(item.id).slice(7), 36)).filter(Number.isFinite);
-      return 'custom-' + ((used.length ? Math.max(...used) : 0) + 1).toString(36);
     }
 
     // Save the label as a named custom product (same name updates it) and add it to Compare.
@@ -97,20 +93,13 @@
         return;
       }
       const name = (element('gaName').value || '').trim().slice(0, 60) || labelFormula(analysis);
-      const existing = state.customProducts.find(item => item.name.toLowerCase() === name.toLowerCase());
-      if (!existing && state.customProducts.length >= maxCustom) {
+      const saved = saveCustomProduct(state, {name, analysis, densityGPerMl: analysis.densityGPerMl});
+      if (saved.error) {
         notify('You can save up to ' + maxCustom + ' custom products. Delete one first.', 'warn');
         return;
       }
-      const record = {
-        id: existing ? existing.id : nextCustomId(state.customProducts),
-        name,
-        analysis: Object.fromEntries(INPUT_FIELDS.map(([key]) => [key, number(analysis[key])])),
-        densityGPerMl: number(analysis.densityGPerMl)
-      };
-      state.customProducts = existing
-        ? state.customProducts.map(item => item.id === existing.id ? record : item)
-        : [...state.customProducts, record];
+      const record = saved.record;
+      const existing = saved.updated;
       const inCompare = state.compare.includes(record.id);
       const room = state.compare.length + state.systemCompare.length < maxLines;
       if (!inCompare && room) state.compare.push(record.id);

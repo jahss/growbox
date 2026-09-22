@@ -22,10 +22,10 @@ const fresh=STATE.freshState;
 let S=STATE.loadState(sessionStorage,PRODUCTS,SYSTEMS);
 const $=id=>document.getElementById(id),fmt=(v,d=2)=>Number.isFinite(+v)?(+v).toFixed(d).replace(/(\.\d*?[1-9])0+$|\.0+$/,'$1'):'—',esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])),save=()=>STATE.saveState(sessionStorage,S);
 const CATALOG=PRODUCT_MODEL.createCatalog(PRODUCTS,SYSTEMS,CHEM,fmt);
-const ANALYSIS_COMPONENT=ANALYSIS.createComponent({document,chemistry:CHEM,levels:LEVELS,format:fmt,escape:esc,getState:()=>S,save,notify:flash,maxCompareLines:STATE.MAX_COMPARE_LINES,maxCustomProducts:STATE.MAX_CUSTOM_PRODUCTS,onCustomProducts:()=>{CATALOG.setCustomProducts(S.customProducts);COMPARE_COMPONENT.render()}});
+const ANALYSIS_COMPONENT=ANALYSIS.createComponent({document,chemistry:CHEM,levels:LEVELS,format:fmt,escape:esc,getState:()=>S,save,notify:flash,maxCompareLines:STATE.MAX_COMPARE_LINES,maxCustomProducts:STATE.MAX_CUSTOM_PRODUCTS,saveCustomProduct:STATE.saveCustomProduct,onCustomProducts:()=>{CATALOG.setCustomProducts(S.customProducts);COMPARE_COMPONENT.render();BLEND_COMPONENT.renderSources()}});
 const COMPARE_COMPONENT=COMPARE.createComponent({document,products:PRODUCTS,systems:SYSTEMS,chemistry:CHEM,catalog:CATALOG,format:fmt,escape:esc,getState:()=>S,save,notify:flash});
 const USE_RATE_COMPONENT=USE_RATE.createComponent({document,products:PRODUCTS,systems:SYSTEMS,chemistry:CHEM,catalog:CATALOG,getState:()=>S,save,format:fmt,escape:esc});
-const BLEND_COMPONENT=BLEND.createComponent({document,products:PRODUCTS,systems:SYSTEMS,chemistry:CHEM,solver:BLEND_SOLVER,catalog:CATALOG,getState:()=>S,save,format:fmt,escape:esc,notify:flash,levels:LEVELS});
+const BLEND_COMPONENT=BLEND.createComponent({document,saveCustomProduct:STATE.saveCustomProduct,onCustomProducts:()=>{CATALOG.setCustomProducts(S.customProducts);COMPARE_COMPONENT.render();manual()},products:PRODUCTS,systems:SYSTEMS,chemistry:CHEM,solver:BLEND_SOLVER,catalog:CATALOG,getState:()=>S,save,format:fmt,escape:esc,notify:flash,levels:LEVELS});
 const prod=CATALOG.product,exportLabel=CATALOG.exportLabel;
 function flash(message,kind=''){
   const box=$('notice');box.textContent=message;box.className='notice'+(kind?' '+kind:'');box.classList.remove('hidden');

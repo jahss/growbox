@@ -11,6 +11,9 @@
   const MICRO_KEYS = ['Fe', 'Mn', 'Zn', 'B', 'Cu', 'Mo'];
   const MACRO_KEYS = FIELDS.map(field => field[0]).filter(key => !MICRO_KEYS.includes(key));
   const ELEMENT_LEVELS = {N: range(50, 300, 10), P: range(10, 150, 10), K: range(50, 300, 10)};
+  // Label fields for entering a product that isn't in the list (as printed, % by weight).
+  const LABEL_FIELDS = [['N', 'N'], ['P2O5', 'P₂O₅'], ['K2O', 'K₂O'], ['Ca', 'Ca'], ['Mg', 'Mg'], ['S', 'S'],
+    ['Fe', 'Fe'], ['Mn', 'Mn'], ['Zn', 'Zn'], ['B', 'B'], ['Cu', 'Cu'], ['Mo', 'Mo']];
 
   function range(start, end, step) {
     const values = [];
@@ -70,6 +73,8 @@
     const escape = options.escape;
     const notify = options.notify;
     const levels = options.levels;
+    const saveCustomProduct = options.saveCustomProduct;
+    const onCustomProducts = options.onCustomProducts || (() => {});
     const element = id => document.getElementById(id);
 
     function productTitle(product) {
@@ -133,6 +138,56 @@
           renderSources();
           clearResult();
         };
+      });
+    }
+
+    // "+ Enter your own product": a label form that saves a custom product and adds it to the sources.
+    function renderCustomForm() {
+      const form = element('blendCustomForm');
+      const toggle = element('blendCustomToggle');
+      if (!form || !toggle || !saveCustomProduct) return;
+      form.innerHTML = '<label class="wide-control">Name<input id="blendCustomName" type="text" maxlength="60" placeholder="e.g. Local cal-mag"></label>' +
+        '<div class="inputs">' + LABEL_FIELDS.map(([key, label]) => '<label>' + label + ' %<input class="bci" data-k="' + key + '" type="number" min="0" step=".001" placeholder="0"></label>').join('') +
+        '<label class="density-field">Density, g/mL (liquids only)<input class="bci" data-k="densityGPerMl" type="number" min="0" step=".001" placeholder="blank for dry"></label></div>' +
+        '<div class="actions"><button id="blendCustomAdd" class="primary" type="button">Add to what you have</button><button id="blendCustomCancel" type="button">Cancel</button></div>' +
+        '<p class="muted session-note">Saved with your custom products for this browser session only.</p>';
+      toggle.onclick = () => {
+        form.classList.toggle('hidden');
+        toggle.classList.toggle('hidden', !form.classList.contains('hidden'));
+      };
+      const bind = (id, handler) => { const button = element(id); if (button) button.onclick = handler; };
+      bind('blendCustomCancel', () => {
+        form.classList.add('hidden');
+        toggle.classList.remove('hidden');
+      });
+      bind('blendCustomAdd', () => {
+        const state = getState();
+        const analysis = {};
+        let densityGPerMl = 0;
+        document.querySelectorAll('.bci').forEach(input => {
+          const value = Math.max(0, number(input.value));
+          if (input.dataset.k === 'densityGPerMl') densityGPerMl = value;
+          else analysis[input.dataset.k] = value;
+        });
+        if (!LABEL_FIELDS.some(([key]) => analysis[key] > 0)) {
+          notify('Enter the label analysis first.', 'warn');
+          return;
+        }
+        const formula = ['N', 'P2O5', 'K2O'].map(key => format(number(analysis[key]), 3)).join('-');
+        const name = (element('blendCustomName').value || '').trim() || formula;
+        const saved = saveCustomProduct(state, {name, analysis, densityGPerMl});
+        if (saved.error) {
+          notify('You can save up to 20 custom products. Delete one on the Label → ppm tab first.', 'warn');
+          return;
+        }
+        if (!state.blend.ids.includes(saved.record.id)) state.blend.ids.push(saved.record.id);
+        onCustomProducts();
+        form.classList.add('hidden');
+        toggle.classList.remove('hidden');
+        renderCustomForm();
+        renderSources();
+        clearResult();
+        notify((saved.updated ? 'Updated “' : 'Added “') + saved.record.name + '” to what you have.');
       });
     }
 
@@ -313,6 +368,7 @@
     function render() {
       renderTarget();
       renderSources();
+      renderCustomForm();
       element('solve').onclick = solve;
       renderResult();
     }

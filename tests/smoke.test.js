@@ -65,7 +65,7 @@ const ELEMENT_IDS = [
   'useRateProduct', 'useRatePreset', 'useRatePresetNote', 'useRateIdentity',
   'useRateInputs', 'useRateSummary', 'useRateResult', 'useRateNitrogen',
   'gaInputs', 'gaElemental', 'gaFeed', 'gaName', 'gaAdd', 'gaSaved',
-  'blendTarget', 'blendLevel', 'blendElement', 'blendLevelControl', 'blendSourcePicker', 'blendSources', 'blendInputs', 'solve',
+  'blendTarget', 'blendLevel', 'blendElement', 'blendLevelControl', 'blendSourcePicker', 'blendCustomToggle', 'blendCustomForm', 'blendSources', 'blendInputs', 'solve',
   'blendResult', 'fit', 'weights', 'blendVsTarget', 'blendClosest', 'feed',
   'notice', 'csv', 'json', 'reset'
 ];

@@ -180,3 +180,41 @@ test('fit badges show match and difference, coloured by closeness', () => {
   assert.equal(blendModule.fitBadgeHtml(0.37, format), '<span class="fit-badge fit-poor"><b>63.0% match</b><small>37.0% different</small></span>');
   assert.match(blendModule.fitBadgeHtml(1.8, format), /<b>0\.0% match<\/b><small>180\.0% different/);
 });
+
+test('"Enter your own product" saves a custom product and adds it to the sources', () => {
+  const {products, systems} = loadDatabase();
+  const ids = ['blendTarget', 'blendLevel', 'blendElement', 'blendLevelControl', 'blendSourcePicker', 'blendSources', 'blendInputs', 'blendResult', 'fit', 'weights', 'blendVsTarget', 'blendClosest', 'feed', 'solve', 'blendCustomToggle', 'blendCustomForm', 'blendCustomName', 'blendCustomAdd', 'blendCustomCancel'];
+  const elements = Object.fromEntries(ids.map(id => [id, fakeElement()]));
+  elements.blendCustomForm.classList.add('hidden');
+  const inputs = [['N', '3'], ['P2O5', '1'], ['K2O', '5'], ['Ca', ''], ['densityGPerMl', '1.2']].map(([k, value]) => ({dataset: {k}, value}));
+  const document = {getElementById: id => elements[id], querySelectorAll: selector => selector === '.bci' ? inputs : []};
+  const format = (value, digits = 2) => Number(value).toFixed(digits).replace(/(\.\d*?[1-9])0+$|\.0+$/, '$1');
+  const catalog = productModel.createCatalog(products, systems, chemistry, format);
+  const state = stateModule.normalizeState(stateModule.freshState(), products, systems);
+  const notices = [];
+  let refreshed = 0;
+  const component = blendModule.createComponent({
+    document, products, systems, chemistry, solver, catalog, format, escape: String, levels: [160],
+    getState: () => state, save() {}, notify: (...args) => notices.push(args),
+    saveCustomProduct: stateModule.saveCustomProduct,
+    onCustomProducts: () => { refreshed += 1; catalog.setCustomProducts(state.customProducts); }
+  });
+  component.render();
+  elements.blendCustomToggle.onclick();
+  assert.equal(elements.blendCustomForm.classList.contains('hidden'), false);
+  assert.match(elements.blendCustomForm.innerHTML, /class="bci" data-k="P2O5"/);
+  elements.blendCustomName.value = 'Local cal-mag';
+  elements.blendCustomAdd.onclick();
+  assert.equal(state.customProducts.length, 1);
+  assert.equal(state.customProducts[0].name, 'Local cal-mag');
+  assert.equal(state.customProducts[0].densityGPerMl, 1.2);
+  assert.ok(state.blend.ids.includes(state.customProducts[0].id));
+  assert.equal(refreshed, 1);
+  assert.equal(elements.blendCustomForm.classList.contains('hidden'), true);
+  assert.match(elements.blendSources.innerHTML, /Custom — Local cal-mag/);
+  assert.match(notices.at(-1)[0], /Added “Local cal-mag” to what you have/);
+
+  inputs.forEach(input => { input.value = ''; });
+  elements.blendCustomAdd.onclick();
+  assert.match(notices.at(-1)[0], /Enter the label analysis first/);
+});

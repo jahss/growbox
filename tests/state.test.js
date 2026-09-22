@@ -224,3 +224,17 @@ test('normalization keeps a valid blend target choice and clears an unknown one'
   assert.equal(stateModule.normalizeState({blend: {targetId: 's:missing'}}, products, systems).blend.targetId, '');
   assert.equal(stateModule.STORAGE_KEY, 'growbox-fert-tool-v08');
 });
+
+test('saveCustomProduct adds, updates by name, and respects the limit', () => {
+  const state = {customProducts: []};
+  const first = stateModule.saveCustomProduct(state, {name: ' My bloom ', analysis: {N: 3, P2O5: 1, K2O: 5, Ca: -1}, densityGPerMl: 1.2});
+  assert.equal(first.updated, false);
+  assert.deepEqual(first.record, {id: 'custom-1', name: 'My bloom', analysis: {N: 3, P2O5: 1, K2O: 5, Ca: 0, Mg: 0, S: 0, Fe: 0, Mn: 0, Zn: 0, B: 0, Cu: 0, Mo: 0}, densityGPerMl: 1.2});
+  const again = stateModule.saveCustomProduct(state, {name: 'my BLOOM', analysis: {N: 4}});
+  assert.equal(again.updated, true);
+  assert.equal(state.customProducts.length, 1);
+  assert.equal(state.customProducts[0].analysis.N, 4);
+  assert.equal(stateModule.saveCustomProduct(state, {name: 'Other', analysis: {N: 1}}).record.id, 'custom-2');
+  state.customProducts = Array.from({length: stateModule.MAX_CUSTOM_PRODUCTS}, (_, i) => ({id: 'custom-' + (i + 1).toString(36), name: 'P' + i, analysis: {}}));
+  assert.deepEqual(stateModule.saveCustomProduct(state, {name: 'One too many', analysis: {N: 1}}), {error: 'limit'});
+});

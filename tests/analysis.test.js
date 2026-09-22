@@ -97,6 +97,7 @@ test('Add to Compare saves a named custom product, updates it by name, and delet
   let refreshes = 0;
   const component = analysisModule.createComponent({
     document, chemistry, levels, format, getState: () => state, save() {},
+    saveCustomProduct: require('../js/state.js').saveCustomProduct,
     notify: (...args) => notices.push(args), onCustomProducts: () => { refreshes += 1; }
   });
   component.render(state.manual, () => {});
