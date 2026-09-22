@@ -431,6 +431,29 @@ window.FERTILIZER_PRODUCTS = [
     useRates:[],
     source:{url:'https://cdn.shopify.com/s/files/1/0049/3987/4378/files/FrontRowAg-5lbBag-BLOOM-ForReading.pdf?v=1698102765',type:'official-product-label',checked:'2026-09-21'}
   },
+
+  // General Hydroponics FloraPro Powders — current commercial two-part dry base program.
+  {
+    id:'gh-florapro-calcium-micros', compareGroup:'component', manufacturer:'General Hydroponics', brand:'General Hydroponics', displayFormula:'14-0-0 (Calcium + Micros)', componentName:'Calcium + Micros', name:'FloraPro Calcium + Micros 14-0-0 + 17% Ca', form:'dry',
+    analysis:{N:14,P2O5:0,K2O:0,Ca:17,Mg:0,S:0,Fe:.30,Mn:.09,Zn:.02,B:.06,Cu:.02,Mo:.007},
+    nitrogenForms:{nitrateN:13.1,ammoniacalN:.9}, useRates:[],
+    source:{url:'https://generalhydroponics.com/products/gh-florapro-calcium-plus-micros',type:'official-product-page',checked:'2026-09-21'},
+    analysisSource:{url:'https://generalhydroponics.com/wp-content/uploads/assets/GH-FloraPro-CA-Micros-5-lb-CFL.pdf',type:'official-product-label',checked:'2026-09-21'}
+  },
+  {
+    id:'gh-florapro-grow', compareGroup:'component', manufacturer:'General Hydroponics', brand:'General Hydroponics', displayFormula:'10-12-22 (Grow)', componentName:'Grow', name:'FloraPro Grow 10-12-22', form:'dry',
+    analysis:{N:10,P2O5:12,K2O:22,Ca:0,Mg:3.5,S:4.5,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0},
+    useRates:[],
+    source:{url:'https://generalhydroponics.com/products/gh-florapro-grow',type:'official-product-page',checked:'2026-09-21'},
+    notes:'Official current page publishes total N but not the guaranteed nitrate/ammoniacal split, so nitrogenForms is intentionally omitted.'
+  },
+  {
+    id:'gh-florapro-bloom', compareGroup:'component', manufacturer:'General Hydroponics', brand:'General Hydroponics', displayFormula:'7-12-27 (Bloom)', componentName:'Bloom', name:'FloraPro Bloom 7-12-27', form:'dry',
+    analysis:{N:7,P2O5:12,K2O:27,Ca:0,Mg:5,S:6.5,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0},
+    nitrogenForms:{nitrateN:6.5,ammoniacalN:.5}, useRates:[],
+    source:{url:'https://generalhydroponics.com/products/gh-florapro-bloom',type:'official-product-page',checked:'2026-09-21'},
+    analysisSource:{url:'https://generalhydroponics.com/wp-content/uploads/assets/GH-FloraPro-Bloom-5-lb-CFL.pdf',type:'official-product-label',checked:'2026-09-21'}
+  },
   {
     id:'mkp-0-52-34', compareGroup:'salt', brand:'Generic salt', name:'MKP 0-52-34', form:'dry',
     analysis:{N:0,P2O5:52,K2O:34,Ca:0,Mg:0,S:0,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, useRates:[]
@@ -713,6 +736,49 @@ window.FERTILIZER_SYSTEMS = [
       {label:'Official clone DTR',components:[{productId:'frontrow-part-a',gPerGal:2},{productId:'frontrow-part-b',gPerGal:1.4}]}
     ],
     source:{url:'https://www.frontrowag.com/pages/resources',type:'official-labels-and-faq',checked:'2026-09-21',original:'3:2:2 relative dry ratio; clone DTR 2.0 g/gal Part A + 1.4 g/gal Part B'}
+  },
+
+  {
+    id:'gh-florapro-veg', partCount:2, manufacturer:'General Hydroponics', brand:'General Hydroponics', program:'FloraPro Veg', displayFormula:'14-0-0 (Calcium + Micros) + 10-12-22 (Grow)', name:'FloraPro Powder — Veg',
+    ratioBasis:'mass', components:[
+      {productId:'gh-florapro-calcium-micros',label:'Calcium + Micros',defaultParts:2.2},
+      {productId:'gh-florapro-grow',label:'Grow',defaultParts:2.9}
+    ],
+    defaultProfile:'expert-160', profiles:[
+      {id:'seedling',label:'Seedling / Clone · 60 ppm N',parts:[.83,1.1]},
+      {id:'early-110',label:'Early Growth · 110 ppm N',parts:[1.6,2]},
+      {id:'expert-160',label:'Early Growth · 160 ppm N',parts:[2.2,2.9]},
+      {id:'late-190',label:'Late Growth · 190 ppm N',parts:[2.6,3.6]}
+    ],
+    ratioNote:'General Hydroponics FloraPro expert base-only chart. Profiles preserve the manufacturer g/gal relationship at each vegetative strength; standardized comparison scales the selected profile to the requested total N.',
+    useRates:[
+      {profileId:'seedling',label:'Official Expert — Seedling / Clone',components:[{productId:'gh-florapro-calcium-micros',gPerGal:.83},{productId:'gh-florapro-grow',gPerGal:1.1}]},
+      {profileId:'early-110',label:'Official Expert — Early Growth · 110 ppm N',components:[{productId:'gh-florapro-calcium-micros',gPerGal:1.6},{productId:'gh-florapro-grow',gPerGal:2}]},
+      {profileId:'expert-160',label:'Official Expert — Early Growth · 160 ppm N',components:[{productId:'gh-florapro-calcium-micros',gPerGal:2.2},{productId:'gh-florapro-grow',gPerGal:2.9}]},
+      {profileId:'late-190',label:'Official Expert — Late Growth · 190 ppm N',components:[{productId:'gh-florapro-calcium-micros',gPerGal:2.6},{productId:'gh-florapro-grow',gPerGal:3.6}]}
+    ],
+    source:{url:'https://generalhydroponics.com/wp-content/uploads/assets/FloraPro-Expert-FeedCharts.pdf',type:'official-feed-chart',checked:'2026-09-21'}
+  },
+  {
+    id:'gh-florapro-bloom-system', partCount:2, manufacturer:'General Hydroponics', brand:'General Hydroponics', program:'FloraPro Bloom', displayFormula:'14-0-0 (Calcium + Micros) + 7-12-27 (Bloom)', name:'FloraPro Powder — Bloom',
+    ratioBasis:'mass', components:[
+      {productId:'gh-florapro-calcium-micros',label:'Calcium + Micros',defaultParts:3},
+      {productId:'gh-florapro-bloom',label:'Bloom',defaultParts:4}
+    ],
+    defaultProfile:'early-180', profiles:[
+      {id:'early-180',label:'Early Bloom · 180 ppm N',parts:[3,4]},
+      {id:'mid-150',label:'Mid-Bloom · 150 ppm N',parts:[2.1,4]},
+      {id:'late-130',label:'Late Bloom · 130 ppm N',parts:[1.8,3.5]},
+      {id:'ripen-110',label:'Ripen · 110 ppm N',parts:[1.8,2.8]}
+    ],
+    ratioNote:'General Hydroponics FloraPro expert base-only chart. Late Bloom 0-24-26 is an optional finishing component and is intentionally excluded from this base two-part comparison.',
+    useRates:[
+      {profileId:'early-180',label:'Official Expert — Early Bloom · 180 ppm N',components:[{productId:'gh-florapro-calcium-micros',gPerGal:3},{productId:'gh-florapro-bloom',gPerGal:4}]},
+      {profileId:'mid-150',label:'Official Expert — Mid-Bloom · 150 ppm N',components:[{productId:'gh-florapro-calcium-micros',gPerGal:2.1},{productId:'gh-florapro-bloom',gPerGal:4}]},
+      {profileId:'late-130',label:'Official Expert — Late Bloom · 130 ppm N',components:[{productId:'gh-florapro-calcium-micros',gPerGal:1.8},{productId:'gh-florapro-bloom',gPerGal:3.5}]},
+      {profileId:'ripen-110',label:'Official Expert — Ripen · 110 ppm N',components:[{productId:'gh-florapro-calcium-micros',gPerGal:1.8},{productId:'gh-florapro-bloom',gPerGal:2.8}]}
+    ],
+    source:{url:'https://generalhydroponics.com/wp-content/uploads/assets/FloraPro-Expert-FeedCharts.pdf',type:'official-feed-chart',checked:'2026-09-21'}
   },
   {
     id:'cropsalt-veg', partCount:2, manufacturer:'CS Consulting', brand:'CropSalt', program:'Veg', displayFormula:'3-7-16 (Veg A) + 14-0-0 (Veg B)', name:'CropSalt Veg',
