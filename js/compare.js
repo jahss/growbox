@@ -192,19 +192,21 @@
     function renderControls() {
       const state = getState();
       const onePart = products.filter(item => item.compareGroup === '1-part' && !state.compare.includes(item.id));
+      const custom = catalog.customProducts().filter(item => !state.compare.includes(item.id));
       const twoPart = systems.filter(item => item.partCount === 2 && !state.systemCompare.includes(item.id));
       const threePart = systems.filter(item => item.partCount === 3 && !state.systemCompare.includes(item.id));
       const group = (label, items, prefix) => items.length
         ? '<optgroup label="' + label + '">' + items.map(item => '<option value="' + prefix + ':' + escape(item.id) + '">' + escape(item.brand + ' — ' + displayProgram(item) + ' · ' + displayFormula(item) + ' · ' + displayParts(item)) + '</option>').join('') + '</optgroup>'
         : '';
 
-      element('productPicker').innerHTML = '<option value="">Add product line…</option>' + group('1-Part', onePart, 'p') + group('2-Part', twoPart, 's') + group('3-Part', threePart, 's');
+      element('productPicker').innerHTML = '<option value="">Add product line…</option>' + group('Custom (from Label → ppm)', custom, 'p') + group('1-Part', onePart, 'p') + group('2-Part', twoPart, 's') + group('3-Part', threePart, 's');
       element('productPicker').disabled = selectionCount() >= MAX_LINES;
       element('compareCount').textContent = selectionCount() + ' / ' + MAX_LINES + ' selected';
 
       const selected = [];
       state.compare.map(product).filter(Boolean).forEach(item => selected.push({
-        kind: 'product', id: item.id, brand: item.brand, program: displayProgram(item), formula: displayFormula(item), parts: displayParts(item)
+        kind: 'product', id: item.id, brand: item.brand, program: displayProgram(item), formula: displayFormula(item),
+        parts: displayParts(item) + (item.custom ? ' · your label' + (item.densityGPerMl ? ' · ' + format(item.densityGPerMl, 4) + ' g/mL' : '') : '')
       }));
       state.systemCompare.map(catalog.system).filter(Boolean).forEach(system => {
         const mix = systemMix(system);

@@ -7,21 +7,24 @@
 
   const STORAGE_KEY = 'growbox-fert-tool-v07';
   const MAX_COMPARE_LINES = 10;
+  const MAX_CUSTOM_PRODUCTS = 20;
+  const CUSTOM_ANALYSIS_KEYS = ['N', 'P2O5', 'K2O', 'Ca', 'Mg', 'S', 'Fe', 'Mn', 'Zn', 'B', 'Cu', 'Mo'];
 
   function freshState() {
     return {
       view: 'compare',
-      compare: ['megacrop-11-5-14', 'jacks-12-4-16'],
-      systemCompare: ['athena-pro-veg'],
+      compare: [],
+      systemCompare: ['athena-pro-bloom', 'cropsalt-bloom', 'jacks-2part-0-12-26'],
       systemParts: {},
       systemProfiles: {},
       systemExcluded: {},
+      customProducts: [],
       compareMode: 'ppm',
       n: 160,
       compareElement: 'N',
       manual: {
-        N: 12, P2O5: 4, K2O: 16, Ca: 7, Mg: 2, S: 0,
-        Fe: 0.15, Mn: 0.05, Zn: 0.035, B: 0.02, Cu: 0.02, Mo: 0.001
+        N: 0, P2O5: 0, K2O: 0, Ca: 0, Mg: 0, S: 0,
+        Fe: 0, Mn: 0, Zn: 0, B: 0, Cu: 0, Mo: 0
       },
       useRate: {
         selection: 'p:jacks-12-4-16',
@@ -97,7 +100,25 @@
     if (!['percent', 'ppm'].includes(state.compareMode)) state.compareMode = 'ppm';
     if (!['N', 'P', 'K'].includes(state.compareElement)) state.compareElement = 'N';
 
+    const customIds = new Set();
+    state.customProducts = (Array.isArray(state.customProducts) ? state.customProducts : [])
+      .filter(item => item && typeof item === 'object' && /^custom-[a-z0-9]+$/.test(String(item.id)) && !customIds.has(item.id) && customIds.add(item.id))
+      .slice(0, MAX_CUSTOM_PRODUCTS)
+      .map(item => {
+        const analysis = {};
+        CUSTOM_ANALYSIS_KEYS.forEach(key => { analysis[key] = Math.max(0, number(item.analysis && item.analysis[key])); });
+        const name = String(item.name == null ? '' : item.name).trim().slice(0, 60);
+        return {
+          id: item.id,
+          name: name || [analysis.N, analysis.P2O5, analysis.K2O].join('-'),
+          analysis,
+          densityGPerMl: Math.max(0, number(item.densityGPerMl))
+        };
+      });
+    const keptCustomIds = new Set(state.customProducts.map(item => item.id));
+
     state.compare = (Array.isArray(state.compare) ? state.compare : []).filter(id => {
+      if (keptCustomIds.has(id)) return true;
       const product = availableProducts.find(candidate => candidate.id === id);
       return product && product.compareGroup === '1-part';
     });
@@ -154,6 +175,7 @@
   return Object.freeze({
     STORAGE_KEY,
     MAX_COMPARE_LINES,
+    MAX_CUSTOM_PRODUCTS,
     freshState,
     normalizeState,
     loadState,

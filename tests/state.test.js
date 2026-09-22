@@ -15,7 +15,10 @@ const products = [
 const systems = [
   {id: 'athena-pro-veg'},
   {id: 'system-b', defaultProfile: 'veg', profiles: [{id: 'veg'}, {id: 'flower'}]},
-  {id: 'system-c'}
+  {id: 'system-c'},
+  {id: 'athena-pro-bloom'},
+  {id: 'cropsalt-bloom'},
+  {id: 'jacks-2part-0-12-26'}
 ];
 
 function memoryStorage(initialValue = null) {
@@ -35,8 +38,9 @@ test('fresh state returns independent defaults', () => {
   first.manual.N = 20;
   first.useRate.doses['jacks-12-4-16'].amount = 9;
   first.systemProfiles['system-b'] = 'flower';
-  assert.deepEqual(second.compare, ['megacrop-11-5-14', 'jacks-12-4-16']);
-  assert.equal(second.manual.N, 12);
+  assert.deepEqual(second.compare, []);
+  assert.deepEqual(second.systemCompare, ['athena-pro-bloom', 'cropsalt-bloom', 'jacks-2part-0-12-26']);
+  assert.equal(second.manual.N, 0);
   assert.equal(second.useRate.doses['jacks-12-4-16'].amount, 1);
   assert.deepEqual(second.systemProfiles, {});
   assert.equal(second.n, 160);
@@ -44,8 +48,8 @@ test('fresh state returns independent defaults', () => {
 
 test('loadState falls back safely when stored JSON is malformed', () => {
   const state = stateModule.loadState(memoryStorage('{not-json'), products, systems);
-  assert.deepEqual(state.compare, ['megacrop-11-5-14', 'jacks-12-4-16']);
-  assert.deepEqual(state.systemCompare, ['athena-pro-veg']);
+  assert.deepEqual(state.compare, []);
+  assert.deepEqual(state.systemCompare, ['athena-pro-bloom', 'cropsalt-bloom', 'jacks-2part-0-12-26']);
   assert.equal(state.compareMode, 'ppm');
 });
 
@@ -70,7 +74,7 @@ test('normalization restores missing nested state without discarding valid value
   }, products, systems);
   assert.equal(state.view, 'compare');
   assert.equal(state.manual.N, 18);
-  assert.equal(state.manual.P2O5, 4);
+  assert.equal(state.manual.P2O5, 0);
   assert.equal(state.blend.mode, 'label');
   assert.deepEqual(state.blend.ids, ['component-a']);
   assert.equal(state.blend.target.N, 15);
@@ -82,8 +86,8 @@ test('normalization restores missing nested state without discarding valid value
 test('loadState recovers when storage access is unavailable', () => {
   const storage = {getItem() { throw new Error('blocked'); }};
   const state = stateModule.loadState(storage, products, systems);
-  assert.deepEqual(state.compare, ['megacrop-11-5-14', 'jacks-12-4-16']);
-  assert.deepEqual(state.systemCompare, ['athena-pro-veg']);
+  assert.deepEqual(state.compare, []);
+  assert.deepEqual(state.systemCompare, ['athena-pro-bloom', 'cropsalt-bloom', 'jacks-2part-0-12-26']);
 });
 
 test('normalization enforces the ten-line comparison limit, dropping systems first', () => {
@@ -169,4 +173,36 @@ test('normalization keeps valid excluded parts and drops invalid or all-part exc
   }, products, partSystems);
   assert.deepEqual(state.systemExcluded, {two: [1], three: [0, 2]});
   assert.deepEqual(stateModule.normalizeState({systemExcluded: []}, products, partSystems).systemExcluded, {});
+});
+
+test('normalization keeps valid custom products and lets them stay in Compare', () => {
+  const state = stateModule.normalizeState({
+    compare: ['custom-1', 'custom-9', 'jacks-12-4-16'],
+    systemCompare: [],
+    customProducts: [
+      {id: 'custom-1', name: '  My bloom  ', analysis: {N: '3', P2O5: 1, K2O: 5, Ca: -2}, densityGPerMl: 1.2},
+      {id: 'custom-1', name: 'duplicate', analysis: {}},
+      {id: 'not-custom', name: 'bad id', analysis: {}},
+      {id: 'custom-2', name: '', analysis: {N: 12, P2O5: 4, K2O: 16}},
+      null
+    ]
+  }, products, systems);
+  assert.deepEqual(state.customProducts.map(item => item.id), ['custom-1', 'custom-2']);
+  assert.equal(state.customProducts[0].name, 'My bloom');
+  assert.equal(state.customProducts[0].analysis.N, 3);
+  assert.equal(state.customProducts[0].analysis.Ca, 0);
+  assert.equal(state.customProducts[0].analysis.Mo, 0);
+  assert.equal(state.customProducts[0].densityGPerMl, 1.2);
+  assert.equal(state.customProducts[1].name, '12-4-16');
+  assert.deepEqual(state.compare, ['custom-1', 'jacks-12-4-16']);
+});
+
+test('default comparison lines exist in the product database', () => {
+  const fs = require('node:fs');
+  const vm = require('node:vm');
+  const context = {window: {}};
+  vm.createContext(context);
+  vm.runInContext(fs.readFileSync(require('node:path').join(__dirname, '..', 'data', 'products.js'), 'utf8'), context);
+  const state = stateModule.normalizeState(stateModule.freshState(), context.window.FERTILIZER_PRODUCTS, context.window.FERTILIZER_SYSTEMS);
+  assert.deepEqual(state.systemCompare, ['athena-pro-bloom', 'cropsalt-bloom', 'jacks-2part-0-12-26']);
 });

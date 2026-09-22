@@ -122,3 +122,19 @@ test('leaves excluded parts out of a system mix and labels what is compared', ()
   const [entry] = catalog.selectedCompareEntries([], [system.id], {}, {}, {[system.id]: [1]});
   assert.match(catalog.exportLabel(entry), / only$/);
 });
+
+test('custom products resolve and compare like 1-part library products', () => {
+  const {products, systems} = loadDatabase();
+  const catalog = productModel.createCatalog(products, systems, chemistry, String);
+  catalog.setCustomProducts([{id: 'custom-1', name: 'My bloom', analysis: {N: 3, P2O5: 1, K2O: 5}, densityGPerMl: 1.2}]);
+  const item = catalog.product('custom-1');
+  assert.equal(item.form, 'liquid');
+  assert.equal(catalog.entryTitle(item), 'Custom — My bloom');
+  assert.equal(catalog.displayFormula(item), '3-1-5');
+  const [entry] = catalog.selectedCompareEntries(['custom-1'], [], {}, {}, {});
+  assert.equal(entry.id, 'custom-1');
+  assert.equal(entry.analysis.K2O, 5);
+  catalog.setCustomProducts([]);
+  assert.equal(catalog.product('custom-1'), undefined);
+  assert.equal(catalog.customProducts().length, 0);
+});

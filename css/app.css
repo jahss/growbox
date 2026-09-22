@@ -26,3 +26,17 @@
 .check-inline{display:inline-flex;align-items:center;gap:5px}
 .check-inline input{min-height:0;width:17px;height:17px;accent-color:var(--green)}
 .cmp-only{font-weight:600;color:var(--blue);white-space:nowrap}
+.density-field{grid-column:1/-1}
+.density-field small{display:block;margin-top:3px}
+.custom-save{display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap;margin-top:12px}
+.custom-save label{flex:1;min-width:180px;font-size:.78rem;color:var(--muted)}
+.custom-save input{display:block;width:100%;margin-top:3px}
+.saved-list h3{margin:14px 0 6px}
+.saved-row{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:8px 0;border-top:1px solid var(--line)}
+.saved-actions{display:flex;gap:6px}
+.saved-actions button{min-height:32px;padding:4px 10px}
+.session-note{font-size:.78rem;margin-top:8px}
+.ga-elements{margin-top:6px}
+.cmp-chip small+b+small{font-size:.66rem}
+.feed-rows{display:grid;gap:8px}
+@media(min-width:800px){.feed-card .cmp-summary-chips{grid-template-columns:repeat(12,1fr)}.feed-card .cmp-summary-chips .cmp-micros{display:contents}.feed-card .cmp-body,.feed-card .cmp-arrow{display:none}.feed-card summary{cursor:default}}

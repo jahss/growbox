@@ -64,7 +64,7 @@ const ELEMENT_IDS = [
   'nControl', 'nElement', 'nLevel', 'analysisCompare', 'analysisCompareCards', 'comparisonHeading',
   'useRateProduct', 'useRatePreset', 'useRatePresetNote', 'useRateIdentity',
   'useRateInputs', 'useRateSummary', 'useRateResult', 'useRateNitrogen',
-  'gaInputs', 'gaElemental', 'gaFeed',
+  'gaInputs', 'gaElemental', 'gaFeed', 'gaName', 'gaAdd', 'gaSaved',
   'blendChecks', 'blendInputs', 'labelMode', 'elementMode', 'solve',
   'blendResult', 'fit', 'weights', 'labelResult', 'elementResult', 'feed',
   'notice', 'csv', 'json', 'reset'
@@ -216,9 +216,9 @@ test('app boots and renders all four views without exceptions', () => {
   assert.match(dom.elements.useRateProduct.innerHTML, /1-Part/);
   assert.ok(dom.elements.useRateInputs.innerHTML.length > 0);
 
-  // Guaranteed-analysis view: renders the twelve input fields + feed chart.
-  assert.ok(dom.elements.gaInputs.innerHTML.includes('N'));
-  assert.ok(dom.elements.gaFeed.innerHTML.includes('N target'));
+  // Label → ppm view: renders the input fields as placeholders; the feed chart waits for a label.
+  assert.ok(dom.elements.gaInputs.innerHTML.includes('placeholder="e.g. 12"'));
+  assert.ok(dom.elements.gaFeed.innerHTML.includes('Enter a label above'));
 
   // Blend view: renders fertilizer and salt checkboxes.
   assert.match(dom.elements.blendChecks.innerHTML, /Fertilizers & components/);
@@ -289,7 +289,7 @@ test('CSV export produces well-formed quoted rows through the real download path
   // Header row is quoted and includes the expected macro + micro columns.
   assert.match(csv, /^"Product \/ system","Total g\/gal","N"/);
   assert.match(csv, /"Ca","Mg","S","Fe","Mn","Zn","B","Cu","Mo"/);
-  // At least two default lines (Mega Crop + Jack's) render rows; blank values
+  // The default lines (Athena Pro Bloom, CropSalt Bloom, Jack's A/B 0-12-26) render rows; blank values
   // are preserved as empty quoted fields.
   const rows = csv.split('\n').filter(line => line.length > 0);
   assert.ok(rows.length >= 3, 'header + at least two comparison rows, got ' + rows.length);

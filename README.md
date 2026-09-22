@@ -12,7 +12,7 @@ A static HTML/CSS/JavaScript toolbox for comparing commercial fertilizer program
 - `js/product-model.js` — product lookup, naming, multipart composition, and comparison entries
 - `js/blend-solver.js` — nonnegative fertilizer blend optimization
 - `js/export.js` — CSV/JSON result generation and browser downloads
-- `js/analysis.js` — Guaranteed Analysis inputs, calculations, and rendering
+- `js/analysis.js` — Label → ppm inputs, custom products, calculations, and rendering
 - `js/compare.js` — commercial program selection and standardized comparison
 - `js/use-rate.js` — editable product/program recipes, published rate presets, and elemental ppm results
 - `js/blend.js` — Blend Finder selection, targets, results, and feed-chart UI
@@ -37,6 +37,10 @@ node --test tests/*.test.js
 ## Product data policy
 
 Prefer official manufacturer labels, technical sheets, and feed charts. Commercial records should eventually include a source URL, source type, date checked, original rate wording and units, formula/version or region when relevant, and liquid density provenance. Unverified ratios, rates, or densities should not be presented as manufacturer recommendations.
+
+## Custom products
+
+Products entered on the Label → ppm tab are stored in `sessionStorage` with the rest of the session state, so they are lost when the tab closes. Keeping them permanently (or sharing them between devices) will need a proper backend; until then this is intentionally session-only.
 
 ## Comparison profiles
 

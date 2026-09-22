@@ -9,11 +9,13 @@
   const ALL_KEYS = [...MACRO_KEYS, 'Fe', 'Mn', 'Zn', 'B', 'Cu', 'Mo'];
 
   function analysisRows(state, levels, chemistry) {
-    const rows = [['Target N', 'g/gal', ...MACRO_KEYS]];
+    const density = Number(state.manual.densityGPerMl) > 0 ? Number(state.manual.densityGPerMl) : 0;
+    const rows = [['Target N', 'g/gal', ...(density ? ['mL/gal'] : []), ...ALL_KEYS]];
     levels.forEach(targetN => {
       const dose = chemistry.standardizedNitrogenDose(state.manual, targetN);
       const ppm = dose === null ? null : chemistry.ppmAtDose(state.manual, dose);
-      rows.push([targetN, dose, ...(ppm ? MACRO_KEYS.map(key => ppm[key]) : ['', '', '', '', '', ''])]);
+      const volume = density ? [dose === null ? '' : dose / density] : [];
+      rows.push([targetN, dose, ...volume, ...(ppm ? ALL_KEYS.map(key => ppm[key]) : ALL_KEYS.map(() => ''))]);
     });
     return rows;
   }

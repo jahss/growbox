@@ -10,7 +10,7 @@ const levels = [120, 140, 160, 180, 200];
 test('builds Guaranteed Analysis CSV rows with elemental ppm', () => {
   const state = {view: 'analysis', manual: {N: 12, P2O5: 4, K2O: 16, Ca: 7, Mg: 2, S: 0}};
   const rows = exportModule.currentCsvRows(state, {levels, chemistry});
-  assert.deepEqual(rows[0], ['Target N', 'g/gal', 'N', 'P', 'K', 'Ca', 'Mg', 'S']);
+  assert.deepEqual(rows[0], ['Target N', 'g/gal', 'N', 'P', 'K', 'Ca', 'Mg', 'S', 'Fe', 'Mn', 'Zn', 'B', 'Cu', 'Mo']);
   assert.equal(rows.length, 6);
   assert.equal(rows[1][0], 120);
   assert.ok(Math.abs(rows[1][2] - 120) < 1e-12);
@@ -62,4 +62,12 @@ test('uses Recipe Analyzer rows while the Use Rate view is active', () => {
 test('escapes CSV values and serializes state JSON', () => {
   assert.equal(exportModule.csvText([['A "quoted" value', 'x,y'], [null, 2]]), '"A ""quoted"" value","x,y"\n"","2"');
   assert.equal(exportModule.stateJson({n: 160}), '{\n  "n": 160\n}');
+});
+
+test('Guaranteed Analysis CSV adds mL/gal when a density is entered', () => {
+  const state = {view: 'analysis', manual: {N: 12, P2O5: 4, K2O: 16, Ca: 7, Mg: 2, S: 0, densityGPerMl: 1.25}};
+  const rows = exportModule.currentCsvRows(state, {levels, chemistry});
+  assert.deepEqual(rows[0], ['Target N', 'g/gal', 'mL/gal', 'N', 'P', 'K', 'Ca', 'Mg', 'S', 'Fe', 'Mn', 'Zn', 'B', 'Cu', 'Mo']);
+  assert.ok(Math.abs(rows[1][2] - rows[1][1] / 1.25) < 1e-12);
+  assert.ok(Math.abs(rows[1][3] - 120) < 1e-12);
 });

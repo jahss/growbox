@@ -19,9 +19,29 @@
 
     const productById = new Map(productList.map(product => [product.id, product]));
     const systemById = new Map(systemList.map(system => [system.id, system]));
+    let customList = [];
+    let customById = new Map();
 
     function product(id) {
-      return productById.get(id);
+      return productById.get(id) || customById.get(id);
+    }
+
+    // Products the user entered on the Label → ppm tab, shaped like 1-part library products.
+    function setCustomProducts(saved) {
+      customList = (Array.isArray(saved) ? saved : []).map(item => {
+        const density = Number(item.densityGPerMl) > 0 ? Number(item.densityGPerMl) : 0;
+        return {
+          id: item.id, custom: true, compareGroup: '1-part', partCount: 1,
+          brand: 'Custom', manufacturer: 'Custom', program: item.name, name: item.name,
+          form: density ? 'liquid' : 'dry', densityGPerMl: density || undefined,
+          analysis: {...item.analysis}
+        };
+      });
+      customById = new Map(customList.map(item => [item.id, item]));
+    }
+
+    function customProducts() {
+      return customList;
     }
 
     function system(id) {
@@ -159,6 +179,8 @@
       displayParts,
       partLabel,
       excludedParts,
+      setCustomProducts,
+      customProducts,
       entryTitle,
       exportLabel,
       systemProfile,

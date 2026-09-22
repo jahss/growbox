@@ -43,7 +43,8 @@ function fixture() {
     : '—';
   const escape = value => String(value ?? '').replace(/[&<>"']/g, character => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'}[character]));
   const catalog = productModel.createCatalog(products, systems, chemistry, format);
-  let state = stateModule.normalizeState(stateModule.freshState(), products, systems);
+  // Pin the selection these tests were written against, independent of the app defaults.
+  let state = stateModule.normalizeState({...stateModule.freshState(), compare: ['megacrop-11-5-14', 'jacks-12-4-16'], systemCompare: ['athena-pro-veg']}, products, systems);
   let saves = 0;
   const notices = [];
   const component = compareModule.createComponent({
