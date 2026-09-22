@@ -32,7 +32,7 @@
         doses: {'jacks-12-4-16': {amount: 1, unit: 'g/gal'}}
       },
       blend: {
-        ids: ['jacks-12-4-16', 'jacks-5-12-26-a', 'jacks-15-0-0-b', 'jacks-epsom', 'mkp-0-52-34'],
+        ids: ['jacks-12-4-16', 'jacks-5-12-26-a', 'jacks-15-0-0-b', 'magnesium-sulfate', 'mkp-0-52-34'],
         // Elemental ppm delivered in solution; 0 means "no target".
         target: {N: 160, P: 50, K: 200, Ca: 120, Mg: 50, S: 60, Fe: 0, Mn: 0, Zn: 0, B: 0, Cu: 0, Mo: 0},
         targetId: '',

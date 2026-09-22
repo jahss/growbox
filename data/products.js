@@ -56,12 +56,6 @@ window.FERTILIZER_PRODUCTS = [
     analysisSource:{type:'user-supplied-manufacturer-label',checked:'2026-09-19'},
     rateSource:{url:'https://www.jacksnutrients.com/_files/ugd/3230c0_2c6597e4cf9349dbafb03283e8db4a2d.pdf',type:'official-feed-chart',checked:'2026-09-21',original:'2.50 g/US gal; 100 ppm N'}
   },
-  {
-    id:'jacks-epsom', compareGroup:'component', manufacturer:'JR Peters', brand:"Jack's Nutrients", displayFormula:'Magnesium Sulfate (C)', componentName:'C', name:'Magnesium Sulfate (Epsom) Part C', form:'dry',
-    analysis:{N:0,P2O5:0,K2O:0,Ca:0,Mg:9.8,S:13,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0},
-    useRates:[{label:"Jack's 3-2-1 Part C",gPerGal:1.1,note:'Manufacturer 3-2-1 mixing lesson.'}],
-    source:{url:'https://www.jacksnutrients.com/post/how-do-i-mix-jack-s-321',checked:'2026-09-19'}
-  },
 
   {
     id:'athena-pro-core', compareGroup:'component', manufacturer:'Athena Ag', brand:'Athena', displayFormula:'14-0-0 (Core)', componentName:'Core', name:'Pro Core 14-0-0', form:'dry',
@@ -533,25 +527,76 @@ window.FERTILIZER_PRODUCTS = [
     densitySource:{url:'https://emeraldharvest.co/wp-content/uploads/2019/06/Bloom-SDS-2019-10-22.pdf',type:'official-sds',checked:'2026-09-21',original:'Relative density 1.12 kg/L'}
   },
   {
-    id:'mkp-0-52-34', compareGroup:'salt', brand:'Generic salt', name:'MKP 0-52-34', form:'dry',
-    analysis:{N:0,P2O5:52,K2O:34,Ca:0,Mg:0,S:0,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, useRates:[]
-  },
-  {
-    id:'calcium-nitrate', compareGroup:'salt', brand:'Generic salt', name:'Calcium nitrate 15.5-0-0 + 19 Ca', form:'dry',
+    id:'calcium-nitrate', compareGroup:'salt', brand:'Salt', name:'Calcium nitrate — fertilizer grade', chemicalFormula:'5Ca(NO₃)₂·NH₄NO₃·10H₂O', form:'dry',
     analysis:{N:15.5,P2O5:0,K2O:0,Ca:19,Mg:0,S:0,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, useRates:[],
-    notes:'Generic reference kept separate from Jack’s 15-0-0 / 18% Ca Part B.'
+    source:{type:'fertilizer-grade',checked:'2026-09-22'},
+    notes:'Standard fertilizer-grade analysis of the calcium ammonium nitrate double salt (about 14.4% nitrate-N, 1.1% ammonium-N).'
   },
   {
-    id:'potassium-nitrate', compareGroup:'salt', brand:'Generic salt', name:'Potassium nitrate 13-0-46', form:'dry',
-    analysis:{N:13,P2O5:0,K2O:46,Ca:0,Mg:0,S:0,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, useRates:[]
+    id:'calcium-nitrate-tetrahydrate', compareGroup:'salt', brand:'Salt', name:'Calcium nitrate tetrahydrate — technical grade', chemicalFormula:'Ca(NO₃)₂·4H₂O', form:'dry',
+    analysis:{N:11.86,P2O5:0,K2O:0,Ca:16.97,Mg:0,S:0,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, useRates:[],
+    source:{type:'stoichiometry',checked:'2026-09-22'},
+    notes:'Pure calcium nitrate with no ammonium. Theoretical analysis from the chemical formula (standard atomic weights); fertilizer grades can run slightly lower.'
   },
   {
-    id:'magnesium-sulfate', compareGroup:'salt', brand:'Generic salt', name:'Magnesium sulfate 9.8 Mg + 13 S', form:'dry',
-    analysis:{N:0,P2O5:0,K2O:0,Ca:0,Mg:9.8,S:13,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, useRates:[]
+    id:'potassium-nitrate', compareGroup:'salt', brand:'Salt', name:'Potassium nitrate — Saltpeter', chemicalFormula:'KNO₃', form:'dry',
+    analysis:{N:13.85,P2O5:0,K2O:46.58,Ca:0,Mg:0,S:0,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, useRates:[],
+    source:{type:'stoichiometry',checked:'2026-09-22'},
+    notes:'Theoretical analysis from the chemical formula (standard atomic weights); fertilizer grades can run slightly lower.'
   },
   {
-    id:'potassium-sulfate', compareGroup:'salt', brand:'Generic salt', name:'Potassium sulfate 0-0-50 + 18 S', form:'dry',
-    analysis:{N:0,P2O5:0,K2O:50,Ca:0,Mg:0,S:18,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, useRates:[]
+    id:'mkp-0-52-34', compareGroup:'salt', brand:'Salt', name:'Monopotassium phosphate — MKP', chemicalFormula:'KH₂PO₄', form:'dry',
+    analysis:{N:0,P2O5:52.15,K2O:34.61,Ca:0,Mg:0,S:0,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, useRates:[],
+    source:{type:'stoichiometry',checked:'2026-09-22'},
+    notes:'Theoretical analysis from the chemical formula (standard atomic weights); fertilizer grades can run slightly lower.'
+  },
+  {
+    id:'monoammonium-phosphate', compareGroup:'salt', brand:'Salt', name:'Monoammonium phosphate — MAP', chemicalFormula:'NH₄H₂PO₄', form:'dry',
+    analysis:{N:12.18,P2O5:61.7,K2O:0,Ca:0,Mg:0,S:0,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, useRates:[],
+    source:{type:'stoichiometry',checked:'2026-09-22'},
+    notes:'Theoretical analysis from the chemical formula (standard atomic weights); fertilizer grades can run slightly lower.'
+  },
+  {
+    id:'dipotassium-phosphate', compareGroup:'salt', brand:'Salt', name:'Dipotassium phosphate — DKP', chemicalFormula:'K₂HPO₄', form:'dry',
+    analysis:{N:0,P2O5:40.75,K2O:54.08,Ca:0,Mg:0,S:0,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, useRates:[],
+    source:{type:'stoichiometry',checked:'2026-09-22'},
+    notes:'Theoretical analysis from the chemical formula (standard atomic weights); fertilizer grades can run slightly lower.'
+  },
+  {
+    id:'potassium-sulfate', compareGroup:'salt', brand:'Salt', name:'Potassium sulfate — SOP', chemicalFormula:'K₂SO₄', form:'dry',
+    analysis:{N:0,P2O5:0,K2O:54.06,Ca:0,Mg:0,S:18.4,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, useRates:[],
+    source:{type:'stoichiometry',checked:'2026-09-22'},
+    notes:'Theoretical analysis from the chemical formula (standard atomic weights); fertilizer grades can run slightly lower.'
+  },
+  {
+    id:'magnesium-sulfate', compareGroup:'salt', brand:'Salt', name:'Magnesium sulfate heptahydrate — Epsom salt', chemicalFormula:'MgSO₄·7H₂O', form:'dry',
+    analysis:{N:0,P2O5:0,K2O:0,Ca:0,Mg:9.86,S:13.01,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, useRates:[],
+    source:{type:'stoichiometry',checked:'2026-09-22'},
+    notes:'Theoretical analysis from the chemical formula (standard atomic weights); fertilizer grades can run slightly lower.'
+  },
+  {
+    id:'magnesium-sulfate-monohydrate', compareGroup:'salt', brand:'Salt', name:'Magnesium sulfate monohydrate — Kieserite', chemicalFormula:'MgSO₄·H₂O', form:'dry',
+    analysis:{N:0,P2O5:0,K2O:0,Ca:0,Mg:17.56,S:23.17,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, useRates:[],
+    source:{type:'stoichiometry',checked:'2026-09-22'},
+    notes:'Theoretical analysis from the chemical formula (standard atomic weights); fertilizer grades can run slightly lower.'
+  },
+  {
+    id:'magnesium-nitrate', compareGroup:'salt', brand:'Salt', name:'Magnesium nitrate hexahydrate', chemicalFormula:'Mg(NO₃)₂·6H₂O', form:'dry',
+    analysis:{N:10.93,P2O5:0,K2O:0,Ca:0,Mg:9.48,S:0,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, useRates:[],
+    source:{type:'stoichiometry',checked:'2026-09-22'},
+    notes:'Theoretical analysis from the chemical formula (standard atomic weights); fertilizer grades can run slightly lower.'
+  },
+  {
+    id:'ammonium-sulfate', compareGroup:'salt', brand:'Salt', name:'Ammonium sulfate — AMS', chemicalFormula:'(NH₄)₂SO₄', form:'dry',
+    analysis:{N:21.2,P2O5:0,K2O:0,Ca:0,Mg:0,S:24.26,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, useRates:[],
+    source:{type:'stoichiometry',checked:'2026-09-22'},
+    notes:'Theoretical analysis from the chemical formula (standard atomic weights); fertilizer grades can run slightly lower.'
+  },
+  {
+    id:'urea', compareGroup:'salt', brand:'Salt', name:'Urea', chemicalFormula:'CO(NH₂)₂', form:'dry',
+    analysis:{N:46.65,P2O5:0,K2O:0,Ca:0,Mg:0,S:0,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, useRates:[],
+    source:{type:'stoichiometry',checked:'2026-09-22'},
+    notes:'All nitrogen is urea-N, which converts to ammonium and then nitrate. Theoretical analysis from the chemical formula (standard atomic weights); fertilizer grades can run slightly lower.'
   }
 ];
 
@@ -598,13 +643,13 @@ window.FERTILIZER_SYSTEMS = [
     ratioBasis:'mass', components:[
       {productId:'jacks-5-12-26-a',label:'Part A',defaultParts:3.6},
       {productId:'jacks-15-0-0-b',label:'Part B',defaultParts:2.4},
-      {productId:'jacks-epsom',label:'Part C',defaultParts:1.1}
+      {productId:'magnesium-sulfate',label:'Part C',defaultParts:1.1}
     ],
     defaultProfile:'all-stages', profiles:[
       {id:'all-stages',label:'All stages',parts:[3.6,2.4,1.1]}
     ],
     ratioNote:'Jack’s published mixing lesson uses 3.6 g/gal Part A, 1.1 g/gal Epsom, then 2.4 g/gal Part B; displayed as A/B/C here.',
-    useRates:[{profileId:'all-stages',label:"Jack's 3-2-1 — All stages",components:[{productId:'jacks-5-12-26-a',gPerGal:3.6},{productId:'jacks-15-0-0-b',gPerGal:2.4},{productId:'jacks-epsom',gPerGal:1.1}]}],
+    useRates:[{profileId:'all-stages',label:"Jack's 3-2-1 — All stages",components:[{productId:'jacks-5-12-26-a',gPerGal:3.6},{productId:'jacks-15-0-0-b',gPerGal:2.4},{productId:'magnesium-sulfate',gPerGal:1.1}]}],
     source:{url:'https://www.jacksnutrients.com/post/how-do-i-mix-jack-s-321',type:'official-mixing-guide',checked:'2026-09-21',original:'3.6 g/gal Part A + 1.1 g/gal Epsom + 2.4 g/gal Part B'}
   },
   {

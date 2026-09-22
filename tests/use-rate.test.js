@@ -65,7 +65,7 @@ test('turns published system rates into editable component doses', () => {
   assert.deepEqual(useRateModule.presetDoses(entry, entry.useRates[0]), {
     'jacks-5-12-26-a': {amount: 3.6, unit: 'g/gal'},
     'jacks-15-0-0-b': {amount: 2.4, unit: 'g/gal'},
-    'jacks-epsom': {amount: 1.1, unit: 'g/gal'}
+    'magnesium-sulfate': {amount: 1.1, unit: 'g/gal'}
   });
 });
 
@@ -124,14 +124,14 @@ test('applying a preset clears stale doses for omitted components', () => {
   const view = fixture();
   view.state.useRate.selection = 's:jacks-321';
   view.component.render();
-  view.state.useRate.doses['jacks-epsom'] = {amount: 9, unit: 'g/gal'};
+  view.state.useRate.doses['magnesium-sulfate'] = {amount: 9, unit: 'g/gal'};
   const entry = view.component.currentEntry();
   entry.useRates.push({label: 'Two components', components: [
     {productId: 'jacks-5-12-26-a', gPerGal: 3},
     {productId: 'jacks-15-0-0-b', gPerGal: 2}
   ]});
   view.component.applyPreset(entry.useRates.length - 1);
-  assert.deepEqual(view.state.useRate.doses['jacks-epsom'], {amount: 0, unit: 'g/gal'});
+  assert.deepEqual(view.state.useRate.doses['magnesium-sulfate'], {amount: 0, unit: 'g/gal'});
 });
 
 test('exports the calculated recipe and its normalized component doses', () => {

@@ -173,3 +173,41 @@ test('non-salt products and all systems carry source metadata with a checked dat
     assert.ok(Boolean(system.source.checked), `${system.id} source needs a checked date`);
   });
 });
+test('salts are dry, unbranded, named by chemistry, and carry their chemical formula', () => {
+  const salts = products.filter(product => product.compareGroup === 'salt');
+  assert.ok(salts.length >= 10, 'expected a populated salt list, got ' + salts.length);
+  salts.forEach(salt => assert.ok(['N', 'P2O5', 'K2O', 'Ca', 'Mg', 'S'].some(key => salt.analysis[key] > 0), salt.id + ' should be a macronutrient salt'));
+  salts.forEach(salt => {
+    assert.equal(salt.form, 'dry', salt.id + ' should be a dry salt');
+    assert.equal(salt.brand, 'Salt', salt.id + ' should not carry a brand');
+    assert.ok(typeof salt.chemicalFormula === 'string' && salt.chemicalFormula.length > 0, salt.id + ' needs a chemical formula');
+    assert.ok(salt.source && salt.source.type, salt.id + ' needs a source type');
+  });
+  assert.equal(byId.get('magnesium-sulfate').name, 'Magnesium sulfate heptahydrate — Epsom salt');
+  assert.ok(!byId.has('jacks-epsom'), "Epsom salt is a generic salt, not a Jack's product");
+  assert.deepEqual([...systemById.get('jacks-321').components.map(component => component.productId)], ['jacks-5-12-26-a', 'jacks-15-0-0-b', 'magnesium-sulfate']);
+});
+
+test('stoichiometric salt analyses match their chemical formulas', () => {
+  const close = (actual, expected, id) => assert.ok(Math.abs(actual - expected) < 0.02, id + ': ' + actual + ' vs ' + expected);
+  const P = chemistry.P_FROM_P2O5;
+  const K = chemistry.K_FROM_K2O;
+  // Molar masses from standard atomic weights.
+  const mkp = 136.084;
+  close(byId.get('mkp-0-52-34').analysis.P2O5 * P, 30.974 / mkp * 100, 'MKP P');
+  close(byId.get('mkp-0-52-34').analysis.K2O * K, 39.098 / mkp * 100, 'MKP K');
+  close(byId.get('potassium-nitrate').analysis.N, 14.007 / 101.102 * 100, 'KNO3 N');
+  close(byId.get('magnesium-sulfate').analysis.Mg, 24.305 / 246.466 * 100, 'Epsom Mg');
+  close(byId.get('potassium-sulfate').analysis.S, 32.06 / 174.25 * 100, 'SOP S');
+});
+
+test('salt display names carry the label N-P-K and other nutrients', () => {
+  const productModel = require('../js/product-model.js');
+  const format = (value, digits = 2) => Number(value).toFixed(digits).replace(/(\.\d*?[1-9])0+$|\.0+$/, '$1');
+  const catalog = productModel.createCatalog(products, systems, chemistry, format);
+  assert.equal(catalog.displayFormula(byId.get('magnesium-sulfate')), 'Magnesium sulfate heptahydrate — Epsom salt · 0-0-0 + 9.9 Mg, 13 S');
+  assert.equal(catalog.displayFormula(byId.get('mkp-0-52-34')), 'Monopotassium phosphate — MKP · 0-52.2-34.6');
+  assert.equal(catalog.displayFormula(byId.get('dipotassium-phosphate')), 'Dipotassium phosphate — DKP · 0-40.8-54.1');
+  assert.equal(catalog.displayFormula(byId.get('urea')), 'Urea · 46.7-0-0');
+  assert.equal(catalog.displayFormula(byId.get('calcium-nitrate-tetrahydrate')), 'Calcium nitrate tetrahydrate — technical grade · 11.9-0-0 + 17 Ca');
+});

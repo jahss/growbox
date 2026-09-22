@@ -222,7 +222,7 @@ test('app boots and renders all four views without exceptions', () => {
 
   // Blend view: target and source dropdowns, with the default sources listed.
   assert.match(dom.elements.blendTarget.innerHTML, /Custom — enter ppm below/);
-  assert.match(dom.elements.blendSourcePicker.innerHTML, /Ingredient salts/);
+  assert.match(dom.elements.blendSourcePicker.innerHTML, /optgroup label="Salts"/);
   assert.match(dom.elements.blendSources.innerHTML, /removeSource/);
 });
 
@@ -253,7 +253,7 @@ test('solve produces a blend with sensible nonnegative weights and a feed chart'
   dom.elements.solve.onclick();
   assert.ok(dom.elements.blendResult.classList.contains('hidden') === false, 'blend result should be visible after solve');
   assert.match(dom.elements.weights.innerHTML, /g\/gal/);
-  // Fresh-state blend (jacks + a + b + epsom + mkp) has N>0, so feed must render rows.
+  // Fresh-state blend (Jack's 12-4-16, A, B, Epsom salt, MKP) has N>0, so feed must render rows.
   assert.ok(dom.elements.feed.innerHTML.includes('ppm N'), 'feed chart should render for a nitrogen-bearing blend');
   assert.match(dom.elements.feed.innerHTML, /50 ppm N/);
 });

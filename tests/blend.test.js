@@ -85,12 +85,12 @@ test('source picker groups commercial products, system parts and salts; chosen s
   const picker = view.elements.blendSourcePicker.innerHTML;
   assert.match(picker, /optgroup label="1-Part products"/);
   assert.match(picker, /optgroup label="System parts"/);
-  assert.match(picker, /optgroup label="Ingredient salts"/);
+  assert.match(picker, /optgroup label="Salts"/);
   assert.match(view.elements.blendSources.innerHTML, /Jack&#39;s Nutrients — 12-4-16/);
   assert.match(view.elements.blendSources.innerHTML, /class="removeSource" data-id="mkp-0-52-34"/);
   assert.doesNotMatch(picker, /value="mkp-0-52-34"/);
-  view.elements.blendSourcePicker.onchange({target: {value: 'jacks-epsom'}});
-  assert.equal(view.state.blend.ids.filter(id => id === 'jacks-epsom').length, 1);
+  view.elements.blendSourcePicker.onchange({target: {value: 'magnesium-sulfate'}});
+  assert.equal(view.state.blend.ids.filter(id => id === 'magnesium-sulfate').length, 1);
 });
 
 test('target product fills its ppm at the chosen level of N, P or K', () => {

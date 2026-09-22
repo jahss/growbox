@@ -62,7 +62,20 @@
       return prefix === 'part' || name.includes(' ' + prefix + ' ') ? match[2] : label;
     }
 
+    function saltLabel(analysis) {
+      // One decimal, halves rounded up as a printed label would (52.15 → 52.2).
+      const oneDecimal = value => format(Math.round((Number(value) || 0) * 10 + 1e-9) / 10, 1);
+      const npk = ['N', 'P2O5', 'K2O'].map(key => oneDecimal(analysis[key])).join('-');
+      const others = ['Ca', 'Mg', 'S', 'Fe', 'Mn', 'Zn', 'B', 'Cu', 'Mo']
+        .filter(key => Number(analysis[key]) > 0)
+        .map(key => oneDecimal(analysis[key]) + ' ' + key);
+      return npk + (others.length ? ' + ' + others.join(', ') : '');
+    }
+
     function displayFormula(item) {
+      // Salts are known by name, with their label N-P-K and any other nutrients:
+      // "Magnesium sulfate heptahydrate — Epsom salt · 0-0-0 + 9.9 Mg, 13 S".
+      if (item.compareGroup === 'salt') return item.name + ' · ' + saltLabel(item.analysis || {});
       if (item.displayFormula && item.partCount > 1) return item.displayFormula.replace(/\(([^()]+)\)/g, (all, label) => '(' + partLabel(item, label) + ')');
       if (item.displayFormula) return item.displayFormula;
       if (item.analysis) return format(item.analysis.N) + '-' + format(item.analysis.P2O5) + '-' + format(item.analysis.K2O);

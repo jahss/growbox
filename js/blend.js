@@ -73,11 +73,25 @@
     const element = id => document.getElementById(id);
 
     function productTitle(product) {
-      return product.custom ? 'Custom — ' + product.name : product.brand + ' — ' + catalog.displayFormula(product);
+      if (product.custom) return 'Custom — ' + product.name;
+      if (product.compareGroup === 'salt') return catalog.displayFormula(product);
+      return product.brand + ' — ' + catalog.displayFormula(product);
     }
 
+    // Short name for the feed chart ("Jack's Nutrients 12-4-16", or the salt's name).
+    function shortName(product) {
+      if (product.custom) return 'Custom — ' + product.name;
+      if (product.compareGroup === 'salt') return catalog.displayFormula(product);
+      return product.brand + ' ' + catalog.displayFormula(product);
+    }
+
+    // What a source contains: N-P-K for fertilizers; formula and nonzero elements for salts.
     function sourceDetail(product) {
       const elemental = chemistry.elementalAnalysis(product.analysis);
+      if (product.compareGroup === 'salt') {
+        const parts = FIELDS.filter(([key]) => elemental[key] > 0).map(([key, label]) => label + ' ' + format(elemental[key], 2) + '%');
+        return (product.chemicalFormula ? product.chemicalFormula + ' · ' : '') + parts.join(', ');
+      }
       return format(product.analysis.N) + '-' + format(product.analysis.P2O5) + '-' + format(product.analysis.K2O) + ' label · ' + format(elemental.N) + ' / ' + format(elemental.P) + ' / ' + format(elemental.K) + ' elemental';
     }
 
@@ -101,7 +115,7 @@
         optionGroup('Your custom products', available.filter(product => product.custom), product => product.id, product => productTitle(product) + ' · ' + catalog.displayFormula(product)) +
         optionGroup('1-Part products', by('1-part'), product => product.id, productTitle) +
         optionGroup('System parts', by('component'), product => product.id, productTitle) +
-        optionGroup('Ingredient salts', by('salt'), product => product.id, productTitle);
+        optionGroup('Salts', by('salt'), product => product.id, productTitle);
       element('blendSourcePicker').onchange = event => {
         const id = event.target.value;
         if (!id || state.blend.ids.includes(id)) return;
@@ -236,7 +250,7 @@
         const total = result.doses.reduce((sum, dose) => sum + dose, 0) * factor;
         const chips = keys => keys.map(key => chip(key, format(result.ppm[key] * factor, digitsFor(key)))).join('');
         const doses = selectedProducts.map((product, index) => result.doses[index] > 0
-          ? '<li>' + escape(product.custom ? 'Custom — ' + product.name : product.brand + ' ' + catalog.displayFormula(product)) + ' — <b>' + doseText(product, result.doses[index] * factor) + '</b></li>'
+          ? '<li>' + escape(shortName(product)) + ' — <b>' + doseText(product, result.doses[index] * factor) + '</b></li>'
           : '').join('');
         return '<details class="cmp-card blend-feed-card"' + (feedOpen ? ' open' : '') + '><summary><div class="cmp-line1"><b class="cmp-name">' + targetN + ' ppm N</b><span class="cmp-dose">' + format(total, 3) + ' g/gal total</span><span class="cmp-arrow" aria-hidden="true"></span></div>' +
           '<div class="cmp-chips cmp-summary-chips">' + chips(MACRO_KEYS) + '<span class="cmp-micros">' + chips(MICRO_KEYS) + '</span></div></summary>' +
