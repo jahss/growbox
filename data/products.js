@@ -384,7 +384,8 @@ window.FERTILIZER_SYSTEMS = [
       {productId:'megacrop-2part-a-8-12-28',label:'Part A',defaultParts:1},
       {productId:'megacrop-2part-b-15-5-0-0',label:'Part B',defaultParts:1}
     ],
-    ratioNote:'A:B is user-adjustable. The 1:1 default is only a neutral starting point, not a manufacturer recommendation.', useRates:[]
+    ratioNote:'A:B is user-adjustable. The 1:1 default is only a neutral starting point, not a manufacturer recommendation.', useRates:[],
+    source:{type:'uploaded-label',checked:'2026-09-19'}, notes:'Derived from the uploaded Mega Crop 2-Part A and B guaranteed-analysis labels; no system-level feed chart is published.'
   },
   {
     id:'jacks-2part-5-12-26', partCount:2, manufacturer:'JR Peters', brand:"Jack's Nutrients", program:'A/B Fast Track', displayFormula:'5-12-26 (A) + 15-0-0 (B)', name:'2-Part — 5-12-26 A + Cal Nit B',
@@ -434,7 +435,9 @@ window.FERTILIZER_SYSTEMS = [
       {productId:'athena-pro-core',label:'Core',defaultParts:.6},
       {productId:'athena-pro-grow',label:'Grow',defaultParts:1}
     ],
-    ratioNote:'Manufacturer dry-weight relationship is approximately 0.6 g Core for every 1 g Pro Grow across the dosage guide.', useRates:[{label:'EC 1.0',components:[{productId:'athena-pro-core',gPerGal:1.4},{productId:'athena-pro-grow',gPerGal:2.3}]},{label:'EC 1.5',components:[{productId:'athena-pro-core',gPerGal:2.1},{productId:'athena-pro-grow',gPerGal:3.6}]},{label:'EC 2.0',components:[{productId:'athena-pro-core',gPerGal:2.9},{productId:'athena-pro-grow',gPerGal:4.9}]},{label:'EC 2.5',components:[{productId:'athena-pro-core',gPerGal:3.8},{productId:'athena-pro-grow',gPerGal:6.3}]},{label:'EC 3.0',components:[{productId:'athena-pro-core',gPerGal:4.6},{productId:'athena-pro-grow',gPerGal:7.7}]},{label:'EC 3.5',components:[{productId:'athena-pro-core',gPerGal:5.5},{productId:'athena-pro-grow',gPerGal:9.1}]},{label:'EC 4.0',components:[{productId:'athena-pro-core',gPerGal:6.4},{productId:'athena-pro-grow',gPerGal:10.6}]}]
+    ratioNote:'Manufacturer dry-weight relationship is approximately 0.6 g Core for every 1 g Pro Grow across the dosage guide.', 
+    useRates:[{label:'EC 1.0',components:[{productId:'athena-pro-core',gPerGal:1.4},{productId:'athena-pro-grow',gPerGal:2.3}]},{label:'EC 1.5',components:[{productId:'athena-pro-core',gPerGal:2.1},{productId:'athena-pro-grow',gPerGal:3.6}]},{label:'EC 2.0',components:[{productId:'athena-pro-core',gPerGal:2.9},{productId:'athena-pro-grow',gPerGal:4.9}]},{label:'EC 2.5',components:[{productId:'athena-pro-core',gPerGal:3.8},{productId:'athena-pro-grow',gPerGal:6.3}]},{label:'EC 3.0',components:[{productId:'athena-pro-core',gPerGal:4.6},{productId:'athena-pro-grow',gPerGal:7.7}]},{label:'EC 3.5',components:[{productId:'athena-pro-core',gPerGal:5.5},{productId:'athena-pro-grow',gPerGal:9.1}]},{label:'EC 4.0',components:[{productId:'athena-pro-core',gPerGal:6.4},{productId:'athena-pro-grow',gPerGal:10.6}]}],
+    source:{url:'https://hydrobuilder.com/media/pdf/specs/Athena-Pro-Core-Product-Label.pdf',checked:'2026-09-19'}, notes:'Program composed from the Athena Pro Core and Pro Grow component labels; dosage guide in the EC use-rates.'
   },
   {
     id:'athena-pro-bloom', partCount:2, manufacturer:'Athena Ag', brand:'Athena', program:'Pro Bloom', displayFormula:'14-0-0 (Core) + 0-12-24 (Bloom)', name:'Pro Line — Flower (Core + Bloom)',
@@ -442,7 +445,9 @@ window.FERTILIZER_SYSTEMS = [
       {productId:'athena-pro-core',label:'Core',defaultParts:.6},
       {productId:'athena-pro-bloom-component',label:'Bloom',defaultParts:1}
     ],
-    ratioNote:'Manufacturer dry-weight relationship is approximately 0.6 g Core for every 1 g Pro Bloom across the dosage guide.', useRates:[{label:'EC 1.0',components:[{productId:'athena-pro-core',gPerGal:1.4},{productId:'athena-pro-bloom-component',gPerGal:2.3}]},{label:'EC 1.5',components:[{productId:'athena-pro-core',gPerGal:2.1},{productId:'athena-pro-bloom-component',gPerGal:3.6}]},{label:'EC 2.0',components:[{productId:'athena-pro-core',gPerGal:2.9},{productId:'athena-pro-bloom-component',gPerGal:4.9}]},{label:'EC 2.5',components:[{productId:'athena-pro-core',gPerGal:3.8},{productId:'athena-pro-bloom-component',gPerGal:6.3}]},{label:'EC 3.0',components:[{productId:'athena-pro-core',gPerGal:4.6},{productId:'athena-pro-bloom-component',gPerGal:7.7}]},{label:'EC 3.5',components:[{productId:'athena-pro-core',gPerGal:5.5},{productId:'athena-pro-bloom-component',gPerGal:9.1}]},{label:'EC 4.0',components:[{productId:'athena-pro-core',gPerGal:6.4},{productId:'athena-pro-bloom-component',gPerGal:10.6}]}]
+    ratioNote:'Manufacturer dry-weight relationship is approximately 0.6 g Core for every 1 g Pro Bloom across the dosage guide.', 
+    useRates:[{label:'EC 1.0',components:[{productId:'athena-pro-core',gPerGal:1.4},{productId:'athena-pro-bloom-component',gPerGal:2.3}]},{label:'EC 1.5',components:[{productId:'athena-pro-core',gPerGal:2.1},{productId:'athena-pro-bloom-component',gPerGal:3.6}]},{label:'EC 2.0',components:[{productId:'athena-pro-core',gPerGal:2.9},{productId:'athena-pro-bloom-component',gPerGal:4.9}]},{label:'EC 2.5',components:[{productId:'athena-pro-core',gPerGal:3.8},{productId:'athena-pro-bloom-component',gPerGal:6.3}]},{label:'EC 3.0',components:[{productId:'athena-pro-core',gPerGal:4.6},{productId:'athena-pro-bloom-component',gPerGal:7.7}]},{label:'EC 3.5',components:[{productId:'athena-pro-core',gPerGal:5.5},{productId:'athena-pro-bloom-component',gPerGal:9.1}]},{label:'EC 4.0',components:[{productId:'athena-pro-core',gPerGal:6.4},{productId:'athena-pro-bloom-component',gPerGal:10.6}]}],
+    source:{url:'https://hydrobuilder.com/media/pdf/specs/Athena-Pro-Core-Product-Label.pdf',checked:'2026-09-19'}, notes:'Program composed from the Athena Pro Core and Pro Bloom component labels; dosage guide in the EC use-rates.'
   },
   {
     id:'athena-blended-veg', partCount:2, manufacturer:'Athena Ag', brand:'Athena', program:'Blended Veg', displayFormula:'4-0-1 (Grow A) + 1-3-5 (Grow B)', name:'Blended Line — Veg (Grow A + Grow B)',
@@ -450,7 +455,9 @@ window.FERTILIZER_SYSTEMS = [
       {productId:'athena-grow-a',label:'Grow A',defaultParts:1},
       {productId:'athena-grow-b',label:'Grow B',defaultParts:1}
     ],
-    ratioNote:'Manufacturer specifies equal parts Grow A and Grow B by volume. Full published program also uses CaMg; base-only comparison here excludes that component.', useRates:[{label:'Veg W1-W4 base',components:[{productId:'athena-grow-a',mLPerGal:11},{productId:'athena-grow-b',mLPerGal:11}]}]
+    ratioNote:'Manufacturer specifies equal parts Grow A and Grow B by volume. Full published program also uses CaMg; base-only comparison here excludes that component.', 
+    useRates:[{label:'Veg W1-W4 base',components:[{productId:'athena-grow-a',mLPerGal:11},{productId:'athena-grow-b',mLPerGal:11}]}],
+    source:{url:'https://hydrobuilder.com/media/pdf/specs/Athena-Grow-A-Product-Label.pdf',checked:'2026-09-19'}, notes:'Program composed from the Athena Blended Grow A and Grow B component labels; base-only, excludes CaMg.'
   },
   {
     id:'athena-blended-bloom', partCount:2, manufacturer:'Athena Ag', brand:'Athena', program:'Blended Bloom', displayFormula:'4-0-5 (Bloom A) + 0.7-6-5 (Bloom B)', name:'Blended Line — Flower (Bloom A + Bloom B)',
@@ -458,7 +465,9 @@ window.FERTILIZER_SYSTEMS = [
       {productId:'athena-bloom-a',label:'Bloom A',defaultParts:1},
       {productId:'athena-bloom-b',label:'Bloom B',defaultParts:1}
     ],
-    ratioNote:'Manufacturer specifies equal parts Bloom A and Bloom B by volume. Full published program also uses CaMg and later PK; base-only comparison here excludes those components.', useRates:[{label:'Flower W1-W4 base',components:[{productId:'athena-bloom-a',mLPerGal:12},{productId:'athena-bloom-b',mLPerGal:12}]},{label:'Flower W5 base',components:[{productId:'athena-bloom-a',mLPerGal:10},{productId:'athena-bloom-b',mLPerGal:10}]},{label:'Flower W6 base',components:[{productId:'athena-bloom-a',mLPerGal:9},{productId:'athena-bloom-b',mLPerGal:9}]},{label:'Flower W7 base',components:[{productId:'athena-bloom-a',mLPerGal:5},{productId:'athena-bloom-b',mLPerGal:5}]},{label:'Flower W8-W9 base',components:[{productId:'athena-bloom-a',mLPerGal:4},{productId:'athena-bloom-b',mLPerGal:4}]}]
+    ratioNote:'Manufacturer specifies equal parts Bloom A and Bloom B by volume. Full published program also uses CaMg and later PK; base-only comparison here excludes those components.', 
+    useRates:[{label:'Flower W1-W4 base',components:[{productId:'athena-bloom-a',mLPerGal:12},{productId:'athena-bloom-b',mLPerGal:12}]},{label:'Flower W5 base',components:[{productId:'athena-bloom-a',mLPerGal:10},{productId:'athena-bloom-b',mLPerGal:10}]},{label:'Flower W6 base',components:[{productId:'athena-bloom-a',mLPerGal:9},{productId:'athena-bloom-b',mLPerGal:9}]},{label:'Flower W7 base',components:[{productId:'athena-bloom-a',mLPerGal:5},{productId:'athena-bloom-b',mLPerGal:5}]},{label:'Flower W8-W9 base',components:[{productId:'athena-bloom-a',mLPerGal:4},{productId:'athena-bloom-b',mLPerGal:4}]}],
+    source:{url:'https://hydrobuilder.com/media/pdf/specs/Athena-Grow-A-Product-Label.pdf',checked:'2026-09-19'}, notes:'Program composed from the Athena Blended Bloom A and Bloom B component labels; base-only, excludes CaMg and later PK.'
   },
   {
     id:'advanced-ph-perfect-gmb', partCount:3, manufacturer:'Advanced Nutrients', brand:'Advanced Nutrients', program:'pH Perfect Grow Micro Bloom', displayFormula:'1-0-4 (Grow) + 2-0-0 (Micro) + 1-3-4 (Bloom)', name:'pH Perfect Grow Micro Bloom',
