@@ -179,7 +179,7 @@ test('salts are dry, unbranded, named by chemistry, and carry their chemical for
   salts.forEach(salt => assert.ok(['N', 'P2O5', 'K2O', 'Ca', 'Mg', 'S'].some(key => salt.analysis[key] > 0), salt.id + ' should be a macronutrient salt'));
   salts.forEach(salt => {
     assert.equal(salt.form, 'dry', salt.id + ' should be a dry salt');
-    assert.equal(salt.brand, 'Salt', salt.id + ' should not carry a brand');
+    assert.equal(salt.brand, 'Raw salt', salt.id + ' should not carry a brand');
     assert.ok(typeof salt.chemicalFormula === 'string' && salt.chemicalFormula.length > 0, salt.id + ' needs a chemical formula');
     assert.ok(salt.source && salt.source.type, salt.id + ' needs a source type');
   });

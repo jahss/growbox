@@ -85,7 +85,7 @@ test('source picker groups commercial products, system parts and salts; chosen s
   const picker = view.elements.blendSourcePicker.innerHTML;
   assert.match(picker, /optgroup label="1-Part products"/);
   assert.match(picker, /optgroup label="System parts"/);
-  assert.match(picker, /optgroup label="Salts"/);
+  assert.match(picker, /optgroup label="Raw salts"/);
   assert.match(view.elements.blendSources.innerHTML, /Jack&#39;s Nutrients — 12-4-16/);
   assert.match(view.elements.blendSources.innerHTML, /class="removeSource" data-id="mkp-0-52-34"/);
   assert.doesNotMatch(picker, /value="mkp-0-52-34"/);

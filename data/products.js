@@ -527,73 +527,73 @@ window.FERTILIZER_PRODUCTS = [
     densitySource:{url:'https://emeraldharvest.co/wp-content/uploads/2019/06/Bloom-SDS-2019-10-22.pdf',type:'official-sds',checked:'2026-09-21',original:'Relative density 1.12 kg/L'}
   },
   {
-    id:'calcium-nitrate', compareGroup:'salt', brand:'Salt', name:'Calcium nitrate', chemicalFormula:'5Ca(NO₃)₂·NH₄NO₃·10H₂O', form:'dry',
+    id:'calcium-nitrate', compareGroup:'salt', brand:'Raw salt', name:'Calcium nitrate', chemicalFormula:'5Ca(NO₃)₂·NH₄NO₃·10H₂O', form:'dry',
     analysis:{N:15.5,P2O5:0,K2O:0,Ca:19,Mg:0,S:0,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, useRates:[],
     source:{type:'fertilizer-grade',checked:'2026-09-22'},
     notes:'Standard fertilizer-grade analysis of the calcium ammonium nitrate double salt (about 14.4% nitrate-N, 1.1% ammonium-N).'
   },
   {
-    id:'calcium-nitrate-tetrahydrate', compareGroup:'salt', brand:'Salt', name:'Calcium nitrate — no ammonium', chemicalFormula:'Ca(NO₃)₂·4H₂O', form:'dry',
+    id:'calcium-nitrate-tetrahydrate', compareGroup:'salt', brand:'Raw salt', name:'Calcium nitrate — no ammonium', chemicalFormula:'Ca(NO₃)₂·4H₂O', form:'dry',
     analysis:{N:11.86,P2O5:0,K2O:0,Ca:16.97,Mg:0,S:0,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, useRates:[],
     source:{type:'stoichiometry',checked:'2026-09-22'},
     notes:'Pure calcium nitrate with no ammonium. Theoretical analysis from the chemical formula (standard atomic weights); fertilizer grades can run slightly lower.'
   },
   {
-    id:'potassium-nitrate', compareGroup:'salt', brand:'Salt', name:'Potassium nitrate — Saltpeter', chemicalFormula:'KNO₃', form:'dry',
+    id:'potassium-nitrate', compareGroup:'salt', brand:'Raw salt', name:'Potassium nitrate — Saltpeter', chemicalFormula:'KNO₃', form:'dry',
     analysis:{N:13.85,P2O5:0,K2O:46.58,Ca:0,Mg:0,S:0,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, useRates:[],
     source:{type:'stoichiometry',checked:'2026-09-22'},
     notes:'Theoretical analysis from the chemical formula (standard atomic weights); fertilizer grades can run slightly lower.'
   },
   {
-    id:'mkp-0-52-34', compareGroup:'salt', brand:'Salt', name:'Monopotassium phosphate — MKP', chemicalFormula:'KH₂PO₄', form:'dry',
+    id:'mkp-0-52-34', compareGroup:'salt', brand:'Raw salt', name:'Monopotassium phosphate — MKP', chemicalFormula:'KH₂PO₄', form:'dry',
     analysis:{N:0,P2O5:52.15,K2O:34.61,Ca:0,Mg:0,S:0,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, useRates:[],
     source:{type:'stoichiometry',checked:'2026-09-22'},
     notes:'Theoretical analysis from the chemical formula (standard atomic weights); fertilizer grades can run slightly lower.'
   },
   {
-    id:'monoammonium-phosphate', compareGroup:'salt', brand:'Salt', name:'Monoammonium phosphate — MAP', chemicalFormula:'NH₄H₂PO₄', form:'dry',
+    id:'monoammonium-phosphate', compareGroup:'salt', brand:'Raw salt', name:'Monoammonium phosphate — MAP', chemicalFormula:'NH₄H₂PO₄', form:'dry',
     analysis:{N:12.18,P2O5:61.7,K2O:0,Ca:0,Mg:0,S:0,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, useRates:[],
     source:{type:'stoichiometry',checked:'2026-09-22'},
     notes:'Theoretical analysis from the chemical formula (standard atomic weights); fertilizer grades can run slightly lower.'
   },
   {
-    id:'dipotassium-phosphate', compareGroup:'salt', brand:'Salt', name:'Dipotassium phosphate — DKP', chemicalFormula:'K₂HPO₄', form:'dry',
+    id:'dipotassium-phosphate', compareGroup:'salt', brand:'Raw salt', name:'Dipotassium phosphate — DKP', chemicalFormula:'K₂HPO₄', form:'dry',
     analysis:{N:0,P2O5:40.75,K2O:54.08,Ca:0,Mg:0,S:0,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, useRates:[],
     source:{type:'stoichiometry',checked:'2026-09-22'},
     notes:'Theoretical analysis from the chemical formula (standard atomic weights); fertilizer grades can run slightly lower.'
   },
   {
-    id:'potassium-sulfate', compareGroup:'salt', brand:'Salt', name:'Potassium sulfate — SOP', chemicalFormula:'K₂SO₄', form:'dry',
+    id:'potassium-sulfate', compareGroup:'salt', brand:'Raw salt', name:'Potassium sulfate — SOP', chemicalFormula:'K₂SO₄', form:'dry',
     analysis:{N:0,P2O5:0,K2O:54.06,Ca:0,Mg:0,S:18.4,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, useRates:[],
     source:{type:'stoichiometry',checked:'2026-09-22'},
     notes:'Theoretical analysis from the chemical formula (standard atomic weights); fertilizer grades can run slightly lower.'
   },
   {
-    id:'magnesium-sulfate', compareGroup:'salt', brand:'Salt', name:'Magnesium sulfate — Epsom salt', chemicalFormula:'MgSO₄·7H₂O', form:'dry',
+    id:'magnesium-sulfate', compareGroup:'salt', brand:'Raw salt', name:'Magnesium sulfate — Epsom salt', chemicalFormula:'MgSO₄·7H₂O', form:'dry',
     analysis:{N:0,P2O5:0,K2O:0,Ca:0,Mg:9.86,S:13.01,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, useRates:[],
     source:{type:'stoichiometry',checked:'2026-09-22'},
     notes:'Theoretical analysis from the chemical formula (standard atomic weights); fertilizer grades can run slightly lower.'
   },
   {
-    id:'magnesium-sulfate-monohydrate', compareGroup:'salt', brand:'Salt', name:'Magnesium sulfate — Kieserite', chemicalFormula:'MgSO₄·H₂O', form:'dry',
+    id:'magnesium-sulfate-monohydrate', compareGroup:'salt', brand:'Raw salt', name:'Magnesium sulfate — Kieserite', chemicalFormula:'MgSO₄·H₂O', form:'dry',
     analysis:{N:0,P2O5:0,K2O:0,Ca:0,Mg:17.56,S:23.17,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, useRates:[],
     source:{type:'stoichiometry',checked:'2026-09-22'},
     notes:'Theoretical analysis from the chemical formula (standard atomic weights); fertilizer grades can run slightly lower.'
   },
   {
-    id:'magnesium-nitrate', compareGroup:'salt', brand:'Salt', name:'Magnesium nitrate', chemicalFormula:'Mg(NO₃)₂·6H₂O', form:'dry',
+    id:'magnesium-nitrate', compareGroup:'salt', brand:'Raw salt', name:'Magnesium nitrate', chemicalFormula:'Mg(NO₃)₂·6H₂O', form:'dry',
     analysis:{N:10.93,P2O5:0,K2O:0,Ca:0,Mg:9.48,S:0,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, useRates:[],
     source:{type:'stoichiometry',checked:'2026-09-22'},
     notes:'Theoretical analysis from the chemical formula (standard atomic weights); fertilizer grades can run slightly lower.'
   },
   {
-    id:'ammonium-sulfate', compareGroup:'salt', brand:'Salt', name:'Ammonium sulfate — AMS', chemicalFormula:'(NH₄)₂SO₄', form:'dry',
+    id:'ammonium-sulfate', compareGroup:'salt', brand:'Raw salt', name:'Ammonium sulfate — AMS', chemicalFormula:'(NH₄)₂SO₄', form:'dry',
     analysis:{N:21.2,P2O5:0,K2O:0,Ca:0,Mg:0,S:24.26,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, useRates:[],
     source:{type:'stoichiometry',checked:'2026-09-22'},
     notes:'Theoretical analysis from the chemical formula (standard atomic weights); fertilizer grades can run slightly lower.'
   },
   {
-    id:'urea', compareGroup:'salt', brand:'Salt', name:'Urea', chemicalFormula:'CO(NH₂)₂', form:'dry',
+    id:'urea', compareGroup:'salt', brand:'Raw salt', name:'Urea', chemicalFormula:'CO(NH₂)₂', form:'dry',
     analysis:{N:46.65,P2O5:0,K2O:0,Ca:0,Mg:0,S:0,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, useRates:[],
     source:{type:'stoichiometry',checked:'2026-09-22'},
     notes:'All nitrogen is urea-N, which converts to ammonium and then nitrate. Theoretical analysis from the chemical formula (standard atomic weights); fertilizer grades can run slightly lower.'

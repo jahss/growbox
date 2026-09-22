@@ -222,7 +222,7 @@ test('app boots and renders all four views without exceptions', () => {
 
   // Blend view: target and source dropdowns, with the default sources listed.
   assert.match(dom.elements.blendTarget.innerHTML, /Custom — enter ppm below/);
-  assert.match(dom.elements.blendSourcePicker.innerHTML, /optgroup label="Salts"/);
+  assert.match(dom.elements.blendSourcePicker.innerHTML, /optgroup label="Raw salts"/);
   assert.match(dom.elements.blendSources.innerHTML, /removeSource/);
 });
 

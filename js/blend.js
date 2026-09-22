@@ -120,7 +120,7 @@
         optionGroup('Your custom products', available.filter(product => product.custom), product => product.id, product => productTitle(product) + ' · ' + catalog.displayFormula(product)) +
         optionGroup('1-Part products', by('1-part'), product => product.id, productTitle) +
         optionGroup('System parts', by('component'), product => product.id, productTitle) +
-        optionGroup('Salts', by('salt'), product => product.id, productTitle);
+        optionGroup('Raw salts', by('salt'), product => product.id, productTitle);
       element('blendSourcePicker').onchange = event => {
         const id = event.target.value;
         if (!id || state.blend.ids.includes(id)) return;
