@@ -90,3 +90,6 @@
 #fit .fit-badge small::before{content:'· '}
 .fit-note{display:block;margin-top:6px}
 .water-hint{font-size:.82rem}
+.water-card .inputs label small{display:block;font-size:.72rem;margin-top:2px}
+.water-card .water-fair{color:#8a4b08}.water-card .water-fair input{border-color:#d99a2b;background:#fff9ec}
+.water-card .water-poor{color:var(--bad)}.water-card .water-poor input{border-color:var(--bad);background:#fdf0ee}

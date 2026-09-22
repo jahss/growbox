@@ -194,3 +194,27 @@ test('source water: RO adds nothing; entered values add to the totals and carry 
   assert.equal(view.state.blend.target.Ca, nutrients.Ca + 40, 'Blend target is the total in solution');
   assert.equal(view.state.blend.target.nitrateN, view.component.currentResult().nitrogenForms.nitrateN + 5);
 });
+
+test('water ranges: within target is fine, outside target is amber, outside acceptable is red; blanks are not flagged', () => {
+  const status = useRateModule.waterStatus;
+  assert.equal(status('Ca', 50).level, 'ok');
+  assert.deepEqual(status('Ca', 120), {level: 'fair', text: 'above target'});
+  assert.deepEqual(status('Ca', 20), {level: 'fair', text: 'below target'});
+  assert.deepEqual(status('Ca', 160), {level: 'poor', text: 'too high'});
+  assert.deepEqual(status('pH', 3.8), {level: 'poor', text: 'too low'});
+  assert.equal(status('pH', 6.2).level, 'ok');
+  assert.equal(status('Na', 0), null, 'blank / not entered');
+  assert.equal(status('K', 40).level, 'ok', 'no target range: only the acceptable limit applies');
+  assert.equal(status('S', 20).text, 'above target', 'sulfur target is SO4 0–40 converted to S');
+});
+
+test('the water card shows each target and counts what is flagged', () => {
+  const view = fixture();
+  view.state.water = {ro: false, values: {pH: 8.2, Ca: 120, Na: 65, Mg: 20}};
+  view.component.render();
+  const html = view.elements.waterInputs.innerHTML;
+  assert.match(html, /<label class="water-fair">pH<input[^>]*data-k="pH"[^>]*><small>target 5\.5–7 · above target<\/small><\/label>/);
+  assert.match(html, /<label class="water-poor">Sodium ppm<input[^>]*><small>target 0–20 · too high<\/small><\/label>/);
+  assert.match(html, /<label>Magnesium ppm<input[^>]*><small>target 10–30<\/small><\/label>/);
+  assert.match(view.elements.waterSummary.textContent, /· 2 above target, 1 too high$/);
+});

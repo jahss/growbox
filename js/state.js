@@ -11,7 +11,7 @@
   const CUSTOM_ANALYSIS_KEYS = ['N', 'P2O5', 'K2O', 'Ca', 'Mg', 'S', 'Fe', 'Mn', 'Zn', 'B', 'Cu', 'Mo'];
   // Optional label split of total N, % by weight; blank (0) means not given.
   const NITROGEN_FORM_KEYS = ['nitrateN', 'ammoniacalN', 'ureaN'];
-  const WATER_KEYS = ['ec', 'alkalinity', 'N', ...NITROGEN_FORM_KEYS, 'P', 'K', 'Ca', 'Mg', 'S', 'Fe', 'Mn', 'Cu', 'B', 'Zn', 'Mo', 'Na', 'Cl'];
+  const WATER_KEYS = ['pH', 'ec', 'alkalinity', 'N', ...NITROGEN_FORM_KEYS, 'P', 'K', 'Ca', 'Mg', 'S', 'Fe', 'Mn', 'Cu', 'B', 'Zn', 'Mo', 'Na', 'Cl'];
 
   function freshState() {
     return {

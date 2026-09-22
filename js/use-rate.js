@@ -38,12 +38,42 @@
 
   // Source water, in JR Peters water-report order. ppm unless noted; N as N, S as S.
   const WATER_FIELDS = [
-    ['ec', 'Soluble salts', 'mS/cm'], ['alkalinity', 'Total alkalinity', 'ppm CaCO₃'], ['N', 'Total N', 'ppm'],
+    ['pH', 'pH', ''], ['ec', 'Soluble salts', 'mS/cm'], ['alkalinity', 'Total alkalinity', 'ppm CaCO₃'], ['N', 'Total N', 'ppm'],
     ['P', 'Phosphorus', 'ppm'], ['K', 'Potassium', 'ppm'], ['Ca', 'Calcium', 'ppm'], ['Mg', 'Magnesium', 'ppm'], ['S', 'Sulfur', 'ppm'],
     ['Fe', 'Iron', 'ppm'], ['Mn', 'Manganese', 'ppm'], ['Cu', 'Copper', 'ppm'], ['B', 'Boron', 'ppm'], ['Zn', 'Zinc', 'ppm'], ['Mo', 'Molybdenum', 'ppm'],
     ['Na', 'Sodium', 'ppm'], ['Cl', 'Chlorides', 'ppm']
   ];
-  const WATER_EXTRAS = [['Na', 'Na', 'ppm'], ['Cl', 'Cl', 'ppm'], ['alkalinity', 'alkalinity', 'ppm CaCO₃'], ['ec', 'EC', 'mS/cm']];
+  // Irrigation-water ranges from UMass Extension, "Target range and Acceptable range of
+  // nutrients and other components of irrigation water" (after Biernbaum 1995). Sulfate
+  // (SO4 0–40 / <100) is converted to S. Zinc's printed target (<0.5) is looser than its
+  // acceptable limit (<0.3), so 0.3 is used, matching Penn State Extension.
+  const WATER_RANGES = {
+    pH: {target: [5.5, 7], acceptable: [4, 10]}, ec: {target: [0.2, 0.8], acceptable: [0, 1.5]},
+    alkalinity: {target: [40, 160], acceptable: [0, 400]},
+    nitrateN: {acceptable: [0, 75]}, ammoniacalN: {acceptable: [0, 10]},
+    P: {target: [0, 3], acceptable: [0, 5]}, K: {acceptable: [0, 100]},
+    Ca: {target: [25, 75], acceptable: [0, 150]}, Mg: {target: [10, 30], acceptable: [0, 50]},
+    S: {target: [0, 13.4], acceptable: [0, 33.4]},
+    Fe: {target: [0, 1], acceptable: [0, 4]}, Mn: {target: [0, 1], acceptable: [0, 2]},
+    Cu: {target: [0, 0.1], acceptable: [0, 0.2]}, B: {target: [0, 0.1], acceptable: [0, 0.5]},
+    Zn: {acceptable: [0, 0.3]}, Mo: {target: [0, 0.1], acceptable: [0, 1]},
+    Na: {target: [0, 20], acceptable: [0, 50]}, Cl: {target: [0, 20], acceptable: [0, 140]}
+  };
+
+  // How a water value sits against its range: null when blank or unranged.
+  function waterStatus(key, value) {
+    const range = WATER_RANGES[key];
+    const amount = number(value);
+    if (!range || amount <= 0) return null;
+    const [low, high] = range.acceptable;
+    if (amount > high) return {level: 'poor', text: 'too high'};
+    if (amount < low) return {level: 'poor', text: 'too low'};
+    if (range.target && amount > range.target[1]) return {level: 'fair', text: 'above target'};
+    if (range.target && amount < range.target[0]) return {level: 'fair', text: 'below target'};
+    return {level: 'ok', text: ''};
+  }
+
+  const WATER_EXTRAS = [['pH', 'pH', ''], ['Na', 'Na', 'ppm'], ['Cl', 'Cl', 'ppm'], ['alkalinity', 'alkalinity', 'ppm CaCO₃'], ['ec', 'EC', 'mS/cm']];
 
   // What the source water adds, as a plain {key: value} of what was entered; RO adds nothing.
   function waterPpm(water) {
@@ -253,7 +283,7 @@
       const digits = key => MICRO_KEYS.includes(key) ? 3 : 1;
       element('useRateResult').innerHTML = PPM_COLUMNS.map(([key, label]) => '<span class="cmp-chip"><small>' + label + '</small><b>' + format(solution.ppm[key], digits(key)) + '</b>' +
         (solution.water[key] ? '<small>+' + format(solution.water[key], digits(key)) + ' water</small>' : '') + '</span>').join('');
-      const extras = WATER_EXTRAS.filter(([key]) => solution.water[key]).map(([key, label, unit]) => label + ' ' + format(solution.water[key], key === 'ec' ? 2 : 1) + ' ' + unit);
+      const extras = WATER_EXTRAS.filter(([key]) => solution.water[key]).map(([key, label, unit]) => label + ' ' + format(solution.water[key], key === 'ec' ? 2 : 1) + (unit ? ' ' + unit : ''));
       if (element('useRateWaterNote')) element('useRateWaterNote').textContent = extras.length ? 'From your water: ' + extras.join(' · ') : '';
       element('useRateNitrogen').innerHTML = nitrogenFormsHtml(solution.forms, solution.ppm.N, format, escape);
     }
@@ -307,17 +337,33 @@
         changed();
       };
       element('waterInputs').classList.toggle('hidden', water.ro);
-      const step = key => ['Fe', 'Mn', 'Cu', 'B', 'Zn', 'Mo', 'ec'].includes(key) ? '.01' : '1';
+      const step = key => ['Fe', 'Mn', 'Cu', 'B', 'Zn', 'Mo', 'ec'].includes(key) ? '.01' : key === 'pH' ? '.1' : '1';
+      // Range hint under a field: "target 25–75 · above target", coloured amber or red when off.
+      const hint = (key, value) => {
+        const range = WATER_RANGES[key];
+        const status = waterStatus(key, value);
+        const bounds = range && (range.target || range.acceptable);
+        const limit = range && !range.target ? 'up to ' + format(bounds[1], 2) : bounds ? 'target ' + format(bounds[0], 2) + '–' + format(bounds[1], 2) : '';
+        return {cls: status && status.level !== 'ok' ? 'water-' + status.level : '', text: [limit, status && status.text].filter(Boolean).join(' · ')};
+      };
       element('waterInputs').innerHTML = WATER_FIELDS.map(([key, label, unit]) => {
         const value = number(water.values[key]);
         const input = '<input' + (key === 'N' ? ' id="wtN"' : '') + ' class="wti" data-k="' + key + '" type="number" min="0" step="' + step(key) + '" placeholder="0" value="' + (value > 0 ? format(value, 4) : '') + '">';
         return key === 'N' && nitrogenFieldHtml
           ? nitrogenFieldHtml('wt', label + ' ' + unit, input, 'wti', water.values, 'ppm', 'From the report\'s nitrate, ammonium and urea nitrogen. With N blank, these fill it in.', format)
-          : '<label>' + label + ' ' + unit + input + '</label>';
+          : (() => { const note = hint(key, value); return '<label' + (note.cls ? ' class="' + note.cls + '"' : '') + '>' + label + (unit ? ' ' + unit : '') + input + (note.text ? '<small>' + note.text + '</small>' : '') + '</label>'; })();
       }).join('');
       document.querySelectorAll('.wti').forEach(input => {
         input.oninput = () => {
           water.values[input.dataset.k] = Math.max(0, number(input.value));
+          const label = input.parentElement;
+          if (label && label.tagName === 'LABEL' && WATER_RANGES[input.dataset.k] && !input.classList.contains('nf-wt')) {
+            const note = hint(input.dataset.k, input.value);
+            label.className = note.cls;
+            let small = label.querySelector('small');
+            if (!small && note.text) { small = document.createElement('small'); label.appendChild(small); }
+            if (small) small.textContent = note.text;
+          }
           changed();
         };
       });
@@ -329,10 +375,14 @@
     function renderWaterSummary() {
       const water = getState().water;
       const entered = waterPpm(water);
-      const short = {alkalinity: 'Alk', ec: 'EC'};
+      const short = {alkalinity: 'Alk', ec: 'EC', pH: 'pH'};
       const parts = WATER_FIELDS.filter(([key]) => entered[key] && !['nitrateN', 'ammoniacalN', 'ureaN'].includes(key))
         .map(([key]) => (short[key] || key) + ' ' + format(entered[key], key === 'ec' ? 2 : 1));
-      if (element('waterSummary')) element('waterSummary').textContent = water.ro ? 'RO / distilled · adds nothing' : (parts.length ? parts.join(' · ') : 'Nothing entered yet');
+      // "· 2 above target, 1 too high", in the order the report lists them.
+      const counts = new Map();
+      if (!water.ro) Object.keys(entered).forEach(key => { const status = waterStatus(key, entered[key]); if (status && status.level !== 'ok') counts.set(status.text, (counts.get(status.text) || 0) + 1); });
+      const flags = [...counts].map(([text, count]) => count + ' ' + text).join(', ');
+      if (element('waterSummary')) element('waterSummary').textContent = water.ro ? 'RO / distilled · adds nothing' : (parts.length ? parts.join(' · ') : 'Nothing entered yet') + (flags ? ' · ' + flags : '');
     }
 
     function render() {
@@ -349,5 +399,5 @@
     return Object.freeze({render, renderResult, applyPreset, currentEntry, currentResult, csvRows, copyToBlend});
   }
 
-  return Object.freeze({PPM_COLUMNS, WATER_FIELDS, waterPpm, nitrogenFormsHtml, doseUnits, resolveEntry, presetDoses, calculateRecipe, createComponent});
+  return Object.freeze({PPM_COLUMNS, WATER_FIELDS, WATER_RANGES, waterStatus, waterPpm, nitrogenFormsHtml, doseUnits, resolveEntry, presetDoses, calculateRecipe, createComponent});
 });
