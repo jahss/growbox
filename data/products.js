@@ -700,28 +700,40 @@ window.FERTILIZER_SYSTEMS = [
     rateSource:{type:'reputable-distributor-label-copy',checked:'2026-09-21',original:'Bloom A and B equal parts; 3.1–4.1 g/US gal each'}
   },
   {
-    id:'advanced-cultivator-series', partCount:3, manufacturer:'Advanced Nutrients', brand:'Advanced Nutrients', program:'Cultivator Series', displayFormula:'14-0-0 (Base) + 2-9-24 (Grow) + 3-13-26 (Bloom)', name:'Cultivator Series',
+    id:'advanced-cultivator-veg', partCount:2, manufacturer:'Advanced Nutrients', brand:'Advanced Nutrients', program:'Cultivator Veg', displayFormula:'14-0-0 (Base) + 2-9-24 (Grow)', name:'Cultivator Series — Veg',
     ratioBasis:'mass', components:[
       {productId:'advanced-cultivator-base',label:'Base',defaultParts:4},
-      {productId:'advanced-cultivator-grow',label:'Grow',defaultParts:4},
-      {productId:'advanced-cultivator-bloom',label:'Bloom',defaultParts:0}
+      {productId:'advanced-cultivator-grow',label:'Grow',defaultParts:4}
     ],
-    defaultProfile:'grow', profiles:[
-      {id:'grow',label:'Grow W1-W4',parts:[4,4,0]},
-      {id:'bloom-early',label:'Bloom W1-W3',parts:[4,0,4]},
-      {id:'bloom-mid',label:'Bloom W4-W7',parts:[3,0,6]},
-      {id:'bloom-late',label:'Bloom W8',parts:[2,0,4]},
-      {id:'bloom-finish',label:'Bloom W9',parts:[0,0,4]}
+    defaultProfile:'veg', profiles:[
+      {id:'veg',label:'Veg W1-W4',parts:[4,4]}
     ],
-    ratioNote:'Official phase-specific dry weights. Grow and Bloom are not used simultaneously; Base tapers through bloom and is removed for week 9.',
+    ratioNote:'Cultivator is sold as a three-bag family, but the vegetative recipe is a two-component program: Base + Grow. Bloom is not used during this phase.',
     useRates:[
-      {profileId:'grow',label:'Official — Grow W1-W4',components:[{productId:'advanced-cultivator-base',gPerGal:4},{productId:'advanced-cultivator-grow',gPerGal:4}]},
+      {profileId:'veg',label:'Official — Veg W1-W4',components:[{productId:'advanced-cultivator-base',gPerGal:4},{productId:'advanced-cultivator-grow',gPerGal:4}]}
+    ],
+    source:{url:'https://www.advancednutrients.com/products/cultivator-series/',type:'official-product-page-and-feed-chart',checked:'2026-09-21',original:'Grow W1-W4: Base 4 + Grow 4 g/US gal; Bloom not used'}
+  },
+  {
+    id:'advanced-cultivator-bloom-system', partCount:2, manufacturer:'Advanced Nutrients', brand:'Advanced Nutrients', program:'Cultivator Bloom', displayFormula:'14-0-0 (Base) + 3-13-26 (Bloom)', name:'Cultivator Series — Bloom',
+    ratioBasis:'mass', components:[
+      {productId:'advanced-cultivator-base',label:'Base',defaultParts:4},
+      {productId:'advanced-cultivator-bloom',label:'Bloom',defaultParts:4}
+    ],
+    defaultProfile:'bloom-early', profiles:[
+      {id:'bloom-early',label:'Bloom W1-W3',parts:[4,4]},
+      {id:'bloom-mid',label:'Bloom W4-W7',parts:[3,6]},
+      {id:'bloom-late',label:'Bloom W8',parts:[2,4]},
+      {id:'bloom-finish',label:'Bloom W9',parts:[0,4]}
+    ],
+    ratioNote:'Cultivator is sold as a three-bag family, but the flowering recipe is a two-component program: Base + Bloom. Grow is not used during this phase; Base tapers and is removed in week 9.',
+    useRates:[
       {profileId:'bloom-early',label:'Official — Bloom W1-W3',components:[{productId:'advanced-cultivator-base',gPerGal:4},{productId:'advanced-cultivator-bloom',gPerGal:4}]},
       {profileId:'bloom-mid',label:'Official — Bloom W4-W7',components:[{productId:'advanced-cultivator-base',gPerGal:3},{productId:'advanced-cultivator-bloom',gPerGal:6}]},
       {profileId:'bloom-late',label:'Official — Bloom W8',components:[{productId:'advanced-cultivator-base',gPerGal:2},{productId:'advanced-cultivator-bloom',gPerGal:4}]},
       {profileId:'bloom-finish',label:'Official — Bloom W9',components:[{productId:'advanced-cultivator-bloom',gPerGal:4}]}
     ],
-    source:{url:'https://www.advancednutrients.com/products/cultivator-series/',type:'official-product-page-and-feed-chart',checked:'2026-09-21',original:'Grow W1-W4 Base 4 + Grow 4 g/gal; Bloom W1-W3 Base 4 + Bloom 4; W4-W7 3 + 6; W8 2 + 4; W9 Bloom 4 only'}
+    source:{url:'https://www.advancednutrients.com/products/cultivator-series/',type:'official-product-page-and-feed-chart',checked:'2026-09-21',original:'Bloom W1-W3 Base 4 + Bloom 4 g/gal; W4-W7 3 + 6; W8 2 + 4; W9 Bloom 4 only'}
   },
   {
     id:'frontrow-3-2-2', partCount:3, manufacturer:'Front Row Ag LLC', brand:'Front Row Ag', program:'3-2-2', displayFormula:'14-0-8 (Part A) + 2-13-17 (Part B) + 0-35-29 (Bloom)', name:'Front Row Ag 3-2-2',
