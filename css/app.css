@@ -51,3 +51,6 @@
 .dose-list{margin:0;padding-left:18px;font-size:.9rem}
 @media(min-width:1100px){.blend-feed-card .cmp-summary-chips{grid-template-columns:repeat(12,1fr)}.blend-feed-card .cmp-summary-chips .cmp-micros{display:contents}.blend-feed-card .cmp-body .cmp-micros{display:none}}
 @media(max-width:560px){.vs-chips{grid-template-columns:repeat(3,1fr)}}
+.pill.unused{opacity:.55}
+#blendLevelControl{display:block;margin-top:8px}
+#blendLevelControl.hidden{display:none}

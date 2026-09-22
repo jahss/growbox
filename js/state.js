@@ -32,10 +32,12 @@
         doses: {'jacks-12-4-16': {amount: 1, unit: 'g/gal'}}
       },
       blend: {
-        mode: 'label',
         ids: ['jacks-12-4-16', 'jacks-5-12-26-a', 'jacks-15-0-0-b', 'jacks-epsom', 'mkp-0-52-34'],
-        target: {N: 12, P2O5: 5, K2O: 16, P: 2.18, K: 13.28, Ca: 7, Mg: 2, S: 2, Fe: 0, Mn: 0, Zn: 0, B: 0, Cu: 0, Mo: 0},
+        // Elemental ppm delivered in solution; 0 means "no target".
+        target: {N: 160, P: 50, K: 200, Ca: 120, Mg: 50, S: 60, Fe: 0, Mn: 0, Zn: 0, B: 0, Cu: 0, Mo: 0},
         targetId: '',
+        targetElement: 'N',
+        targetLevel: 160,
         result: null
       }
     };
@@ -58,11 +60,18 @@
     state.blend = candidate.blend && typeof candidate.blend === 'object' && !Array.isArray(candidate.blend)
       ? {...defaults.blend, ...candidate.blend}
       : defaults.blend;
-    state.blend.target = state.blend.target && typeof state.blend.target === 'object' && !Array.isArray(state.blend.target)
-      ? {...defaults.blend.target, ...state.blend.target}
-      : defaults.blend.target;
+    // Sessions from before the ppm Blend finder (they carry `mode`) held label %
+    // targets, which would read as tiny ppm values, so they start from the defaults.
+    const legacyBlend = 'mode' in state.blend;
+    delete state.blend.mode;
+    const candidateTarget = !legacyBlend && state.blend.target && typeof state.blend.target === 'object' && !Array.isArray(state.blend.target) ? state.blend.target : {};
+    state.blend.target = Object.fromEntries(Object.keys(defaults.blend.target).map(key => [key, key in candidateTarget ? Math.max(0, number(candidateTarget[key])) : defaults.blend.target[key]]));
+    if (legacyBlend) state.blend.targetId = '';
     if (!Array.isArray(state.blend.ids)) state.blend.ids = defaults.blend.ids;
-    if (!['label', 'element'].includes(state.blend.mode)) state.blend.mode = defaults.blend.mode;
+    if (!['N', 'P', 'K'].includes(state.blend.targetElement)) state.blend.targetElement = defaults.blend.targetElement;
+    state.blend.targetLevel = number(state.blend.targetLevel) > 0 ? number(state.blend.targetLevel) : defaults.blend.targetLevel;
+    const result = state.blend.result;
+    if (!result || !Array.isArray(result.doses) || !Array.isArray(result.ids) || !result.ppm || !result.target) state.blend.result = null;
     if (!['compare', 'useRate', 'analysis', 'blend'].includes(state.view)) state.view = defaults.view;
 
     state.useRate = candidate.useRate && typeof candidate.useRate === 'object' && !Array.isArray(candidate.useRate)

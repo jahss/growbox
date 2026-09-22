@@ -5,114 +5,143 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 
-  const LABEL_KEYS = ['N', 'P2O5', 'K2O', 'Ca', 'Mg', 'S'];
-  const ELEMENT_KEYS = ['N', 'P', 'K', 'Ca', 'Mg', 'S'];
+  // The Blend finder matches elemental ppm delivered in solution, not label %.
+  const MACRO_KEYS = ['N', 'P', 'K', 'Ca', 'Mg', 'S'];
   const MICRO_KEYS = ['Fe', 'Mn', 'Zn', 'B', 'Cu', 'Mo'];
-  // Micros only count when the target asks for them, and all six together weigh
-  // about as much as one macro so they can steer but not override N-P-K.
+  const PPM_KEYS = [...MACRO_KEYS, ...MICRO_KEYS];
+  // All six micros together weigh about as much as one macro. A micro your sources
+  // lack costs at most its full weight, so it never distorts N-P-K; a targeted micro
+  // that would be heavily overdosed can still pull the dose down.
   const MICRO_WEIGHT = 1 / MICRO_KEYS.length;
-  const MICRO_SCALE_FLOOR = 0.01;
 
   function number(value) {
     return Number.isFinite(Number(value)) ? Number(value) : 0;
   }
 
-  function keysForMode(mode) {
-    return mode === 'label' ? LABEL_KEYS : ELEMENT_KEYS;
+  // Elements the fit uses: only those with a target above 0 ppm. Errors are
+  // relative to the target, so 10% off counts the same for N as for Ca.
+  function fitRows(target) {
+    return PPM_KEYS
+      .map(key => ({key, value: number(target && target[key]), weight: MICRO_KEYS.includes(key) ? MICRO_WEIGHT : 1}))
+      .filter(row => row.value > 0);
   }
 
-  function allKeysForMode(mode) {
-    return [...keysForMode(mode), ...MICRO_KEYS];
-  }
-
-  // Rows the fit uses, with their relative scale and weight.
-  function fitRows(target, mode) {
-    return allKeysForMode(mode).map(key => {
-      const value = number(target && target[key]);
-      const micro = MICRO_KEYS.includes(key);
-      return {key, value, micro, scale: Math.max(Math.abs(value), micro ? MICRO_SCALE_FLOOR : 1), weight: micro ? MICRO_WEIGHT : 1};
-    }).filter(row => !row.micro || row.value > 0);
-  }
-
-  // Weighted relative RMS difference of `analysis` from `target` (0 = identical).
-  function relativeError(analysis, target, mode) {
-    const rows = fitRows(target, mode);
+  // Weighted relative RMS difference of `ppm` from `target` (0 = identical).
+  function relativeError(ppm, target) {
+    const rows = fitRows(target);
+    if (!rows.length) return 0;
     const total = rows.reduce((sum, row) => sum + row.weight, 0);
-    const squared = rows.reduce((sum, row) => sum + row.weight * ((number(analysis[row.key]) - row.value) / row.scale) ** 2, 0);
+    const squared = rows.reduce((sum, row) => sum + row.weight * ((number(ppm[row.key]) - row.value) / row.value) ** 2, 0);
     return Math.sqrt(squared / total);
   }
 
-  function averageAnalysis(products, weights, mode, chemistry) {
-    const keys = allKeysForMode(mode);
-    const average = {};
-    keys.forEach(key => { average[key] = 0; });
-    products.forEach((product, index) => {
-      const analysis = mode === 'label' ? product.analysis : chemistry.elementalAnalysis(product.analysis);
-      keys.forEach(key => { average[key] += weights[index] * number(analysis[key]); });
-    });
-    return average;
+  // Solve the square system `matrix · x = vector` by Gaussian elimination with
+  // partial pivoting. `matrix` is small (one row per source in use).
+  function solveLinear(matrix, vector) {
+    const size = vector.length;
+    const a = matrix.map((row, index) => [...row, vector[index]]);
+    for (let column = 0; column < size; column += 1) {
+      let pivot = column;
+      for (let row = column + 1; row < size; row += 1) {
+        if (Math.abs(a[row][column]) > Math.abs(a[pivot][column])) pivot = row;
+      }
+      [a[column], a[pivot]] = [a[pivot], a[column]];
+      const lead = a[column][column] || 1e-300;
+      for (let row = column + 1; row < size; row += 1) {
+        const factor = a[row][column] / lead;
+        for (let k = column; k <= size; k += 1) a[row][k] -= factor * a[column][k];
+      }
+    }
+    const x = new Array(size).fill(0);
+    for (let row = size - 1; row >= 0; row -= 1) {
+      let sum = a[row][size];
+      for (let k = row + 1; k < size; k += 1) sum -= a[row][k] * x[k];
+      x[row] = sum / (a[row][row] || 1e-300);
+    }
+    return x;
   }
 
-  function projectSimplex(values) {
-    const sorted = [...values].sort((a, b) => b - a);
-    let sum = 0;
-    let boundary = -1;
-    for (let index = 0; index < sorted.length; index += 1) {
-      sum += sorted[index];
-      if (sorted[index] * (index + 1) > sum - 1) boundary = index;
-    }
-    if (boundary < 0) return values.map(() => 1 / values.length);
-    const threshold = (sorted.slice(0, boundary + 1).reduce((total, value) => total + value, 0) - 1) / (boundary + 1);
-    return values.map(value => Math.max(0, value - threshold));
+  // Least squares restricted to the columns in `active` (others fixed at 0).
+  // A tiny ridge keeps duplicate or proportional sources solvable.
+  function restrictedLeastSquares(A, b, active) {
+    const columns = [...active];
+    const normal = columns.map(i => columns.map(j => A.reduce((sum, row) => sum + row[i] * row[j], 0)));
+    const trace = normal.reduce((sum, row, index) => sum + row[index], 0);
+    normal.forEach((row, index) => { row[index] += 1e-12 * (trace || 1); });
+    const rhs = columns.map(i => A.reduce((sum, row, r) => sum + row[i] * b[r], 0));
+    const solution = solveLinear(normal, rhs);
+    const z = new Array(A[0].length).fill(0);
+    columns.forEach((column, index) => { z[column] = solution[index]; });
+    return z;
   }
 
-  function solveBlend(products, target, mode, chemistry) {
-    if (!Array.isArray(products) || products.length === 0) throw new TypeError('At least one fertilizer is required.');
-    if (!chemistry || typeof chemistry.elementalAnalysis !== 'function') throw new TypeError('A chemistry engine is required.');
-
-    const rows = fitRows(target, mode);
-    const columns = products.map(product => mode === 'label' ? product.analysis : chemistry.elementalAnalysis(product.analysis));
-    let weights = products.map(() => 1 / products.length);
-    let frobenius = 0;
-
-    rows.forEach(row => {
-      products.forEach((product, column) => {
-        frobenius += row.weight * (number(columns[column][row.key]) / row.scale) ** 2;
-      });
-    });
-
-    const step = 1 / Math.max(1e-9, 2 * frobenius);
-    for (let iteration = 0; iteration < 30000; iteration += 1) {
-      const prediction = rows.map(row => products.reduce((sum, product, index) => sum + weights[index] * number(columns[index][row.key]), 0));
-      const gradient = weights.map((weight, column) => rows.reduce((sum, row, index) => {
-        return sum + 2 * row.weight * ((prediction[index] - row.value) / row.scale) * (number(columns[column][row.key]) / row.scale);
-      }, 0));
-      const next = projectSimplex(weights.map((weight, index) => weight - step * gradient[index]));
-      const delta = Math.max(...next.map((weight, index) => Math.abs(weight - weights[index])));
-      weights = next;
-      if (delta < 1e-12) break;
-    }
-
-    const label = averageAnalysis(products, weights, 'label', chemistry);
-    const element = averageAnalysis(products, weights, 'element', chemistry);
-    const basis = mode === 'label' ? label : element;
-
-    return {
-      w: weights,
-      label,
-      element,
-      rms: relativeError(basis, target, mode)
+  // Non-negative least squares (Lawson–Hanson): minimize |A·x − b| with x ≥ 0.
+  function nnls(A, b) {
+    const n = A[0] ? A[0].length : 0;
+    let x = new Array(n).fill(0);
+    const active = new Set();
+    const tolerance = 1e-10;
+    const gradient = () => {
+      const residual = b.map((value, r) => value - A[r].reduce((sum, a, j) => sum + a * x[j], 0));
+      return Array.from({length: n}, (_, j) => A.reduce((sum, row, r) => sum + row[j] * residual[r], 0));
     };
+    for (let outer = 0; outer < 3 * n + 10; outer += 1) {
+      const w = gradient();
+      let best = -1;
+      for (let j = 0; j < n; j += 1) {
+        if (!active.has(j) && w[j] > tolerance && (best < 0 || w[j] > w[best])) best = j;
+      }
+      if (best < 0) break;
+      active.add(best);
+      for (let inner = 0; inner < 3 * n + 10; inner += 1) {
+        const z = restrictedLeastSquares(A, b, active);
+        const blocking = [...active].filter(j => z[j] <= tolerance);
+        if (!blocking.length) { x = z; break; }
+        const alpha = Math.min(...blocking.map(j => x[j] / Math.max(x[j] - z[j], 1e-300)));
+        x = x.map((value, j) => value + alpha * (z[j] - value));
+        [...active].forEach(j => { if (x[j] <= tolerance) { active.delete(j); x[j] = 0; } });
+        if (!active.size) break;
+      }
+    }
+    return x.map(value => Math.max(0, value));
+  }
+
+  // Elemental ppm delivered by 1 g/US gal of each product.
+  function ppmPerGram(product, chemistry) {
+    return chemistry.ppmAtDose(product.analysis, 1);
+  }
+
+  function deliveredPpm(products, doses, chemistry) {
+    const columns = products.map(product => ppmPerGram(product, chemistry));
+    const ppm = {};
+    PPM_KEYS.forEach(key => {
+      ppm[key] = columns.reduce((sum, column, index) => sum + doses[index] * number(column[key]), 0);
+    });
+    return ppm;
+  }
+
+  // Grams per US gallon of each product whose combined ppm is closest to `target`.
+  function solveDoses(products, target, chemistry) {
+    if (!Array.isArray(products) || products.length === 0) throw new TypeError('At least one fertilizer is required.');
+    if (!chemistry || typeof chemistry.ppmAtDose !== 'function') throw new TypeError('A chemistry engine is required.');
+    const rows = fitRows(target);
+    if (!rows.length) throw new RangeError('Enter at least one target ppm.');
+    const columns = products.map(product => ppmPerGram(product, chemistry));
+    const A = rows.map(row => columns.map(column => Math.sqrt(row.weight) * number(column[row.key]) / row.value));
+    const b = rows.map(row => Math.sqrt(row.weight));
+    const doses = nnls(A, b);
+    const ppm = deliveredPpm(products, doses, chemistry);
+    return {doses, ppm, rms: relativeError(ppm, target)};
   }
 
   return Object.freeze({
-    LABEL_KEYS: Object.freeze([...LABEL_KEYS]),
-    ELEMENT_KEYS: Object.freeze([...ELEMENT_KEYS]),
+    MACRO_KEYS: Object.freeze([...MACRO_KEYS]),
     MICRO_KEYS: Object.freeze([...MICRO_KEYS]),
-    allKeysForMode,
+    PPM_KEYS: Object.freeze([...PPM_KEYS]),
+    fitRows,
     relativeError,
-    averageAnalysis,
-    projectSimplex,
-    solveBlend
+    nnls,
+    deliveredPpm,
+    solveDoses
   });
 });

@@ -22,8 +22,8 @@ test('builds fixed-ratio blend feed-chart rows', () => {
     blend: {
       result: {
         ids: ['a', 'b'],
-        w: [0.6, 0.4],
-        element: {N: 10, P: 2, K: 3, Ca: 4, Mg: 1, S: 0.5}
+        doses: [3, 1],
+        ppm: {N: 100, P: 20, K: 30, Ca: 40, Mg: 10, S: 5, Fe: 1}
       }
     }
   };
@@ -32,6 +32,10 @@ test('builds fixed-ratio blend feed-chart rows', () => {
   assert.deepEqual(rows[0], ['Target N', 'A g/gal', 'B g/gal', 'Total g/gal', 'P', 'K', 'Ca', 'Mg', 'S', 'Fe', 'Mn', 'Zn', 'B', 'Cu', 'Mo']);
   assert.equal(rows.length, 6);
   assert.ok(Math.abs(rows[1][1] + rows[1][2] - rows[1][3]) < 1e-12);
+  // 120 ppm N is 1.2× the solved recipe, so every dose and ppm scales by 1.2.
+  assert.ok(Math.abs(rows[1][1] - 3.6) < 1e-12);
+  assert.ok(Math.abs(rows[1][4] - 24) < 1e-12);
+  assert.ok(Math.abs(rows[1][9] - 1.2) < 1e-12);
 });
 
 test('builds comparison rows and leaves zero-nitrogen dose fields empty', () => {

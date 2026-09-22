@@ -65,8 +65,8 @@ const ELEMENT_IDS = [
   'useRateProduct', 'useRatePreset', 'useRatePresetNote', 'useRateIdentity',
   'useRateInputs', 'useRateSummary', 'useRateResult', 'useRateNitrogen',
   'gaInputs', 'gaElemental', 'gaFeed', 'gaName', 'gaAdd', 'gaSaved',
-  'blendTarget', 'blendSourcePicker', 'blendSources', 'blendInputs', 'labelMode', 'elementMode', 'solve',
-  'blendResult', 'fit', 'weights', 'blendBasisTitle', 'blendVsTarget', 'blendClosest', 'feed',
+  'blendTarget', 'blendLevel', 'blendElement', 'blendLevelControl', 'blendSourcePicker', 'blendSources', 'blendInputs', 'solve',
+  'blendResult', 'fit', 'weights', 'blendVsTarget', 'blendClosest', 'feed',
   'notice', 'csv', 'json', 'reset'
 ];
 
@@ -221,7 +221,7 @@ test('app boots and renders all four views without exceptions', () => {
   assert.ok(dom.elements.gaFeed.innerHTML.includes('Enter a label above'));
 
   // Blend view: target and source dropdowns, with the default sources listed.
-  assert.match(dom.elements.blendTarget.innerHTML, /Custom — enter values below/);
+  assert.match(dom.elements.blendTarget.innerHTML, /Custom — enter ppm below/);
   assert.match(dom.elements.blendSourcePicker.innerHTML, /Ingredient salts/);
   assert.match(dom.elements.blendSources.innerHTML, /removeSource/);
 });
@@ -252,31 +252,18 @@ test('solve produces a blend with sensible nonnegative weights and a feed chart'
   // Default blend selection and target are already in fresh state; solve directly.
   dom.elements.solve.onclick();
   assert.ok(dom.elements.blendResult.classList.contains('hidden') === false, 'blend result should be visible after solve');
-  assert.match(dom.elements.weights.innerHTML, /% by mass/);
+  assert.match(dom.elements.weights.innerHTML, /g\/gal/);
   // Fresh-state blend (jacks + a + b + epsom + mkp) has N>0, so feed must render rows.
   assert.ok(dom.elements.feed.innerHTML.includes('ppm N'), 'feed chart should render for a nitrogen-bearing blend');
   assert.match(dom.elements.feed.innerHTML, /50 ppm N/);
 });
 
-test('blend label and elemental modes both render their target fields and labels', () => {
+test('blend target is entered in elemental ppm and a solve shows delivered ppm', () => {
   const {elements} = loadAppDom({});
-  // Fresh state defaults to label mode: blend target inputs carry label keys
-  // (P2O5 / K2O) and no elemental-only P / K keys.
-  assert.match(elements.blendInputs.innerHTML, /data-k="P2O5"/);
-  assert.match(elements.blendInputs.innerHTML, /data-k="K2O"/);
-  assert.doesNotMatch(elements.blendInputs.innerHTML, /data-k="P"/);
-  assert.doesNotMatch(elements.blendInputs.innerHTML, /data-k="K"/);
-
-  // Switch to elemental mode via the bound button and verify the target inputs
-  // now carry the elemental keys.
-  elements.elementMode.onclick();
+  assert.match(elements.blendInputs.innerHTML, /N ppm<input class="bi" data-k="N"/);
+  assert.match(elements.blendInputs.innerHTML, /data-k="Mo"/);
   assert.doesNotMatch(elements.blendInputs.innerHTML, /data-k="P2O5"/);
-  assert.match(elements.blendInputs.innerHTML, /data-k="P"/);
-  assert.match(elements.blendInputs.innerHTML, /data-k="K"/);
-
-  // Solving renders both the label-basis and elemental-basis result tables.
   elements.solve.onclick();
-  // Solving shows the result in the chosen (elemental) basis only.
   assert.match(elements.blendVsTarget.innerHTML, /<small>K<\/small>/);
   assert.doesNotMatch(elements.blendVsTarget.innerHTML, /K₂O/);
   assert.ok(elements.blendClosest.innerHTML.length > 0, 'closest products render after solve');

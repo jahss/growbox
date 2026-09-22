@@ -75,10 +75,18 @@ test('normalization restores missing nested state without discarding valid value
   assert.equal(state.view, 'compare');
   assert.equal(state.manual.N, 18);
   assert.equal(state.manual.P2O5, 0);
-  assert.equal(state.blend.mode, 'label');
+  assert.equal('mode' in state.blend, false);
   assert.deepEqual(state.blend.ids, ['component-a']);
-  assert.equal(state.blend.target.N, 15);
-  assert.equal(state.blend.target.K2O, 16);
+  // A session from before the ppm Blend finder (it has `mode`) held label % targets, so it resets.
+  assert.equal(state.blend.target.N, 160);
+  assert.equal(state.blend.target.K, 200);
+  const current = stateModule.normalizeState({blend: {target: {N: 150, Fe: -1}, targetElement: 'Q', targetLevel: -5, result: {w: [1]}}}, products, systems);
+  assert.equal(current.blend.target.N, 150);
+  assert.equal(current.blend.target.Fe, 0);
+  assert.equal(current.blend.target.K, 200);
+  assert.equal(current.blend.targetElement, 'N');
+  assert.equal(current.blend.targetLevel, 160);
+  assert.equal(current.blend.result, null, 'an old-shape result is dropped');
   assert.equal(state.useRate.selection, 'p:jacks-12-4-16');
   assert.equal(state.useRate.doses['jacks-12-4-16'].unit, 'g/gal');
 });
