@@ -227,6 +227,133 @@ window.FERTILIZER_PRODUCTS = [
     analysisSource:{url:'https://emeraldharvest.co/wp-content/uploads/2019/06/EH_Product_Guide_LR_2023_02_24.pdf',type:'official-product-guide',checked:'2026-09-21'},
     densitySource:{url:'https://emeraldharvest.co/wp-content/uploads/2019/06/Cali-Pro-Bloom-B-SDS-2019-10-22.pdf',type:'official-sds',checked:'2026-09-21'}
   },
+
+  // Advanced Nutrients — two-part base families. Official product pages establish current NPK,
+  // equal-volume A:B use, stage rates, and regional availability. Secondary/micro guarantees use
+  // current retailer copies of manufacturer labels where the official page only exposes headline NPK.
+  // Current official SDS files publish density ranges for several parts; densityGPerMl stores the
+  // midpoint solely to make volume-based chemistry calculable, and densityEstimate keeps that
+  // approximation explicit for the UI.
+  {
+    id:'advanced-sensi-grow-a', compareGroup:'component', manufacturer:'Advanced Nutrients', brand:'Advanced Nutrients', displayFormula:'3-0-0 (Grow A)', componentName:'Grow A', name:'pH Perfect Sensi Grow A 3-0-0', form:'liquid', densityGPerMl:1.155,
+    analysis:{N:3,P2O5:0,K2O:0,Ca:3,Mg:.5,S:0,Fe:.03,Mn:.05,Zn:.02,B:.03,Cu:.001,Mo:.0001},
+    useRates:[],
+    source:{url:'https://www.advancednutrients.com/products/ph-perfect-sensi-grow-bloom/',type:'official-product-page',checked:'2026-09-21'},
+    analysisSource:{url:'https://provisiongardens.com/products/advanced-nutrients-ph-perfect-sensi-grow-a-4-litre',type:'reputable-distributor-label-copy',checked:'2026-09-21'},
+    densitySource:{url:'https://www.advancednutrients.com/safety-data-sheets/na-eu/Advanced_Nutrients_pH_Perfect_Sensi_Grow_A_Base_001C_North_America_2026_04_16.pdf',type:'official-sds',checked:'2026-09-21',original:'Relative density 1.146–1.164'},
+    densityEstimate:{method:'midpoint-of-official-sds-range',min:1.146,max:1.164},
+    notes:'Zeros represent nutrients without a guaranteed percentage in the cited label copy, not necessarily chemical absence.'
+  },
+  {
+    id:'advanced-sensi-grow-b', compareGroup:'component', manufacturer:'Advanced Nutrients', brand:'Advanced Nutrients', displayFormula:'1-2-6 (Grow B)', componentName:'Grow B', name:'pH Perfect Sensi Grow B 1-2-6', form:'liquid', densityGPerMl:1.1665,
+    analysis:{N:1,P2O5:2,K2O:6,Ca:0,Mg:0,S:1.3,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0},
+    nitrogenForms:{nitrateN:.94,ammoniacalN:.03,ureaN:.03}, useRates:[],
+    source:{url:'https://www.advancednutrients.com/products/ph-perfect-sensi-grow-bloom/',type:'official-product-page',checked:'2026-09-21'},
+    analysisSource:{url:'https://provisiongardens.com/products/advanced-nutrients-ph-perfect-sensi-grow-b-10-litre',type:'reputable-distributor-label-copy',checked:'2026-09-21'},
+    densitySource:{url:'https://www.advancednutrients.com/safety-data-sheets/na-eu/Advanced_Nutrients_pH_Perfect_Sensi_Grow_B_002B_North_America_2026_05_25.pdf',type:'official-sds',checked:'2026-09-21',original:'Relative density 1.143–1.190'},
+    densityEstimate:{method:'midpoint-of-official-sds-range',min:1.143,max:1.190},
+    notes:'Zeros represent nutrients without a guaranteed percentage in the cited label copy, not necessarily chemical absence.'
+  },
+  {
+    id:'advanced-sensi-bloom-a', compareGroup:'component', manufacturer:'Advanced Nutrients', brand:'Advanced Nutrients', displayFormula:'3-0-0 (Bloom A)', componentName:'Bloom A', name:'pH Perfect Sensi Bloom A 3-0-0', form:'liquid', densityGPerMl:1.138,
+    analysis:{N:3,P2O5:0,K2O:0,Ca:2.1,Mg:.6,S:0,Fe:.04,Mn:.05,Zn:.02,B:0,Cu:.001,Mo:.0002},
+    nitrogenForms:{nitrateN:2.2,ureaN:.8}, useRates:[],
+    source:{url:'https://www.advancednutrients.com/products/ph-perfect-sensi-grow-bloom/',type:'official-product-page',checked:'2026-09-21'},
+    analysisSource:{url:'https://provisiongardens.com/products/advanced-nutrients-ph-perfect-sensi-bloom-a-500-ml',type:'reputable-distributor-label-copy',checked:'2026-09-21'},
+    densitySource:{url:'https://www.advancednutrients.com/safety-data-sheets/na-eu/Advanced_Nutrients_pH_Perfect_Sensi_Bloom_A_Base_001C_North_America_2026_04_14.pdf',type:'official-sds',checked:'2026-09-21',original:'Relative density 1.134–1.142'},
+    densityEstimate:{method:'midpoint-of-official-sds-range',min:1.134,max:1.142},
+    notes:'Zeros represent nutrients without a guaranteed percentage in the cited label copy, not necessarily chemical absence.'
+  },
+  {
+    id:'advanced-sensi-bloom-b', compareGroup:'component', manufacturer:'Advanced Nutrients', brand:'Advanced Nutrients', displayFormula:'2-4-8 (Bloom B)', componentName:'Bloom B', name:'pH Perfect Sensi Bloom B 2-4-8', form:'liquid', densityGPerMl:1.161,
+    analysis:{N:2,P2O5:4,K2O:8,Ca:0,Mg:0,S:.4,Fe:0,Mn:0,Zn:0,B:.01,Cu:0,Mo:0},
+    nitrogenForms:{nitrateN:1.7,ammoniacalN:.03,ureaN:.27}, useRates:[],
+    source:{url:'https://www.advancednutrients.com/products/ph-perfect-sensi-grow-bloom/',type:'official-product-page',checked:'2026-09-21'},
+    analysisSource:{url:'https://provisiongardens.com/products/advanced-nutrients-ph-perfect-sensi-bloom-b-10-litre',type:'reputable-distributor-label-copy',checked:'2026-09-21'},
+    densitySource:{url:'https://www.advancednutrients.com/safety-data-sheets/na-eu/Advanced_Nutrients_pH_Perfect_Sensi_Bloom_B_001C_North_America_2026_05_25.pdf',type:'official-sds',checked:'2026-09-21',original:'Relative density 1.120–1.202'},
+    densityEstimate:{method:'midpoint-of-official-sds-range',min:1.120,max:1.202},
+    notes:'Zeros represent nutrients without a guaranteed percentage in the cited label copy, not necessarily chemical absence.'
+  },
+
+  {
+    id:'advanced-sensi-coco-grow-a', compareGroup:'component', manufacturer:'Advanced Nutrients', brand:'Advanced Nutrients', displayFormula:'3-0-0 (Grow A)', componentName:'Grow A', name:'pH Perfect Sensi Coco Grow A 3-0-0', form:'liquid', densityGPerMl:1.18,
+    analysis:{N:3,P2O5:0,K2O:0,Ca:3,Mg:.5,S:0,Fe:.17,Mn:.05,Zn:0,B:0,Cu:0,Mo:0},
+    nitrogenForms:{nitrateN:3}, useRates:[],
+    source:{url:'https://www.advancednutrients.com/products/ph-perfect-sensi-coco-grow-bloom/',type:'official-product-page',checked:'2026-09-21',region:'Europe and Canada'},
+    analysisSource:{url:'https://provisiongardens.com/products/advanced-nutrients-ph-perfect-sensi-coco-grow-a-1-litre',type:'reputable-distributor-label-copy',checked:'2026-09-21'},
+    densitySource:{url:'https://www.advancednutrients.com/safety-data-sheets/na-eu/Advanced_Nutrients_pH_Perfect_Sensi_Coco_Grow_A_001F_North_America_4_17_2026.pdf',type:'official-sds',checked:'2026-09-21',original:'Relative density 1.174–1.186'},
+    densityEstimate:{method:'midpoint-of-official-sds-range',min:1.174,max:1.186},
+    notes:'Current official product page lists this line for Europe and Canada. Zeros mean no guaranteed percentage located in the cited label copy.'
+  },
+  {
+    id:'advanced-sensi-coco-grow-b', compareGroup:'component', manufacturer:'Advanced Nutrients', brand:'Advanced Nutrients', displayFormula:'1-2-4 (Grow B)', componentName:'Grow B', name:'pH Perfect Sensi Coco Grow B 1-2-4', form:'liquid', densityGPerMl:1.085,
+    analysis:{N:1,P2O5:2,K2O:4,Ca:0,Mg:0,S:.8,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0},
+    nitrogenForms:{nitrateN:.5,ureaN:.5}, useRates:[],
+    source:{url:'https://www.advancednutrients.com/products/ph-perfect-sensi-coco-grow-bloom/',type:'official-product-page',checked:'2026-09-21',region:'Europe and Canada'},
+    analysisSource:{url:'https://provisiongardens.com/products/advanced-nutrients-ph-perfect-sensi-coco-grow-b-1-litre',type:'reputable-distributor-label-copy',checked:'2026-09-21'},
+    densitySource:{url:'https://www.advancednutrients.com/safety-data-sheets/na-eu/Advanced_Nutrients_pH_Perfect_Sensi_Coco_Grow_Part_B_Base_Nutrient_005B_North_America_2025_01_21.pdf',type:'official-sds',checked:'2026-09-21',original:'Relative density 1.080–1.090'},
+    densityEstimate:{method:'midpoint-of-official-sds-range',min:1.080,max:1.090},
+    notes:'Current official product page lists this line for Europe and Canada. Zeros mean no guaranteed percentage located in the cited label copy.'
+  },
+  {
+    id:'advanced-sensi-coco-bloom-a', compareGroup:'component', manufacturer:'Advanced Nutrients', brand:'Advanced Nutrients', displayFormula:'4-0-0 (Bloom A)', componentName:'Bloom A', name:'pH Perfect Sensi Coco Bloom A 4-0-0', form:'liquid', densityGPerMl:1.18,
+    analysis:{N:4,P2O5:0,K2O:0,Ca:3,Mg:.9,S:0,Fe:.17,Mn:.05,Zn:0,B:0,Cu:0,Mo:0},
+    nitrogenForms:{nitrateN:3.4,ureaN:.6}, useRates:[],
+    source:{url:'https://www.advancednutrients.com/products/ph-perfect-sensi-coco-grow-bloom/',type:'official-product-page',checked:'2026-09-21',region:'Europe and Canada'},
+    analysisSource:{url:'https://provisiongardens.com/products/advanced-nutrients-ph-perfect-sensi-coco-bloom-a-1-litre',type:'reputable-distributor-label-copy',checked:'2026-09-21'},
+    densitySource:{url:'https://www.advancednutrients.com/safety-data-sheets/na-eu/Advanced_Nutrients_pH_Perfect_Sensi_Coco_Bloom_Part_A_Base_Nutrient_002D_North_America_2025_01_21.pdf',type:'official-sds',checked:'2026-09-21',original:'Relative density 1.174–1.186'},
+    densityEstimate:{method:'midpoint-of-official-sds-range',min:1.174,max:1.186},
+    notes:'Current official product page lists this line for Europe and Canada. Zeros mean no guaranteed percentage located in the cited label copy.'
+  },
+  {
+    id:'advanced-sensi-coco-bloom-b', compareGroup:'component', manufacturer:'Advanced Nutrients', brand:'Advanced Nutrients', displayFormula:'0-4-5 (Bloom B)', componentName:'Bloom B', name:'pH Perfect Sensi Coco Bloom B 0-4-5', form:'liquid', densityGPerMl:1.114,
+    analysis:{N:0,P2O5:4,K2O:5,Ca:0,Mg:0,S:.9,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0},
+    useRates:[],
+    source:{url:'https://www.advancednutrients.com/products/ph-perfect-sensi-coco-grow-bloom/',type:'official-product-page',checked:'2026-09-21',region:'Europe and Canada'},
+    analysisSource:{url:'https://provisiongardens.com/products/advanced-nutrients-ph-perfect-sensi-coco-bloom-b-1-litre',type:'reputable-distributor-label-copy',checked:'2026-09-21'},
+    densitySource:{url:'https://www.advancednutrients.com/safety-data-sheets/na-eu/Advanced_Nutrients_pH_Perfect_Sensi_Coco_Bloom_Part_B_Base_Nutrient_002C_North_America_2025_01_21.pdf',type:'official-sds',checked:'2026-09-21',original:'Relative density 1.110–1.118'},
+    densityEstimate:{method:'midpoint-of-official-sds-range',min:1.110,max:1.118},
+    notes:'Current official product page lists this line for Europe and Canada. Zeros mean no guaranteed percentage located in the cited label copy.'
+  },
+
+  {
+    id:'advanced-connoisseur-grow-a', compareGroup:'component', manufacturer:'Advanced Nutrients', brand:'Advanced Nutrients', displayFormula:'4-0-0 (Grow A)', componentName:'Grow A', name:'pH Perfect Connoisseur Grow A 4-0-0', form:'liquid', densityGPerMl:1.187,
+    analysis:{N:4,P2O5:0,K2O:0,Ca:3.5,Mg:.9,S:0,Fe:.05,Mn:.05,Zn:0,B:0,Cu:0,Mo:0},
+    nitrogenForms:{nitrateN:4}, useRates:[],
+    source:{url:'https://www.advancednutrients.com/products/ph-perfect-connoisseur-grow-bloom/',type:'official-product-page',checked:'2026-09-21',region:'Europe, Canada and Brazil'},
+    analysisSource:{url:'https://provisiongardens.com/products/advanced-nutrients-ph-perfect-connoisseur-grow-a-4-litre',type:'reputable-distributor-label-copy',checked:'2026-09-21'},
+    densitySource:{url:'https://www.advancednutrients.com/safety-data-sheets/na-eu/Advanced_Nutrients_pH_Perfect_Connoisseur_Grow_Part_A_Base_Nutrient_004A_North_America_2025_01_21.pdf',type:'official-sds',checked:'2026-09-21',original:'Relative density 1.187 g/mL'},
+    notes:'Current official product page lists this line for Europe, Canada and Brazil. Zeros mean no guaranteed percentage located in the cited label copy.'
+  },
+  {
+    id:'advanced-connoisseur-grow-b', compareGroup:'component', manufacturer:'Advanced Nutrients', brand:'Advanced Nutrients', displayFormula:'1-2-7 (Grow B)', componentName:'Grow B', name:'pH Perfect Connoisseur Grow B 1-2-7', form:'liquid', densityGPerMl:1.149,
+    analysis:{N:1,P2O5:2,K2O:7,Ca:0,Mg:0,S:1.5,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0},
+    nitrogenForms:{nitrateN:.9,ammoniacalN:.1}, useRates:[],
+    source:{url:'https://www.advancednutrients.com/products/ph-perfect-connoisseur-grow-bloom/',type:'official-product-page',checked:'2026-09-21',region:'Europe, Canada and Brazil'},
+    analysisSource:{url:'https://provisiongardens.com/products/advanced-nutrients-ph-perfect-connoisseur-grow-b-4-litre',type:'reputable-distributor-label-copy',checked:'2026-09-21'},
+    densitySource:{url:'https://www.advancednutrients.com/safety-data-sheets/na-eu/Advanced_Nutrients_pH_Perfect_Connoisseur_Grow_Part_B_Base_Nutrient_006B_North_America_2025_01_21.pdf',type:'official-sds',checked:'2026-09-21',original:'Relative density 1.142–1.156'},
+    densityEstimate:{method:'midpoint-of-official-sds-range',min:1.142,max:1.156},
+    notes:'Current official product page lists this line for Europe, Canada and Brazil. Zeros mean no guaranteed percentage located in the cited label copy.'
+  },
+  {
+    id:'advanced-connoisseur-bloom-a', compareGroup:'component', manufacturer:'Advanced Nutrients', brand:'Advanced Nutrients', displayFormula:'3-0-0 (Bloom A)', componentName:'Bloom A', name:'pH Perfect Connoisseur Bloom A 3-0-0', form:'liquid', densityGPerMl:1.149,
+    analysis:{N:3,P2O5:0,K2O:0,Ca:2.2,Mg:.7,S:0,Fe:.05,Mn:.05,Zn:.02,B:.039,Cu:.001,Mo:.0002},
+    nitrogenForms:{nitrateN:2.5,ureaN:.5}, useRates:[],
+    source:{url:'https://www.advancednutrients.com/products/ph-perfect-connoisseur-grow-bloom/',type:'official-product-page',checked:'2026-09-21',region:'Europe, Canada and Brazil'},
+    analysisSource:{url:'https://provisiongardens.com/products/advanced-nutrients-ph-perfect-connoisseur-bloom-a-1-litre',type:'reputable-distributor-label-copy',checked:'2026-09-21'},
+    densitySource:{url:'https://www.advancednutrients.com/safety-data-sheets/na-eu/Advanced_Nutrients_pH_Perfect_Conn_Bloom_A_001C_North_America_4_7_2026.pdf',type:'official-sds',checked:'2026-09-21',original:'Relative density 1.149 g/mL'},
+    notes:'Current official product page lists this line for Europe, Canada and Brazil.'
+  },
+  {
+    id:'advanced-connoisseur-bloom-b', compareGroup:'component', manufacturer:'Advanced Nutrients', brand:'Advanced Nutrients', displayFormula:'2-4-10 (Bloom B)', componentName:'Bloom B', name:'pH Perfect Connoisseur Bloom B 2-4-10', form:'liquid', densityGPerMl:1.2085,
+    analysis:{N:2,P2O5:4,K2O:10,Ca:0,Mg:0,S:.4,Fe:0,Mn:0,Zn:0,B:.04,Cu:0,Mo:0},
+    nitrogenForms:{nitrateN:1.95,ammoniacalN:.05}, useRates:[],
+    source:{url:'https://www.advancednutrients.com/products/ph-perfect-connoisseur-grow-bloom/',type:'official-product-page',checked:'2026-09-21',region:'Europe, Canada and Brazil'},
+    analysisSource:{url:'https://provisiongardens.com/products/advanced-nutrients-ph-perfect-connoisseur-bloom-b-4-litre',type:'reputable-distributor-label-copy',checked:'2026-09-21'},
+    densitySource:{url:'https://www.advancednutrients.com/safety-data-sheets/na-eu/Advanced_Nutrients_pH_Perfect_Connoisseur_Bloom_Part_B_Base_Nutrient_001C_North_America_2025_01_21.pdf',type:'official-sds',checked:'2026-09-21',original:'Relative density 1.197–1.220'},
+    densityEstimate:{method:'midpoint-of-official-sds-range',min:1.197,max:1.220},
+    notes:'Current official product page lists this line for Europe, Canada and Brazil. Zeros mean no guaranteed percentage located in the cited label copy.'
+  },
   {
     id:'mkp-0-52-34', compareGroup:'salt', brand:'Generic salt', name:'MKP 0-52-34', form:'dry',
     analysis:{N:0,P2O5:52,K2O:34,Ca:0,Mg:0,S:0,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, useRates:[]
@@ -349,6 +476,88 @@ window.FERTILIZER_SYSTEMS = [
       {profileId:'all-stages',label:'Grow W4 / Bloom — 4 mL/L each',components:[{productId:'advanced-ph-perfect-grow',mLPerGal:15.141647136},{productId:'advanced-ph-perfect-micro',mLPerGal:15.141647136},{productId:'advanced-ph-perfect-bloom',mLPerGal:15.141647136}]}
     ],
     source:{url:'https://www.advancednutrients.com/products/ph-perfect-grow-micro-bloom/',type:'official-product-page',checked:'2026-09-21',original:'1:1:1 by volume; Grow W1-W4 = 1/2/3/4 mL/L each; Bloom W1-W7 = 4 mL/L each'}
+  },
+
+  {
+    id:'advanced-sensi-grow', partCount:2, manufacturer:'Advanced Nutrients', brand:'Advanced Nutrients', program:'pH Perfect Sensi Grow', displayFormula:'3-0-0 (Grow A) + 1-2-6 (Grow B)', name:'pH Perfect Sensi Grow',
+    ratioBasis:'volume', components:[
+      {productId:'advanced-sensi-grow-a',label:'Grow A',defaultParts:1},
+      {productId:'advanced-sensi-grow-b',label:'Grow B',defaultParts:1}
+    ],
+    defaultProfile:'1to1', profiles:[{id:'1to1',label:'1:1 by volume',parts:[1,1]}],
+    ratioNote:'Manufacturer uses equal volumes of A and B. Combined chemistry is approximate because current official SDS files give density ranges; Growbox uses each range midpoint for volume-to-mass conversion.',
+    useRates:[
+      {profileId:'1to1',label:'Grow W1 — 1 mL/L each',components:[{productId:'advanced-sensi-grow-a',mLPerGal:3.785411784},{productId:'advanced-sensi-grow-b',mLPerGal:3.785411784}]},
+      {profileId:'1to1',label:'Grow W2 — 2 mL/L each',components:[{productId:'advanced-sensi-grow-a',mLPerGal:7.570823568},{productId:'advanced-sensi-grow-b',mLPerGal:7.570823568}]},
+      {profileId:'1to1',label:'Grow W3 — 3 mL/L each',components:[{productId:'advanced-sensi-grow-a',mLPerGal:11.356235351999999},{productId:'advanced-sensi-grow-b',mLPerGal:11.356235351999999}]},
+      {profileId:'1to1',label:'Grow W4 — 4 mL/L each',components:[{productId:'advanced-sensi-grow-a',mLPerGal:15.141647136},{productId:'advanced-sensi-grow-b',mLPerGal:15.141647136}]}
+    ],
+    source:{url:'https://www.advancednutrients.com/products/ph-perfect-sensi-grow-bloom/',type:'official-product-page-feed-chart',checked:'2026-09-21',original:'1:1 by volume; Grow W1-W4 = 1/2/3/4 mL/L each'}
+  },
+  {
+    id:'advanced-sensi-bloom', partCount:2, manufacturer:'Advanced Nutrients', brand:'Advanced Nutrients', program:'pH Perfect Sensi Bloom', displayFormula:'3-0-0 (Bloom A) + 2-4-8 (Bloom B)', name:'pH Perfect Sensi Bloom',
+    ratioBasis:'volume', components:[
+      {productId:'advanced-sensi-bloom-a',label:'Bloom A',defaultParts:1},
+      {productId:'advanced-sensi-bloom-b',label:'Bloom B',defaultParts:1}
+    ],
+    defaultProfile:'1to1', profiles:[{id:'1to1',label:'1:1 by volume',parts:[1,1]}],
+    ratioNote:'Manufacturer uses equal volumes of A and B. Combined chemistry is approximate because current official SDS files give density ranges; Growbox uses each range midpoint for volume-to-mass conversion.',
+    useRates:[{profileId:'1to1',label:'Bloom W1-W7 — 4 mL/L each',components:[{productId:'advanced-sensi-bloom-a',mLPerGal:15.141647136},{productId:'advanced-sensi-bloom-b',mLPerGal:15.141647136}]}],
+    source:{url:'https://www.advancednutrients.com/products/ph-perfect-sensi-grow-bloom/',type:'official-product-page-feed-chart',checked:'2026-09-21',original:'1:1 by volume; Bloom W1-W7 = 4 mL/L each'}
+  },
+  {
+    id:'advanced-sensi-coco-grow', partCount:2, manufacturer:'Advanced Nutrients', brand:'Advanced Nutrients', program:'pH Perfect Sensi Coco Grow', displayFormula:'3-0-0 (Grow A) + 1-2-4 (Grow B)', name:'pH Perfect Sensi Coco Grow', region:'Europe and Canada',
+    ratioBasis:'volume', components:[
+      {productId:'advanced-sensi-coco-grow-a',label:'Grow A',defaultParts:1},
+      {productId:'advanced-sensi-coco-grow-b',label:'Grow B',defaultParts:1}
+    ],
+    defaultProfile:'1to1', profiles:[{id:'1to1',label:'1:1 by volume',parts:[1,1]}],
+    ratioNote:'Manufacturer uses equal volumes of A and B. Current official page lists this line for Europe and Canada. Combined chemistry is approximate because SDS densities are ranges and Growbox uses their midpoints.',
+    useRates:[
+      {profileId:'1to1',label:'Grow W1 — 1 mL/L each',components:[{productId:'advanced-sensi-coco-grow-a',mLPerGal:3.785411784},{productId:'advanced-sensi-coco-grow-b',mLPerGal:3.785411784}]},
+      {profileId:'1to1',label:'Grow W2 — 2 mL/L each',components:[{productId:'advanced-sensi-coco-grow-a',mLPerGal:7.570823568},{productId:'advanced-sensi-coco-grow-b',mLPerGal:7.570823568}]},
+      {profileId:'1to1',label:'Grow W3 — 3 mL/L each',components:[{productId:'advanced-sensi-coco-grow-a',mLPerGal:11.356235351999999},{productId:'advanced-sensi-coco-grow-b',mLPerGal:11.356235351999999}]},
+      {profileId:'1to1',label:'Grow W4 — 4 mL/L each',components:[{productId:'advanced-sensi-coco-grow-a',mLPerGal:15.141647136},{productId:'advanced-sensi-coco-grow-b',mLPerGal:15.141647136}]}
+    ],
+    source:{url:'https://www.advancednutrients.com/products/ph-perfect-sensi-coco-grow-bloom/',type:'official-product-page-feed-chart',checked:'2026-09-21',original:'Europe/Canada; 1:1 by volume; Grow W1-W4 = 1/2/3/4 mL/L each'}
+  },
+  {
+    id:'advanced-sensi-coco-bloom', partCount:2, manufacturer:'Advanced Nutrients', brand:'Advanced Nutrients', program:'pH Perfect Sensi Coco Bloom', displayFormula:'4-0-0 (Bloom A) + 0-4-5 (Bloom B)', name:'pH Perfect Sensi Coco Bloom', region:'Europe and Canada',
+    ratioBasis:'volume', components:[
+      {productId:'advanced-sensi-coco-bloom-a',label:'Bloom A',defaultParts:1},
+      {productId:'advanced-sensi-coco-bloom-b',label:'Bloom B',defaultParts:1}
+    ],
+    defaultProfile:'1to1', profiles:[{id:'1to1',label:'1:1 by volume',parts:[1,1]}],
+    ratioNote:'Manufacturer uses equal volumes of A and B. Current official page lists this line for Europe and Canada. Combined chemistry is approximate because SDS densities are ranges and Growbox uses their midpoints.',
+    useRates:[{profileId:'1to1',label:'Bloom W1-W7 — 4 mL/L each',components:[{productId:'advanced-sensi-coco-bloom-a',mLPerGal:15.141647136},{productId:'advanced-sensi-coco-bloom-b',mLPerGal:15.141647136}]}],
+    source:{url:'https://www.advancednutrients.com/products/ph-perfect-sensi-coco-grow-bloom/',type:'official-product-page-feed-chart',checked:'2026-09-21',original:'Europe/Canada; 1:1 by volume; Bloom W1-W7 = 4 mL/L each'}
+  },
+  {
+    id:'advanced-connoisseur-grow', partCount:2, manufacturer:'Advanced Nutrients', brand:'Advanced Nutrients', program:'pH Perfect Connoisseur Grow', displayFormula:'4-0-0 (Grow A) + 1-2-7 (Grow B)', name:'pH Perfect Connoisseur Grow', region:'Europe, Canada and Brazil',
+    ratioBasis:'volume', components:[
+      {productId:'advanced-connoisseur-grow-a',label:'Grow A',defaultParts:1},
+      {productId:'advanced-connoisseur-grow-b',label:'Grow B',defaultParts:1}
+    ],
+    defaultProfile:'1to1', profiles:[{id:'1to1',label:'1:1 by volume',parts:[1,1]}],
+    ratioNote:'Manufacturer uses equal volumes of A and B. Current official page lists this line for Europe, Canada and Brazil. Grow B uses the midpoint of its official SDS density range, so combined chemistry is approximate.',
+    useRates:[
+      {profileId:'1to1',label:'Grow W1 — 1 mL/L each',components:[{productId:'advanced-connoisseur-grow-a',mLPerGal:3.785411784},{productId:'advanced-connoisseur-grow-b',mLPerGal:3.785411784}]},
+      {profileId:'1to1',label:'Grow W2 — 2 mL/L each',components:[{productId:'advanced-connoisseur-grow-a',mLPerGal:7.570823568},{productId:'advanced-connoisseur-grow-b',mLPerGal:7.570823568}]},
+      {profileId:'1to1',label:'Grow W3 — 3 mL/L each',components:[{productId:'advanced-connoisseur-grow-a',mLPerGal:11.356235351999999},{productId:'advanced-connoisseur-grow-b',mLPerGal:11.356235351999999}]},
+      {profileId:'1to1',label:'Grow W4 — 4 mL/L each',components:[{productId:'advanced-connoisseur-grow-a',mLPerGal:15.141647136},{productId:'advanced-connoisseur-grow-b',mLPerGal:15.141647136}]}
+    ],
+    source:{url:'https://www.advancednutrients.com/products/ph-perfect-connoisseur-grow-bloom/',type:'official-product-page-feed-chart',checked:'2026-09-21',original:'Europe/Canada/Brazil; 1:1 by volume; Grow W1-W4 = 1/2/3/4 mL/L each'}
+  },
+  {
+    id:'advanced-connoisseur-bloom', partCount:2, manufacturer:'Advanced Nutrients', brand:'Advanced Nutrients', program:'pH Perfect Connoisseur Bloom', displayFormula:'3-0-0 (Bloom A) + 2-4-10 (Bloom B)', name:'pH Perfect Connoisseur Bloom', region:'Europe, Canada and Brazil',
+    ratioBasis:'volume', components:[
+      {productId:'advanced-connoisseur-bloom-a',label:'Bloom A',defaultParts:1},
+      {productId:'advanced-connoisseur-bloom-b',label:'Bloom B',defaultParts:1}
+    ],
+    defaultProfile:'1to1', profiles:[{id:'1to1',label:'1:1 by volume',parts:[1,1]}],
+    ratioNote:'Manufacturer uses equal volumes of A and B. Current official page lists this line for Europe, Canada and Brazil. Bloom B uses the midpoint of its official SDS density range, so combined chemistry is approximate.',
+    useRates:[{profileId:'1to1',label:'Bloom W1-W7 — 4 mL/L each',components:[{productId:'advanced-connoisseur-bloom-a',mLPerGal:15.141647136},{productId:'advanced-connoisseur-bloom-b',mLPerGal:15.141647136}]}],
+    source:{url:'https://www.advancednutrients.com/products/ph-perfect-connoisseur-grow-bloom/',type:'official-product-page-feed-chart',checked:'2026-09-21',original:'Europe/Canada/Brazil; 1:1 by volume; Bloom W1-W7 = 4 mL/L each'}
   },
   {
     id:'cropsalt-veg', partCount:2, manufacturer:'CS Consulting', brand:'CropSalt', program:'Veg', displayFormula:'3-7-16 (Veg A) + 14-0-0 (Veg B)', name:'CropSalt Veg',
