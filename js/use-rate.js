@@ -71,10 +71,11 @@
         label: entry.components[index].label,
         amount,
         unit,
+        usesEstimatedDensity: (unit === 'mL/gal' || unit === 'mL/L') && Boolean(product.densityEstimate),
         gramsPerLiter: chemistry.doseGramsPerLiter(product, amount, unit)
       };
     });
-    return {lines, ...chemistry.recipeAtDoses(lines)};
+    return {lines, approximateDensity: lines.some(line => line.usesEstimatedDensity), ...chemistry.recipeAtDoses(lines)};
   }
 
   function createComponent(options) {
@@ -157,7 +158,10 @@
         const unit = allowedUnits.includes(saved.unit) ? saved.unit : allowedUnits[0];
         const amount = Math.max(0, number(saved.amount));
         const densityNote = product.form === 'liquid' && number(product.densityGPerMl) <= 0
-          ? '<small class="muted">Density unavailable; mass units only.</small>' : '';
+          ? '<small class="muted">Density unavailable; mass units only.</small>'
+          : (product.densityEstimate
+            ? '<small class="muted">Approx. density: midpoint of published SDS range ' + escape(product.densityEstimate.min) + '–' + escape(product.densityEstimate.max) + ' g/mL.</small>'
+            : '');
         return '<div class="rate-row"><div><b>' + escape(catalog.displayFormula(product)) + '</b><small class="muted">' + escape(entry.components[index].label) + '</small>' + densityNote + '</div><label>Rate<input class="urAmount" data-id="' + escape(product.id) + '" type="number" min="0" step=".01" value="' + format(amount, 4) + '"></label><label>Unit<select class="urUnit" data-id="' + escape(product.id) + '">' + allowedUnits.map(value => '<option value="' + value + '" ' + (value === unit ? 'selected' : '') + '>' + value + '</option>').join('') + '</select></label></div>';
       }).join('');
 
@@ -186,7 +190,10 @@
     function renderResult() {
       const result = currentResult();
       if (!result) return;
-      element('useRateSummary').innerHTML = '<div class="pill"><b>' + format(result.totalGPerLiter, 4) + ' g/L</b><span>Total fertilizer mass</span></div><div class="pill"><b>' + format(result.totalGPerLiter * chemistry.US_GALLON_LITERS, 4) + ' g/gal</b><span>Total fertilizer mass</span></div>' + result.lines.map(line => '<div class="pill"><b>' + escape(line.label) + '</b><span>' + format(line.gramsPerLiter, 4) + ' g/L normalized</span></div>').join('');
+      const estimateNote = result.approximateDensity
+        ? '<p class="muted">Approximate result: at least one volume dose uses the midpoint of a published SDS density range.</p>'
+        : '';
+      element('useRateSummary').innerHTML = '<div class="pill"><b>' + format(result.totalGPerLiter, 4) + ' g/L</b><span>Total fertilizer mass</span></div><div class="pill"><b>' + format(result.totalGPerLiter * chemistry.US_GALLON_LITERS, 4) + ' g/gal</b><span>Total fertilizer mass</span></div>' + result.lines.map(line => '<div class="pill"><b>' + escape(line.label) + '</b><span>' + format(line.gramsPerLiter, 4) + ' g/L normalized</span></div>').join('') + estimateNote;
       element('useRateResult').innerHTML = '<thead><tr>' + PPM_COLUMNS.map(column => '<th>' + column[1] + ' ppm</th>').join('') + '</tr></thead><tbody><tr>' + PPM_COLUMNS.map(([key]) => '<td>' + format(result.ppm[key], ['Fe', 'Mn', 'Zn', 'B', 'Cu', 'Mo'].includes(key) ? 3 : 1) + '</td>').join('') + '</tr></tbody>';
       const nitrogenForms = Object.entries(result.nitrogenForms).filter(([, value]) => value > 0);
       element('useRateNitrogen').innerHTML = nitrogenForms.length
