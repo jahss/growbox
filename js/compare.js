@@ -63,6 +63,109 @@
     return soleSourceIndex(products, 'N');
   }
 
+  function lineKey(kind, id) {
+    return (kind === 'product' ? 'p:' : 's:') + id;
+  }
+
+  // Sorts lines by the saved card order; unlisted ones keep their place at the end (sort is stable).
+  function byCardOrder(order) {
+    const rank = key => { const index = order.indexOf(key); return index < 0 ? order.length : index; };
+    return (a, b) => rank(lineKey(a.kind, a.id)) - rank(lineKey(b.kind, b.id));
+  }
+
+  // Hold a card ~0.3 s, then drag it up or down; Alt + ↑/↓ moves the focused card.
+  // Controls inside a card (the ×, its settings) never start a drag. Binds once per container.
+  function bindSortable(container, onOrder) {
+    if (!container || typeof container.addEventListener !== 'function' || container.dataset.sortable) return;
+    container.dataset.sortable = '1';
+    const cards = () => Array.from(container.children).filter(child => child.classList.contains('selected-line'));
+    let card = null;
+    let timer = null;
+    let startY = 0;
+    let startTop = 0;
+    let dragging = false;
+    const still = () => typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
+    // FLIP: after cards move in the page, slide each from where it was to where it is.
+    const slide = (others, before) => others.forEach((other, index) => {
+      const delta = before[index] - other.getBoundingClientRect().top;
+      if (!delta) return;
+      other.style.transition = 'none';
+      other.style.transform = 'translateY(' + delta + 'px)';
+      other.getBoundingClientRect();
+      other.style.transition = 'transform .18s ease';
+      other.style.transform = '';
+    });
+    const reset = () => {
+      clearTimeout(timer);
+      if (card) {
+        card.classList.remove('dragging');
+        card.style.transition = '';
+        card.style.transform = '';
+      }
+      card = null;
+      dragging = false;
+    };
+    container.addEventListener('pointerdown', event => {
+      const target = event.target.closest('.selected-line');
+      if (!target || event.button > 0 || event.target.closest('button, details, input, select, label')) return;
+      card = target;
+      startY = event.clientY;
+      startTop = target.offsetTop;
+      timer = setTimeout(() => {
+        dragging = true;
+        card.classList.add('dragging');
+        if (!still()) card.style.transition = 'none';
+        try { container.setPointerCapture(event.pointerId); } catch (error) { /* pointer already gone */ }
+      }, 300);
+    });
+    container.addEventListener('pointermove', event => {
+      if (!card) return;
+      if (!dragging) {
+        if (Math.abs(event.clientY - startY) > 8) reset();
+        return;
+      }
+      const others = cards().filter(other => other !== card);
+      const next = others.find(other => { const box = other.getBoundingClientRect(); return event.clientY < box.top + box.height / 2; });
+      if ((next || null) !== card.nextElementSibling) {
+        const before = others.map(other => other.getBoundingClientRect().top);
+        container.insertBefore(card, next || null);
+        if (!still()) slide(others, before);
+      }
+      // The held card follows the pointer from wherever its slot now is.
+      if (!still()) card.style.transform = 'translateY(' + ((event.clientY - startY) - (card.offsetTop - startTop)) + 'px) scale(1.02)';
+    });
+    const drop = () => {
+      if (!dragging) return reset();
+      const moved = card;
+      const order = cards().map(other => other.dataset.key);
+      clearTimeout(timer);
+      card = null;
+      dragging = false;
+      moved.classList.remove('dragging');
+      if (still()) return onOrder(order);
+      // Glide into the slot, then save (saving re-renders the list).
+      moved.style.transition = 'transform .18s ease';
+      moved.style.transform = '';
+      setTimeout(() => onOrder(order), 190);
+    };
+    container.addEventListener('pointerup', drop);
+    container.addEventListener('pointercancel', reset);
+    // While dragging, the finger moves the card instead of scrolling the page.
+    container.addEventListener('touchmove', event => { if (dragging) event.preventDefault(); }, {passive: false});
+    container.addEventListener('contextmenu', event => { if (card) event.preventDefault(); });
+    container.addEventListener('keydown', event => {
+      const target = event.target;
+      if (!event.altKey || !['ArrowUp', 'ArrowDown'].includes(event.key) || !target.classList.contains('selected-line')) return;
+      event.preventDefault();
+      const order = cards().map(other => other.dataset.key);
+      const from = order.indexOf(target.dataset.key);
+      const to = from + (event.key === 'ArrowUp' ? -1 : 1);
+      if (to < 0 || to >= order.length) return;
+      order.splice(to, 0, order.splice(from, 1)[0]);
+      onOrder(order, target.dataset.key);
+    });
+  }
+
   function createComponent(options) {
     const document = options.document;
     const products = options.products;
@@ -164,11 +267,23 @@
       const list = kind === 'product' ? state.compare : state.systemCompare;
       const index = list.indexOf(id);
       if (index >= 0) list.splice(index, 1);
+      // Forget its place, so adding it back puts it at the end.
+      state.compareOrder = (state.compareOrder || []).filter(key => key !== lineKey(kind, id));
       save();
       renderControls();
       renderTables();
       const item = kind === 'product' ? product(id) : catalog.system(id);
       if (item) notify('Removed “' + item.brand + ' — ' + displayProgram(item) + '”. Add it back from the list above.');
+    }
+
+    // Save a new card order; results follow it. `focusKey` keeps keyboard focus on the moved card.
+    function setOrder(keys, focusKey) {
+      getState().compareOrder = keys.slice();
+      save();
+      renderControls();
+      renderTables();
+      const moved = focusKey && document.querySelector && document.querySelector('.selected-line[data-key="' + focusKey + '"]');
+      if (moved && moved.focus) moved.focus();
     }
 
     function systemMix(system) {
@@ -232,12 +347,15 @@
         selected.push({kind: 'system', id: system.id, brand: system.brand, program: displayProgram(system), formula: displayFormula(system), parts: partsLabel, controls, constraintNote, ratioNote: system.ratioNote || '', settingsLabel: profiles.length ? 'Comparison profile and balance' : 'Adjust component balance'});
       });
 
-      // Tap the card's name area to remove it; the settings below stay separate so they never remove.
-      element('selectedLines').innerHTML = selected.map(item => '<div class="selected-line"><button type="button" class="line-remove removeLine" data-kind="' + item.kind + '" data-id="' + escape(item.id) + '" aria-label="Remove ' + escape(item.brand + ' — ' + item.program) + '"><span class="source-x" aria-hidden="true">×</span><b>' + escape(item.brand + ' — ' + item.program) + '</b><span>' + escape(item.formula) + '</span><span class="muted">' + escape(item.parts) + '</span></button>' + (item.controls ? '<details><summary>' + escape(item.settingsLabel) + '</summary><div style="margin-top:7px">' + item.controls + '</div>' + (item.ratioNote ? '<p class="muted ratio-note">' + escape(item.ratioNote) + '</p>' : '') + (item.constraintNote ? '<p class="muted ratio-note"><b>Fixed-N behavior:</b> ' + escape(item.constraintNote) + '</p>' : '') + '</details>' : '') + '</div>').join('');
+      // The × removes; holding the card drags it (see bindSortable).
+      selected.sort(byCardOrder(state.compareOrder || []));
+      element('selectedLines').innerHTML = selected.map(item => '<div class="selected-line" data-key="' + escape(lineKey(item.kind, item.id)) + '" tabindex="0"><div class="line-head"><div class="line-text"><b>' + escape(item.brand + ' — ' + item.program) + '</b><span>' + escape(item.formula) + '</span><span class="muted">' + escape(item.parts) + '</span></div><button type="button" class="line-x removeLine" data-kind="' + item.kind + '" data-id="' + escape(item.id) + '" aria-label="Remove ' + escape(item.brand + ' — ' + item.program) + '">×</button></div>' + (item.controls ? '<details><summary>' + escape(item.settingsLabel) + '</summary><div style="margin-top:7px">' + item.controls + '</div>' + (item.ratioNote ? '<p class="muted ratio-note">' + escape(item.ratioNote) + '</p>' : '') + (item.constraintNote ? '<p class="muted ratio-note"><b>Fixed-N behavior:</b> ' + escape(item.constraintNote) + '</p>' : '') + '</details>' : '') + '</div>').join('');
 
       document.querySelectorAll('.removeLine').forEach(button => {
         button.onclick = () => removeItem(button.dataset.kind, button.dataset.id);
       });
+      bindSortable(element('selectedLines'), setOrder);
+      if (element('sortHint')) element('sortHint').classList.toggle('hidden', selected.length < 2);
       document.querySelectorAll('.sysProfile').forEach(select => {
         select.onchange = () => setSystemProfile(select.dataset.sys, select.value);
       });
@@ -282,7 +400,8 @@
 
     function selectedEntries() {
       const state = getState();
-      return catalog.selectedCompareEntries(state.compare, state.systemCompare, state.systemParts, state.systemProfiles, state.systemExcluded).slice(0, MAX_LINES);
+      return catalog.selectedCompareEntries(state.compare, state.systemCompare, state.systemParts, state.systemProfiles, state.systemExcluded)
+        .sort(byCardOrder(state.compareOrder || [])).slice(0, MAX_LINES);
     }
 
     function productDoseText(item, grams) {
@@ -390,7 +509,7 @@
       renderTables();
     }
 
-    return Object.freeze({render, renderControls, renderTables, selectedEntries, addItem, removeItem, setSystemProfile});
+    return Object.freeze({render, renderControls, renderTables, selectedEntries, addItem, removeItem, setSystemProfile, setOrder});
   }
 
   return Object.freeze({range, nearestLevel, ELEMENT_LEVELS: Object.freeze({

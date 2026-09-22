@@ -16,6 +16,8 @@
     return {
       view: 'compare',
       compare: [],
+      // Card order on Compare, as 'p:<id>' / 's:<id>'; lines not listed go last.
+      compareOrder: [],
       systemCompare: ['athena-pro-bloom', 'cropsalt-bloom', 'jacks-2part-0-12-26'],
       systemParts: {},
       systemProfiles: {},
@@ -157,6 +159,8 @@
       if (state.systemCompare.length) state.systemCompare.pop();
       else state.compare.pop();
     }
+    const selectedKeys = new Set([...state.compare.map(id => 'p:' + id), ...state.systemCompare.map(id => 's:' + id)]);
+    state.compareOrder = [...new Set(Array.isArray(state.compareOrder) ? state.compareOrder : [])].filter(key => selectedKeys.has(key));
 
     Object.keys(state.systemParts).forEach(id => {
       const parts = state.systemParts[id];

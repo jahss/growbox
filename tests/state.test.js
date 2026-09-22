@@ -243,3 +243,9 @@ test('saveCustomProduct adds, updates by name, and respects the limit', () => {
   const reloaded = stateModule.normalizeState({customProducts: [{...split.record}, {id: 'custom-9', name: 'Bad', analysis: {N: 1}, nitrogenForms: {nitrateN: 4}}]}, [], []);
   assert.deepEqual(reloaded.customProducts.map(item => item.nitrogenForms), [{nitrateN: 2.5}, {}]);
 });
+
+test('compare order keeps only selected lines, once each', () => {
+  const state = stateModule.normalizeState({compare: ['jacks-12-4-16'], systemCompare: ['athena-pro-veg'], compareOrder: ['s:athena-pro-veg', 'p:gone', 's:athena-pro-veg', 7, 'p:jacks-12-4-16']}, products, systems);
+  assert.deepEqual(state.compareOrder, ['s:athena-pro-veg', 'p:jacks-12-4-16']);
+  assert.deepEqual(stateModule.freshState().compareOrder, []);
+});

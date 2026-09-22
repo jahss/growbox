@@ -238,13 +238,12 @@ test('a system with a part left out compares only the remaining part', () => {
   assert.match(view.elements.selectedLines.innerHTML, /Comparing Grow only/);
 });
 
-test('tapping a line card removes it with a notice; settings stay outside the button', () => {
+test('the × removes a line with a notice and forgets its place in the order', () => {
   const view = fixture();
   const cards = [];
   view.component.render();
   const html = view.elements.selectedLines.innerHTML;
-  assert.match(html, /<button type="button" class="line-remove removeLine" data-kind="system" data-id="athena-pro-veg" aria-label="Remove Athena — Pro Veg"><span class="source-x" aria-hidden="true">×<\/span>/);
-  assert.match(html, /<\/button><details>/, 'the settings sit after the button, not inside it');
+  assert.match(html, /aria-label="Remove Athena — Pro Veg">×<\/button><\/div><details>/, 'the settings sit after the ×, not inside it');
   assert.doesNotMatch(html, />Remove</);
 
   const document = {getElementById: id => view.elements[id], querySelectorAll: selector => selector === '.removeLine' ? cards : []};
@@ -253,8 +252,35 @@ test('tapping a line card removes it with a notice; settings stay outside the bu
     format: v => String(v), escape: String, getState: () => view.state, save() {}, notify: (...args) => view.notices.push(args)
   });
   cards.push({dataset: {kind: 'system', id: 'athena-pro-veg'}});
+  view.state.compareOrder = ['s:athena-pro-veg', 'p:jacks-12-4-16'];
   component.render();
   cards[0].onclick();
   assert.deepEqual(view.state.systemCompare, []);
   assert.match(view.notices.at(-1)[0], /Removed “Athena — Pro Veg”\. Add it back from the list above\./);
+  assert.deepEqual(view.state.compareOrder, ['p:jacks-12-4-16']);
+});
+
+test('lines follow the saved card order; new lines go to the end; results follow too', () => {
+  const view = fixture();
+  view.state.compareOrder = ['s:athena-pro-veg', 'p:jacks-12-4-16'];
+  view.component.render();
+  assert.deepEqual(view.component.selectedEntries().map(entry => entry.id), ['athena-pro-veg', 'jacks-12-4-16', 'megacrop-11-5-14']);
+  const html = view.elements.selectedLines.innerHTML;
+  assert.ok(html.indexOf('Athena — Pro Veg') < html.indexOf('RO') && html.indexOf('RO') < html.indexOf('Mega Crop'), 'cards in saved order');
+  assert.match(html, /<div class="selected-line" data-key="s:athena-pro-veg" tabindex="0"/);
+  const table = view.elements.analysisCompare.innerHTML;
+  assert.ok(table.indexOf('Pro Veg') < table.indexOf('Mega Crop'), 'comparison rows follow the card order');
+
+  view.component.setOrder(['p:megacrop-11-5-14', 's:athena-pro-veg', 'p:jacks-12-4-16']);
+  assert.deepEqual(view.state.compareOrder, ['p:megacrop-11-5-14', 's:athena-pro-veg', 'p:jacks-12-4-16']);
+  assert.deepEqual(view.component.selectedEntries().map(entry => entry.id), ['megacrop-11-5-14', 'athena-pro-veg', 'jacks-12-4-16']);
+  assert.ok(view.saves >= 1);
+});
+
+test('the × is the only remove control; the card itself is not a button', () => {
+  const view = fixture();
+  view.component.render();
+  const html = view.elements.selectedLines.innerHTML;
+  assert.match(html, /<button type="button" class="line-x removeLine" data-kind="system" data-id="athena-pro-veg" aria-label="Remove Athena — Pro Veg">×<\/button>/);
+  assert.doesNotMatch(html, /line-remove/);
 });
