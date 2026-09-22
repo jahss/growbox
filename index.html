@@ -14,6 +14,7 @@
 <script src="js/export.js"></script>
 <script src="js/analysis.js"></script>
 <script src="js/compare.js"></script>
+<script src="js/mix.js"></script>
 <script src="js/use-rate.js"></script>
 <script src="js/blend.js"></script>
 </head>
@@ -31,6 +32,7 @@
 <div class="card"><h2>Use rate</h2><p class="muted">Pick a product or program and a published rate, or type your own, to see the elemental ppm it puts in solution.</p><label>Product or program<select id="useRateProduct" class="wide-control"></select></label><label>Published rate<select id="useRatePreset" class="wide-control"></select></label><p id="useRateIdentity" class="muted"></p><p id="useRatePresetNote" class="muted"></p></div>
 <div class="card"><h2>Component rates</h2><div id="useRateInputs" class="rate-inputs"></div></div>
 <div class="card"><div class="group-title copy-head"><h2>Elemental ppm in solution</h2><button id="useRateCopy" type="button">Copy to Blend finder</button></div><p id="useRateSummary"></p><div id="useRateResult" class="cmp-chips ga-elements"></div><p id="useRateWaterNote" class="muted water-note"></p><div id="useRateNitrogen"></div></div>
+<div id="urMix" class="card mix-card"></div>
 </section>
 <section id="analysis" class="view">
 <div class="grid2"><div class="card"><h2>Label → ppm</h2><p class="muted">For any fertilizer not in the list. Enter the guaranteed analysis exactly as printed on the label; P₂O₅ and K₂O are converted automatically.</p><div id="gaInputs" class="inputs"></div><div class="custom-save"><label>Name <input id="gaName" type="text" maxlength="60" placeholder="e.g. My local bloom"></label><button id="gaAdd" class="primary" type="button">+ Add to Compare</button></div><p class="muted session-note">Custom products are kept for this browser session only and are lost when the tab closes. Saving them permanently will need a proper backend later.</p><div id="gaSaved" class="saved-list"></div></div><div class="card"><h2>Elemental % analysis</h2><p class="muted">Elemental % of the label. P and K show the printed P₂O₅ / K₂O underneath.</p><div id="gaElemental" class="cmp-chips ga-elements"></div><div id="gaNShare"></div></div></div>
@@ -43,6 +45,7 @@
 <h3>Delivered ppm vs target</h3><p class="muted">Green is within 5% of the target, amber is further off. Elements without a target are shown but not matched.</p><div id="blendVsTarget" class="cmp-chips ga-elements vs-chips"></div><div id="blendNitrogen"></div>
 <h3>Closest commercial products</h3><p class="muted">Products and programs whose ppm profile is nearest this blend when dosed to the same N.</p><div id="blendClosest" class="selected-lines"></div>
 <h3>Feed chart — fixed blend ratio</h3><p class="muted">The same recipe scaled up or down to deliver 50 to 300 ppm N. Expand a row for micros and the dose of each product.</p><div id="feed" class="feed-rows"></div></div>
+<div id="blMix" class="card mix-card hidden"></div>
 </section>
 <div class="card"><div class="actions"><button id="csv">Download current CSV</button><button id="json">Download results JSON</button><button id="reset" class="danger">Reset session</button></div></div>
 <div class="footer">Session state is stored only for the current browser session. Conversions: 1 g/US gal = 264.172052 mg/L; P = P₂O₅ × 0.436426; K = K₂O × 0.830151.</div>

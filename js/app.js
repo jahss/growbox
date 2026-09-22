@@ -15,6 +15,8 @@ const COMPARE=window.GrowboxCompare;
 if(!COMPARE)throw new Error('Growbox compare component failed to load.');
 const USE_RATE=window.GrowboxUseRate;
 if(!USE_RATE)throw new Error('Growbox use-rate component failed to load.');
+const MIX=window.GrowboxMix;
+if(!MIX)throw new Error('Growbox mix component failed to load.');
 const BLEND=window.GrowboxBlend;
 if(!BLEND)throw new Error('Growbox blend component failed to load.');
 const PRODUCTS=window.FERTILIZER_PRODUCTS||[],SYSTEMS=window.FERTILIZER_SYSTEMS||[],LEVELS=Array.from({length:((300-50)/10)+1},(_,i)=>50+i*10);
@@ -24,8 +26,9 @@ const $=id=>document.getElementById(id),fmt=(v,d=2)=>Number.isFinite(+v)?(+v).to
 const CATALOG=PRODUCT_MODEL.createCatalog(PRODUCTS,SYSTEMS,CHEM,fmt);
 const ANALYSIS_COMPONENT=ANALYSIS.createComponent({document,chemistry:CHEM,levels:LEVELS,format:fmt,escape:esc,getState:()=>S,save,notify:flash,maxCompareLines:STATE.MAX_COMPARE_LINES,maxCustomProducts:STATE.MAX_CUSTOM_PRODUCTS,saveCustomProduct:STATE.saveCustomProduct,onCustomProducts:()=>{CATALOG.setCustomProducts(S.customProducts);COMPARE_COMPONENT.render();BLEND_COMPONENT.renderSources();BLEND_COMPONENT.renderResult()}});
 const COMPARE_COMPONENT=COMPARE.createComponent({document,products:PRODUCTS,systems:SYSTEMS,chemistry:CHEM,catalog:CATALOG,format:fmt,escape:esc,getState:()=>S,save,notify:flash});
-const USE_RATE_COMPONENT=USE_RATE.createComponent({document,nitrogenFieldHtml:ANALYSIS.nitrogenFieldHtml,bindNitrogenField:ANALYSIS.bindNitrogenField,onWaterChange:()=>BLEND_COMPONENT.waterChanged(),onCopied:label=>{S.view='blend';render();scrollTo(0,0);flash('Target copied from Use rate: '+label)},products:PRODUCTS,systems:SYSTEMS,chemistry:CHEM,catalog:CATALOG,getState:()=>S,save,format:fmt,escape:esc});
-const BLEND_COMPONENT=BLEND.createComponent({document,waterOf:()=>USE_RATE.waterPpm(S.water),nitrogenFormsHtml:USE_RATE.nitrogenFormsHtml,nitrogenFieldHtml:ANALYSIS.nitrogenFieldHtml,bindNitrogenField:ANALYSIS.bindNitrogenField,labelStep:ANALYSIS.labelStep,saveCustomProduct:STATE.saveCustomProduct,onCustomProducts:()=>{CATALOG.setCustomProducts(S.customProducts);COMPARE_COMPONENT.render();manual()},products:PRODUCTS,systems:SYSTEMS,chemistry:CHEM,solver:BLEND_SOLVER,catalog:CATALOG,getState:()=>S,save,format:fmt,escape:esc,notify:flash,levels:LEVELS});
+const MIX_COMPONENT=MIX.createComponent({document,getState:()=>S,save,format:fmt,escape:esc});
+const USE_RATE_COMPONENT=USE_RATE.createComponent({document,renderMix:MIX_COMPONENT.render,nitrogenFieldHtml:ANALYSIS.nitrogenFieldHtml,bindNitrogenField:ANALYSIS.bindNitrogenField,onWaterChange:()=>BLEND_COMPONENT.waterChanged(),onCopied:label=>{S.view='blend';render();scrollTo(0,0);flash('Target copied from Use rate: '+label)},products:PRODUCTS,systems:SYSTEMS,chemistry:CHEM,catalog:CATALOG,getState:()=>S,save,format:fmt,escape:esc});
+const BLEND_COMPONENT=BLEND.createComponent({document,renderMix:MIX_COMPONENT.render,waterOf:()=>USE_RATE.waterPpm(S.water),nitrogenFormsHtml:USE_RATE.nitrogenFormsHtml,nitrogenFieldHtml:ANALYSIS.nitrogenFieldHtml,bindNitrogenField:ANALYSIS.bindNitrogenField,labelStep:ANALYSIS.labelStep,saveCustomProduct:STATE.saveCustomProduct,onCustomProducts:()=>{CATALOG.setCustomProducts(S.customProducts);COMPARE_COMPONENT.render();manual()},products:PRODUCTS,systems:SYSTEMS,chemistry:CHEM,solver:BLEND_SOLVER,catalog:CATALOG,getState:()=>S,save,format:fmt,escape:esc,notify:flash,levels:LEVELS});
 const prod=CATALOG.product,exportLabel=CATALOG.exportLabel;
 function flash(message,kind=''){
   const box=$('notice');box.textContent=message;box.className='notice'+(kind?' '+kind:'');box.classList.remove('hidden');

@@ -157,6 +157,7 @@
     const escape = options.escape;
     const onCopied = options.onCopied || (() => {});
     const onWaterChange = options.onWaterChange || (() => {});
+    const renderMix = options.renderMix || (() => {});
     const nitrogenFieldHtml = options.nitrogenFieldHtml;
     const bindNitrogenField = options.bindNitrogenField || (() => {});
     const element = id => document.getElementById(id);
@@ -286,6 +287,8 @@
       const extras = WATER_EXTRAS.filter(([key]) => solution.water[key]).map(([key, label, unit]) => label + ' ' + format(solution.water[key], key === 'ec' ? 2 : 1) + (unit ? ' ' + unit : ''));
       if (element('useRateWaterNote')) element('useRateWaterNote').textContent = extras.length ? 'From your water: ' + extras.join(' · ') : '';
       element('useRateNitrogen').innerHTML = nitrogenFormsHtml(solution.forms, solution.ppm.N, format, escape);
+      renderMix('urMix', result.lines.filter(line => line.gramsPerLiter > 0)
+        .map(line => ({product: line.product, gPerGal: line.gramsPerLiter * chemistry.US_GALLON_LITERS, label: catalog.displayFormula(line.product)})));
     }
 
     // Hands the exact delivered ppm to the Blend finder as a custom target, so stage

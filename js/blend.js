@@ -74,6 +74,7 @@
     const nitrogenFieldHtml = options.nitrogenFieldHtml;
     // Source water entered on Use rate ({} for RO).
     const waterOf = options.waterOf || (() => ({}));
+    const renderMix = options.renderMix || (() => {});
     const bindNitrogenField = options.bindNitrogenField || (() => {});
     const labelStep = options.labelStep || (() => '.1');
     const nitrogenFormsHtml = options.nitrogenFormsHtml;
@@ -376,6 +377,7 @@
         save();
       }
       const result = state.blend.result;
+      if (element('blMix')) element('blMix').classList.toggle('hidden', !result);
       if (!result) {
         element('blendResult').classList.add('hidden');
         return;
@@ -403,6 +405,8 @@
       element('blendNitrogen').innerHTML = nitrogenFormsHtml(forms, inTank.N, format, escape, result.target);
       element('blendClosest').innerHTML = closestProducts(result).map(item => '<div class="selected-line"><div class="selected-line-head"><div><b>' + escape(item.title) + '</b>' + (item.value === state.blend.targetId ? ' <small class="cmp-only">your target</small>' : '') + '<div class="muted">' + escape(item.formula) + '</div></div>' + fitBadgeHtml(item.distance, format) + '</div></div>').join('');
       element('feed').innerHTML = feedHtml(result, selectedProducts);
+      renderMix('blMix', selectedProducts.map((product, index) => ({product, gPerGal: result.doses[index], label: product.custom ? product.name : catalog.displayFormula(product)}))
+        .filter(line => line.gPerGal > 0));
       const cards = document.querySelectorAll('.blend-feed-card');
       cards.forEach(card => {
         card.ontoggle = () => {
