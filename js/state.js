@@ -15,6 +15,7 @@
       systemCompare: ['athena-pro-veg'],
       systemParts: {},
       systemProfiles: {},
+      systemExcluded: {},
       compareMode: 'ppm',
       n: 160,
       compareElement: 'N',
@@ -91,6 +92,8 @@
     else state.systemParts = {...state.systemParts};
     if (!state.systemProfiles || typeof state.systemProfiles !== 'object' || Array.isArray(state.systemProfiles)) state.systemProfiles = {};
     else state.systemProfiles = {...state.systemProfiles};
+    if (!state.systemExcluded || typeof state.systemExcluded !== 'object' || Array.isArray(state.systemExcluded)) state.systemExcluded = {};
+    else state.systemExcluded = {...state.systemExcluded};
     if (!['percent', 'ppm'].includes(state.compareMode)) state.compareMode = 'ppm';
     if (!['N', 'P', 'K'].includes(state.compareElement)) state.compareElement = 'N';
 
@@ -108,6 +111,15 @@
     Object.keys(state.systemParts).forEach(id => {
       const parts = state.systemParts[id];
       if (!Array.isArray(parts) || !parts.some(value => number(value) > 0)) delete state.systemParts[id];
+    });
+    Object.keys(state.systemExcluded).forEach(id => {
+      const system = availableSystems.find(item => item.id === id);
+      const count = system && Array.isArray(system.components) ? system.components.length : 0;
+      const excluded = [...new Set(Array.isArray(state.systemExcluded[id]) ? state.systemExcluded[id] : [])]
+        .filter(index => Number.isInteger(index) && index >= 0 && index < count)
+        .sort((a, b) => a - b);
+      if (!excluded.length || excluded.length >= count) delete state.systemExcluded[id];
+      else state.systemExcluded[id] = excluded;
     });
     Object.keys(state.systemProfiles).forEach(id => {
       const system = availableSystems.find(item => item.id === id);

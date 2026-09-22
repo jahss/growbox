@@ -223,3 +223,16 @@ test('labels the unchanged 3-2-1 recipe as an All stages profile', () => {
   assert.match(view.elements.selectedLines.innerHTML, />All stages<\/option>/);
   assert.equal(view.component.selectedEntries()[0].profileLabel, 'All stages');
 });
+
+test('a system with a part left out compares only the remaining part', () => {
+  const view = fixture();
+  view.state.systemExcluded = {'athena-pro-veg': [0]};
+  view.component.render();
+  const cards = view.elements.analysisCompareCards.innerHTML;
+  assert.match(cards, /cmp-only">Grow only</);
+  assert.match(view.elements.analysisCompare.innerHTML, /Grow only/);
+  assert.doesNotMatch(view.elements.analysisCompare.innerHTML, /Core [\d.]+ g\/gal/);
+  assert.match(view.elements.selectedLines.innerHTML, /class="spx"[^>]*data-i="0" type="checkbox">/);
+  assert.match(view.elements.selectedLines.innerHTML, /class="spx"[^>]*data-i="1" type="checkbox" checked>/);
+  assert.match(view.elements.selectedLines.innerHTML, /Comparing Grow only/);
+});

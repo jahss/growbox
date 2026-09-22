@@ -22,3 +22,7 @@
 @media(max-width:380px){.cmp-chips{grid-template-columns:repeat(3,1fr)}}
 
 .grid2>*{min-width:0}
+.part-toggles{margin-top:9px;align-items:center}
+.check-inline{display:inline-flex;align-items:center;gap:5px}
+.check-inline input{min-height:0;width:17px;height:17px;accent-color:var(--green)}
+.cmp-only{font-weight:600;color:var(--blue);white-space:nowrap}

@@ -51,11 +51,16 @@
     return '';
   }
 
-  function soleNitrogenSourceIndex(products) {
+  // Index of the only product supplying `analysisKey` (N, P2O5 or K2O), else -1.
+  function soleSourceIndex(products, analysisKey) {
     const sources = products
       .map((product, index) => ({product, index}))
-      .filter(item => number(item.product && item.product.analysis && item.product.analysis.N) > 0);
+      .filter(item => number(item.product && item.product.analysis && item.product.analysis[analysisKey]) > 0);
     return sources.length === 1 ? sources[0].index : -1;
+  }
+
+  function soleNitrogenSourceIndex(products) {
+    return soleSourceIndex(products, 'N');
   }
 
   function createComponent(options) {
@@ -80,7 +85,7 @@
     let cardsOpen = false;
 
     function entrySubtitle(entry) {
-      const profile = entry.profileLabel ? ' · ' + entry.profileLabel + ' profile' : '';
+      const profile = (entry.profileLabel ? ' · ' + entry.profileLabel + ' profile' : '') + (entry.includedLabel ? ' · ' + entry.includedLabel : '');
       const estimate = entry.kind === 'system' && entry.mix && entry.mix.approximateDensity ? ' · approx. density' : '';
       return escape(displayFormula(entry)) + ' · ' + escape(displayParts(entry)) + escape(profile + estimate);
     }
@@ -109,7 +114,7 @@
         const key = entry.kind + ':' + entry.id;
         const dose = doseHtml ? doseHtml(row) : null;
         return '<details class="cmp-card" data-key="' + escape(key) + '"' + (cardsOpen ? ' open' : '') + '><summary>' +
-          '<div class="cmp-line1"><b class="cmp-name">' + escape(catalog.entryTitle(entry)) + '</b>' +
+          '<div class="cmp-line1"><b class="cmp-name">' + escape(catalog.entryTitle(entry)) + (entry.includedLabel ? ' <small class="cmp-only">' + escape(entry.includedLabel) + '</small>' : '') + '</b>' +
           (dose ? '<span class="cmp-dose">' + escape(shortDoseText(entry, row.dose)) + '</span>' : '') +
           '<span class="cmp-arrow" aria-hidden="true"></span></div>' +
           '<div class="cmp-chips cmp-summary-chips">' + chips(row, index, columns.slice(0, 6)) + '<span class="cmp-micros">' + chips(row, index, columns.slice(6)) + '</span></div></summary>' +
@@ -165,7 +170,7 @@
 
     function systemMix(system) {
       const state = getState();
-      return catalog.mixSystem(system, state.systemParts[system.id], state.systemProfiles[system.id]);
+      return catalog.mixSystem(system, state.systemParts[system.id], state.systemProfiles[system.id], state.systemExcluded[system.id]);
     }
 
     function setSystemProfile(systemId, profileId) {
@@ -212,11 +217,13 @@
         const partControls = (!profiles.length || selectedProfile === 'custom')
           ? system.components.map((component, index) => '<label>' + escape(catalog.partLabel(system, component.label)) + ' <input class="spr" data-sys="' + escape(system.id) + '" data-i="' + index + '" type="number" min="0" step=".1" value="' + format(mix.parts[index], 3) + '"> ' + unit + ' parts</label>').join('')
           : '';
-        const controls = profileControl + (partControls ? '<div class="toolbar" style="margin-top:7px">' + partControls + '</div>' : '');
-        const nitrogenSourceIndex = soleNitrogenSourceIndex(mix.products);
+        const includeControls = '<div class="toolbar part-toggles"><span class="muted">Compare:</span>' + system.components.map((component, index) => '<label class="check-inline"><input class="spx" data-sys="' + escape(system.id) + '" data-i="' + index + '" type="checkbox"' + (mix.excluded.includes(index) ? '' : ' checked') + '> ' + escape(catalog.partLabel(system, component.label)) + '</label>').join('') + '</div>' +
+          (mix.excluded.length ? '<p class="muted ratio-note">Comparing ' + escape(mix.includedLabel) + '. A part on its own may have little N, so standardizing by P or K often compares it better.</p>' : '');
+        const controls = profileControl + (partControls ? '<div class="toolbar" style="margin-top:7px">' + partControls + '</div>' : '') + includeControls;
+        const nitrogenSourceIndex = soleNitrogenSourceIndex(includedProducts(mix));
         const constraintNote = nitrogenSourceIndex < 0 ? '' : 'In Elemental ppm mode, ' + displayFormula(mix.products[nitrogenSourceIndex]) + ' is the only nitrogen source. Its dose is fixed by the selected N target; changing the balance adjusts the other component doses. Use the Use Rate tool to set every dose independently.';
         const profileLabel = mix.profile ? mix.profile.label : (profiles.length && selectedProfile === 'custom' ? 'Custom' : '');
-        const partsLabel = displayParts(system) + (profileLabel ? ' · ' + profileLabel + ' profile' : '');
+        const partsLabel = displayParts(system) + (profileLabel ? ' · ' + profileLabel + ' profile' : '') + (mix.includedLabel ? ' · ' + mix.includedLabel : '');
         selected.push({kind: 'system', id: system.id, brand: system.brand, program: displayProgram(system), formula: displayFormula(system), parts: partsLabel, controls, constraintNote, ratioNote: system.ratioNote || '', settingsLabel: profiles.length ? 'Comparison profile and balance' : 'Adjust component balance'});
       });
 
@@ -227,6 +234,25 @@
       });
       document.querySelectorAll('.sysProfile').forEach(select => {
         select.onchange = () => setSystemProfile(select.dataset.sys, select.value);
+      });
+      document.querySelectorAll('.spx').forEach(input => {
+        input.onchange = () => {
+          const system = systems.find(item => item.id === input.dataset.sys);
+          if (!system) return;
+          const index = Number(input.dataset.i);
+          const current = systemMix(system).excluded;
+          const next = input.checked ? current.filter(value => value !== index) : [...current, index];
+          if (catalog.excludedParts(system, next).length !== new Set(next).size) {
+            input.checked = true;
+            notify('Keep at least one part in the comparison.', 'warn');
+            return;
+          }
+          if (next.length) state.systemExcluded[system.id] = next.sort((a, b) => a - b);
+          else delete state.systemExcluded[system.id];
+          save();
+          renderControls();
+          renderTables();
+        };
       });
       document.querySelectorAll('.spr').forEach(input => {
         input.oninput = () => {
@@ -250,7 +276,7 @@
 
     function selectedEntries() {
       const state = getState();
-      return catalog.selectedCompareEntries(state.compare, state.systemCompare, state.systemParts, state.systemProfiles).slice(0, MAX_LINES);
+      return catalog.selectedCompareEntries(state.compare, state.systemCompare, state.systemParts, state.systemProfiles, state.systemExcluded).slice(0, MAX_LINES);
     }
 
     function productDoseText(item, grams) {
@@ -258,17 +284,28 @@
       return format(grams, 3) + ' g/gal';
     }
 
+    // Parts left out of the comparison count as absent (null).
+    function includedProducts(mix) {
+      return mix.products.map((item, index) => mix.excluded.includes(index) ? null : item);
+    }
+
     function systemStandardDoseText(entry, totalGrams) {
-      const nitrogenSourceIndex = soleNitrogenSourceIndex(entry.mix.products);
+      const standardElement = getState().compareElement || 'N';
+      const included = includedProducts(entry.mix);
+      // Only worth saying when more than one part is dosed.
+      const targetSourceIndex = included.filter(Boolean).length > 1
+        ? soleSourceIndex(included, {N: 'N', P: 'P2O5', K: 'K2O'}[standardElement])
+        : -1;
       const pieces = entry.mix.products.map((item, index) => {
+        if (entry.mix.excluded.includes(index)) return null;
         const grams = totalGrams * entry.mix.weights[index];
-        const constraint = index === nitrogenSourceIndex ? ' (sets N target)' : '';
+        const constraint = index === targetSourceIndex ? ' (sets ' + standardElement + ' target)' : '';
         const label = escape(catalog.partLabel(entry.system, entry.system.components[index].label));
         if (item.form === 'liquid' && number(item.densityGPerMl) > 0) return label + ' ' + format(grams / item.densityGPerMl, 3) + ' mL/gal' + constraint;
         return label + ' ' + format(grams, 3) + ' g/gal' + constraint;
       });
       const estimate = entry.mix.approximateDensity ? '<br><small class="muted">Approximate: volume-to-mass conversion uses midpoint(s) of published SDS density range(s).</small>' : '';
-      return format(totalGrams, 3) + ' g/gal total<br><small class="muted">' + pieces.join(' + ') + '</small>' + estimate;
+      return format(totalGrams, 3) + ' g/gal total<br><small class="muted">' + pieces.filter(Boolean).join(' + ') + '</small>' + estimate;
     }
 
     function renderTables() {

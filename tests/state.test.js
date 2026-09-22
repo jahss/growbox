@@ -156,3 +156,17 @@ test('saveState persists the current state under the versioned key', () => {
   stateModule.saveState(storage, state);
   assert.equal(JSON.parse(storage.value(stateModule.STORAGE_KEY)).n, 180);
 });
+
+test('normalization keeps valid excluded parts and drops invalid or all-part exclusions', () => {
+  const partSystems = [
+    {id: 'two', components: [{}, {}]},
+    {id: 'three', components: [{}, {}, {}]},
+    {id: 'all', components: [{}, {}]}
+  ];
+  const state = stateModule.normalizeState({
+    compare: [], systemCompare: [], systemParts: {},
+    systemExcluded: {two: [1, 1, 5], three: [2, 0], all: [0, 1], missing: [0]}
+  }, products, partSystems);
+  assert.deepEqual(state.systemExcluded, {two: [1], three: [0, 2]});
+  assert.deepEqual(stateModule.normalizeState({systemExcluded: []}, products, partSystems).systemExcluded, {});
+});

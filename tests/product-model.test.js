@@ -105,3 +105,20 @@ test('shortens part labels the line name already implies', () => {
   assert.equal(catalog.partLabel({program: 'Dual Fuel'}, 'Dual Fuel 2'), '2');
   assert.equal(catalog.partLabel({program: 'Pro Veg'}, 'Core'), 'Core');
 });
+
+test('leaves excluded parts out of a system mix and labels what is compared', () => {
+  const {products, systems} = loadDatabase();
+  const catalog = productModel.createCatalog(products, systems, chemistry, String);
+  const system = systems.find(item => item.id === 'jacks-2part-5-12-26');
+  const partA = products.find(item => item.id === system.components[0].productId);
+  const mix = catalog.mixSystem(system, null, null, [1]);
+  assert.deepEqual(mix.excluded, [1]);
+  assert.equal(mix.weights[1], 0);
+  assert.equal(mix.analysis.K2O, partA.analysis.K2O);
+  assert.equal(mix.includedLabel, catalog.partLabel(system, system.components[0].label) + ' only');
+  assert.equal(mix.parts.length, system.components.length, 'saved ratio is kept for the inputs');
+  assert.deepEqual(catalog.mixSystem(system, null, null, [0, 1]).excluded, [], 'cannot exclude every part');
+  assert.deepEqual(catalog.mixSystem(system, null, null, [7, -1, 'x']).excluded, []);
+  const [entry] = catalog.selectedCompareEntries([], [system.id], {}, {}, {[system.id]: [1]});
+  assert.match(catalog.exportLabel(entry), / only$/);
+});
