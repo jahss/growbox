@@ -66,10 +66,13 @@
       const parts = chosenParts
         .map(value => Math.max(0, Number.isFinite(Number(value)) ? Number(value) : 0));
       const componentProducts = systemRecord.components.map(component => product(component.productId));
+      const approximateDensity = systemRecord.ratioBasis === 'volume'
+        && componentProducts.some(item => item && item.densityEstimate);
       return {
         sys: systemRecord,
         profile,
         products: componentProducts,
+        approximateDensity,
         ...chemistry.mixSystem(systemRecord, componentProducts, parts)
       };
     }
