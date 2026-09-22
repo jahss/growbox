@@ -28,8 +28,8 @@
       },
       useRate: {
         selection: 'p:jacks-12-4-16',
-        preset: 'custom',
-        doses: {'jacks-12-4-16': {amount: 1, unit: 'g/gal'}}
+        preset: '0',
+        doses: {'jacks-12-4-16': {amount: 6.309, unit: 'g/gal'}}
       },
       blend: {
         ids: ['jacks-12-4-16', 'jacks-5-12-26-a', 'jacks-15-0-0-b', 'magnesium-sulfate', 'mkp-0-52-34'],

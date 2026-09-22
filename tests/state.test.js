@@ -41,7 +41,7 @@ test('fresh state returns independent defaults', () => {
   assert.deepEqual(second.compare, []);
   assert.deepEqual(second.systemCompare, ['athena-pro-bloom', 'cropsalt-bloom', 'jacks-2part-0-12-26']);
   assert.equal(second.manual.N, 0);
-  assert.equal(second.useRate.doses['jacks-12-4-16'].amount, 1);
+  assert.equal(second.useRate.doses['jacks-12-4-16'].amount, 6.309);
   assert.deepEqual(second.systemProfiles, {});
   assert.equal(second.n, 160);
 });

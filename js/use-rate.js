@@ -9,6 +9,7 @@
     ['N', 'N'], ['P', 'P'], ['K', 'K'], ['Ca', 'Ca'], ['Mg', 'Mg'], ['S', 'S'],
     ['Fe', 'Fe'], ['Mn', 'Mn'], ['Zn', 'Zn'], ['B', 'B'], ['Cu', 'Cu'], ['Mo', 'Mo']
   ];
+  const MICRO_KEYS = ['Fe', 'Mn', 'Zn', 'B', 'Cu', 'Mo'];
   const NITROGEN_FORM_LABELS = {
     nitrateN: 'Nitrate N', ammoniacalN: 'Ammoniacal N', ureaN: 'Urea N',
     otherN: 'Other N', waterSolubleN: 'Other water-soluble N'
@@ -122,7 +123,8 @@
       element('useRateProduct').onchange = event => {
         state.useRate.selection = event.target.value;
         state.useRate.preset = 'custom';
-        save();
+        // A new program starts on its first published rate, so the numbers mean something.
+        if (!applyPreset(0)) save();
         render();
       };
     }
@@ -136,8 +138,8 @@
       element('useRatePreset').value = preset;
       element('useRatePreset').disabled = rates.length === 0;
       element('useRatePresetNote').textContent = rates.length
-        ? 'Published presets fill the component rates and remain editable.'
-        : 'No published rate preset is loaded for this program; enter a custom rate.';
+        ? ''
+        : 'No published rate for this product yet; type your own below.';
       element('useRatePreset').onchange = event => {
         if (event.target.value === 'custom') {
           state.useRate.preset = 'custom';
@@ -151,7 +153,9 @@
 
     function renderInputs(entry) {
       const state = getState();
-      element('useRateIdentity').innerHTML = '<b>' + escape(entry.record.brand + ' — ' + catalog.displayProgram(entry.record)) + '</b><span>' + escape(catalog.displayFormula(entry.record)) + ' · ' + escape(catalog.displayParts(entry.record)) + '</span>';
+      const basis = entry.kind === 's' ? ' · parts mixed by ' + (entry.record.ratioBasis === 'volume' ? 'volume' : 'weight') : '';
+      element('useRateIdentity').textContent = catalog.displayFormula(entry.record) + ' · ' + catalog.displayParts(entry.record) + basis;
+      // Account-only later: "+ Add product" row here, so additives join the recipe as extra lines.
       element('useRateInputs').innerHTML = entry.products.map((product, index) => {
         const allowedUnits = doseUnits(product);
         const saved = state.useRate.doses[product.id] || {};
@@ -162,7 +166,8 @@
           : (product.densityEstimate
             ? '<small class="muted">Approx. density: midpoint of published SDS range ' + escape(product.densityEstimate.min) + '–' + escape(product.densityEstimate.max) + ' g/mL.</small>'
             : '');
-        return '<div class="rate-row"><div><b>' + escape(catalog.displayFormula(product)) + '</b><small class="muted">' + escape(entry.components[index].label) + '</small>' + densityNote + '</div><label>Rate<input class="urAmount" data-id="' + escape(product.id) + '" type="number" min="0" step=".01" value="' + format(amount, 4) + '"></label><label>Unit<select class="urUnit" data-id="' + escape(product.id) + '">' + allowedUnits.map(value => '<option value="' + value + '" ' + (value === unit ? 'selected' : '') + '>' + value + '</option>').join('') + '</select></label></div>';
+        // Brand above formula, like the Blend finder recipe; component formulas carry the part name.
+        return '<div class="rate-row"><div><small class="muted">' + escape(product.brand) + '</small><b>' + escape(catalog.displayFormula(product)) + '</b>' + densityNote + '</div><label>Rate<input class="urAmount" data-id="' + escape(product.id) + '" type="number" min="0" step=".01" value="' + format(amount, 4) + '"></label><label>Unit<select class="urUnit" data-id="' + escape(product.id) + '">' + allowedUnits.map(value => '<option value="' + value + '" ' + (value === unit ? 'selected' : '') + '>' + value + '</option>').join('') + '</select></label></div>';
       }).join('');
 
       document.querySelectorAll('.urAmount').forEach(input => {
@@ -191,14 +196,14 @@
       const result = currentResult();
       if (!result) return;
       const estimateNote = result.approximateDensity
-        ? '<p class="muted">Approximate result: at least one volume dose uses the midpoint of a published SDS density range.</p>'
+        ? '<br><small class="muted">Approximate: a volume dose uses the midpoint of a published SDS density range.</small>'
         : '';
-      element('useRateSummary').innerHTML = '<div class="pill"><b>' + format(result.totalGPerLiter, 4) + ' g/L</b><span>Total fertilizer mass</span></div><div class="pill"><b>' + format(result.totalGPerLiter * chemistry.US_GALLON_LITERS, 4) + ' g/gal</b><span>Total fertilizer mass</span></div>' + result.lines.map(line => '<div class="pill"><b>' + escape(line.label) + '</b><span>' + format(line.gramsPerLiter, 4) + ' g/L normalized</span></div>').join('') + estimateNote;
-      element('useRateResult').innerHTML = '<thead><tr>' + PPM_COLUMNS.map(column => '<th>' + column[1] + ' ppm</th>').join('') + '</tr></thead><tbody><tr>' + PPM_COLUMNS.map(([key]) => '<td>' + format(result.ppm[key], ['Fe', 'Mn', 'Zn', 'B', 'Cu', 'Mo'].includes(key) ? 3 : 1) + '</td>').join('') + '</tr></tbody>';
+      element('useRateSummary').innerHTML = 'Product weight <b>' + format(result.totalGPerLiter * chemistry.US_GALLON_LITERS, 3) + ' g/gal</b> <span class="muted">· ' + format(result.totalGPerLiter, 3) + ' g/L</span>' + estimateNote;
+      element('useRateResult').innerHTML = PPM_COLUMNS.map(([key, label]) => '<span class="cmp-chip"><small>' + label + '</small><b>' + format(result.ppm[key], MICRO_KEYS.includes(key) ? 3 : 1) + '</b></span>').join('');
       const nitrogenForms = Object.entries(result.nitrogenForms).filter(([, value]) => value > 0);
       element('useRateNitrogen').innerHTML = nitrogenForms.length
-        ? '<h3>Published nitrogen forms</h3><div class="result-grid">' + nitrogenForms.map(([key, value]) => '<div class="pill"><b>' + format(value, 1) + ' ppm</b><span>' + escape(NITROGEN_FORM_LABELS[key] || key) + '</span></div>').join('') + '</div>'
-        : '<p class="muted">No nitrogen-form breakdown is published for the selected inputs.</p>';
+        ? '<h3>Nitrogen forms</h3><div class="result-grid">' + nitrogenForms.map(([key, value]) => '<div class="pill"><b>' + format(value, 1) + ' ppm</b><span>' + escape(NITROGEN_FORM_LABELS[key] || key) + '</span></div>').join('') + '</div>'
+        : '<p class="muted">No N-form breakdown is published for this product.</p>';
     }
 
     function csvRows() {

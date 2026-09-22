@@ -101,9 +101,21 @@ test('renders a one-program calculator without generic salts or loose components
   assert.match(view.elements.useRateProduct.innerHTML, /optgroup label="2-Part"/);
   assert.doesNotMatch(view.elements.useRateProduct.innerHTML, /mkp-0-52-34/);
   assert.doesNotMatch(view.elements.useRateProduct.innerHTML, /jacks-5-12-26-a/);
-  assert.match(view.elements.useRateIdentity.innerHTML, /Jack&#39;s Nutrients — RO/);
+  assert.equal(view.elements.useRateIdentity.textContent, '12-4-16 · 1-part');
   assert.match(view.elements.useRateInputs.innerHTML, /g\/gal/);
-  assert.match(view.elements.useRateResult.innerHTML, /N ppm/);
+  assert.match(view.elements.useRateResult.innerHTML, /<small>N<\/small><b>200<\/b>/);
+  assert.match(view.elements.useRateResult.innerHTML, /<small>Mo<\/small>/);
+});
+
+test('choosing a program loads its first published rate', () => {
+  const view = fixture();
+  view.component.render();
+  view.elements.useRateProduct.onchange({target: {value: 's:athena-pro-bloom'}});
+  assert.equal(view.state.useRate.preset, '0');
+  assert.deepEqual(view.state.useRate.doses['athena-pro-core'], {amount: 1.4, unit: 'g/gal'});
+  assert.match(view.elements.useRateIdentity.textContent, /parts mixed by weight/);
+  view.elements.useRateProduct.onchange({target: {value: 'p:megacrop-11-5-14'}});
+  assert.equal(view.state.useRate.preset, 'custom');
 });
 
 test('applies a liquid manufacturer preset using density-aware volume doses', () => {
