@@ -249,3 +249,15 @@ test('compare order keeps only selected lines, once each', () => {
   assert.deepEqual(state.compareOrder, ['s:athena-pro-veg', 'p:jacks-12-4-16']);
   assert.deepEqual(stateModule.freshState().compareOrder, []);
 });
+
+test('source water defaults to RO and keeps only known, non-negative values', () => {
+  assert.deepEqual(stateModule.freshState().water, {ro: true, values: {}});
+  const state = stateModule.normalizeState({water: {ro: false, values: {Ca: '40', Na: -3, bogus: 9, nitrateN: 6, N: 4}}}, products, systems);
+  assert.equal(state.water.ro, false);
+  assert.equal(state.water.values.Ca, 40);
+  assert.equal(state.water.values.Na, 0);
+  assert.equal(state.water.values.bogus, undefined);
+  assert.equal(state.water.values.N, 6, 'N is at least its forms');
+  assert.equal(stateModule.normalizeState({water: 'junk'}, products, systems).water.ro, true);
+  assert.equal(stateModule.freshState().blend.useWater, true);
+});

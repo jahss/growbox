@@ -85,3 +85,11 @@ test('Guaranteed Analysis CSV adds mL/gal when a density is entered', () => {
   assert.ok(Math.abs(rows[1][2] - rows[1][1] / 1.25) < 1e-12);
   assert.ok(Math.abs(rows[1][3] - 120) < 1e-12);
 });
+
+test('Blend CSV counts source water in each N row', () => {
+  const state = {view: 'blend', blend: {result: {ids: ['a'], doses: [1], ppm: {N: 50, Ca: 20}, water: {N: 10, Ca: 40}, target: {}}}};
+  const rows = exportModule.currentCsvRows(state, {levels: [110], chemistry, product: () => ({name: 'A'})});
+  assert.equal(rows[1][0], 110);
+  assert.equal(rows[1][1], 2, 'recipe doubles to add 100 N on top of 10 from water');
+  assert.equal(rows[1][rows[0].indexOf('Ca')], 80, 'Ca = 20 × 2 + 40 from water');
+});

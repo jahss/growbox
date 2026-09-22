@@ -25,17 +25,19 @@
     const products = result.ids.map(product);
     const ppmKeys = ALL_KEYS.filter(key => key !== 'N');
     const rows = [['Target N', ...products.map(item => item.name + ' g/gal'), 'Total g/gal', ...ppmKeys]];
-    // The solved recipe (g/gal per product) scaled to deliver each N level.
+    // The solved recipe (g/gal per product) scaled so the tank, source water included, holds each N level.
     const nitrogen = Number(result.ppm.N) || 0;
+    const water = result.water || {};
+    const waterN = Number(water.N) || 0;
     if (nitrogen > 0) {
-      levels.forEach(targetN => {
-        const factor = targetN / nitrogen;
+      levels.filter(targetN => targetN > waterN).forEach(targetN => {
+        const factor = (targetN - waterN) / nitrogen;
         const doses = result.doses.map(dose => dose * factor);
         rows.push([
           targetN,
           ...doses,
           doses.reduce((sum, dose) => sum + dose, 0),
-          ...ppmKeys.map(key => (Number(result.ppm[key]) || 0) * factor)
+          ...ppmKeys.map(key => (Number(result.ppm[key]) || 0) * factor + (Number(water[key]) || 0))
         ]);
       });
     }

@@ -63,7 +63,7 @@ const ELEMENT_IDS = [
   'compareCount', 'productPicker', 'selectedLines', 'percentView', 'ppmView',
   'nControl', 'nElement', 'nLevel', 'analysisCompare', 'analysisCompareCards', 'comparisonHeading',
   'useRateProduct', 'useRatePreset', 'useRatePresetNote', 'useRateIdentity',
-  'useRateInputs', 'useRateSummary', 'useRateResult', 'useRateNitrogen', 'useRateCopy',
+  'useRateInputs', 'useRateSummary', 'useRateResult', 'useRateNitrogen', 'useRateCopy', 'useRateWaterNote', 'waterCard', 'waterRo', 'waterInputs', 'waterSummary', 'blendWaterToggle', 'blendUseWater', 'blendWaterSummary',
   'gaInputs', 'gaElemental', 'gaNShare', 'gaFeed', 'gaName', 'gaAdd', 'gaSaved',
   'blendTarget', 'blendLevel', 'blendElement', 'blendLevelControl', 'blendSourcePicker', 'blendCustomToggle', 'blendCustomForm', 'blendSources', 'blendInputs', 'solve',
   'blendResult', 'fit', 'weights', 'blendVsTarget', 'blendNitrogen', 'blendClosest', 'feed',

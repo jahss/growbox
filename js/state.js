@@ -11,6 +11,7 @@
   const CUSTOM_ANALYSIS_KEYS = ['N', 'P2O5', 'K2O', 'Ca', 'Mg', 'S', 'Fe', 'Mn', 'Zn', 'B', 'Cu', 'Mo'];
   // Optional label split of total N, % by weight; blank (0) means not given.
   const NITROGEN_FORM_KEYS = ['nitrateN', 'ammoniacalN', 'ureaN'];
+  const WATER_KEYS = ['ec', 'alkalinity', 'N', ...NITROGEN_FORM_KEYS, 'P', 'K', 'Ca', 'Mg', 'S', 'Fe', 'Mn', 'Cu', 'B', 'Zn', 'Mo', 'Na', 'Cl'];
 
   function freshState() {
     return {
@@ -22,6 +23,8 @@
       systemParts: {},
       systemProfiles: {},
       systemExcluded: {},
+      // Source water from a water report, ppm (alkalinity as CaCO3, ec in mS/cm). RO adds nothing.
+      water: {ro: true, values: {}},
       customProducts: [],
       compareMode: 'ppm',
       n: 160,
@@ -42,6 +45,8 @@
         targetId: '',
         targetElement: 'N',
         targetLevel: 160,
+        // Subtract the source water (from Use rate) before solving.
+        useWater: true,
         result: null
       }
     };
@@ -88,6 +93,16 @@
     const result = state.blend.result;
     if (!result || !Array.isArray(result.doses) || !Array.isArray(result.ids) || !result.ppm || !result.target) state.blend.result = null;
     if (!['compare', 'useRate', 'analysis', 'blend'].includes(state.view)) state.view = defaults.view;
+
+    const water = candidate.water && typeof candidate.water === 'object' && !Array.isArray(candidate.water) ? candidate.water : defaults.water;
+    const rawValues = water.values && typeof water.values === 'object' ? water.values : {};
+    const values = {};
+    WATER_KEYS.forEach(key => { if (key in rawValues) values[key] = Math.max(0, number(rawValues[key])); });
+    // The forms can add up to N but never exceed it.
+    const formsSum = NITROGEN_FORM_KEYS.reduce((sum, key) => sum + number(values[key]), 0);
+    if (formsSum > number(values.N)) values.N = formsSum;
+    state.water = {ro: water.ro !== false, values};
+    state.blend.useWater = state.blend.useWater !== false;
 
     state.useRate = candidate.useRate && typeof candidate.useRate === 'object' && !Array.isArray(candidate.useRate)
       ? {...defaults.useRate, ...candidate.useRate}
@@ -233,6 +248,7 @@
     MAX_COMPARE_LINES,
     MAX_CUSTOM_PRODUCTS,
     NITROGEN_FORM_KEYS,
+    WATER_KEYS,
     freshState,
     normalizeState,
     loadState,

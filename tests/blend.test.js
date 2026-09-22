@@ -33,7 +33,7 @@ function fakeElement() {
 
 function fixture() {
   const {products, systems} = loadDatabase();
-  const ids = ['blendTarget', 'blendLevel', 'blendElement', 'blendLevelControl', 'blendSourcePicker', 'blendSources', 'blendInputs', 'blendResult', 'fit', 'weights', 'blendVsTarget', 'blendNitrogen', 'blendClosest', 'feed', 'solve'];
+  const ids = ['blendTarget', 'blendLevel', 'blendElement', 'blendLevelControl', 'blendSourcePicker', 'blendSources', 'blendInputs', 'blendResult', 'fit', 'weights', 'blendVsTarget', 'blendNitrogen', 'blendClosest', 'feed', 'solve', 'blendWaterToggle', 'blendUseWater', 'blendWaterSummary'];
   const elements = Object.fromEntries(ids.map(id => [id, fakeElement()]));
   const document = {
     getElementById(id) { return elements[id]; },
@@ -47,16 +47,18 @@ function fixture() {
   let state = stateModule.normalizeState(stateModule.freshState(), products, systems);
   let saves = 0;
   const notices = [];
+  let water = {};
   const component = blendModule.createComponent({
     nitrogenFormsHtml: require('../js/use-rate.js').nitrogenFormsHtml,
     nitrogenFieldHtml: require('../js/analysis.js').nitrogenFieldHtml,
+    waterOf: () => water,
     document, products, systems, chemistry, solver, catalog, format, escape,
     getState: () => state,
     save: () => { saves += 1; },
     notify: (...args) => notices.push(args),
     levels: [120, 140, 160, 180, 200]
   });
-  return {products, systems, catalog, elements, component, get state() { return state; }, set state(value) { state = value; }, get saves() { return saves; }, notices};
+  return {products, systems, catalog, elements, component, get state() { return state; }, set state(value) { state = value; }, get saves() { return saves; }, notices, setWater(value) { water = value; }};
 }
 
 const fmt = (value, digits = 2) => Number.isFinite(Number(value))
@@ -285,4 +287,34 @@ test('tapping a source card removes it and says so', () => {
   view.component.render();
   assert.match(view.elements.blendSources.innerHTML, /<button type="button" class="source-card removeSource" data-id="mkp-0-52-34" aria-label="Remove [^"]+"><span class="source-x" aria-hidden="true">×<\/span>/);
   assert.doesNotMatch(view.elements.blendSources.innerHTML, />Remove</);
+});
+
+test('with source water, the solver makes up the rest and results show the total in solution', () => {
+  const view = fixture();
+  view.setWater({Ca: 40, Mg: 60, nitrateN: 5, N: 5});
+  view.component.render();
+  assert.equal(view.elements.blendWaterToggle.classList.contains('hidden'), false, 'the switch shows once water is entered');
+  assert.equal(view.elements.blendUseWater.checked, true);
+  view.component.solve();
+  const result = view.state.blend.result;
+  assert.deepEqual(result.water, {Ca: 40, Mg: 60, nitrateN: 5, N: 5});
+  assert.ok(Math.abs(result.total.Ca - (result.ppm.Ca + 40)) < 1e-9);
+  assert.match(view.elements.blendVsTarget.innerHTML, new RegExp('<small>Ca</small><b>' + Number(result.total.Ca.toFixed(1)) + '</b>'), 'boxes show the total in the tank');
+  assert.match(view.notices.at(-1)[0], /Your water already supplies Mg \(60 ppm, target 50\)/);
+  assert.match(view.elements.fit.innerHTML, /your water/);
+  // Feed chart rows total the water in too: the 160 ppm N row delivers 160 N in solution.
+  assert.match(view.elements.feed.innerHTML, /<b class="cmp-name">160 ppm N<\/b>[^]*?<small>N<\/small><b>160<\/b>/);
+
+  view.elements.blendUseWater.checked = false;
+  view.elements.blendUseWater.onchange();
+  assert.equal(view.state.blend.useWater, false);
+  assert.equal(view.state.blend.result, null, 'changing the switch clears the old result');
+  view.component.solve();
+  assert.deepEqual(view.state.blend.result.water, {});
+});
+
+test('the water switch stays hidden with RO water', () => {
+  const view = fixture();
+  view.component.render();
+  assert.equal(view.elements.blendWaterToggle.classList.contains('hidden'), true);
 });

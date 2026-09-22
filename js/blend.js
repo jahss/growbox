@@ -9,6 +9,7 @@
   const FIELDS = [['N', 'N'], ['P', 'P'], ['K', 'K'], ['Ca', 'Ca'], ['Mg', 'Mg'], ['S', 'S'],
     ['Fe', 'Fe'], ['Mn', 'Mn'], ['Zn', 'Zn'], ['B', 'B'], ['Cu', 'Cu'], ['Mo', 'Mo']];
   const MICRO_KEYS = ['Fe', 'Mn', 'Zn', 'B', 'Cu', 'Mo'];
+  const FORM_LABELS = {nitrateN: 'nitrate N', ammoniacalN: 'ammonium N', ureaN: 'urea N'};
   const MACRO_KEYS = FIELDS.map(field => field[0]).filter(key => !MICRO_KEYS.includes(key));
   const ELEMENT_LEVELS = {N: range(50, 300, 10), P: range(10, 150, 10), K: range(50, 300, 10)};
   // Label fields for entering a product that isn't in the list (as printed, % by weight).
@@ -71,6 +72,8 @@
     const save = options.save;
     const format = options.format;
     const nitrogenFieldHtml = options.nitrogenFieldHtml;
+    // Source water entered on Use rate ({} for RO).
+    const waterOf = options.waterOf || (() => ({}));
     const bindNitrogenField = options.bindNitrogenField || (() => {});
     const labelStep = options.labelStep || (() => '.1');
     const nitrogenFormsHtml = options.nitrogenFormsHtml;
@@ -106,6 +109,28 @@
 
     function optionGroup(label, items, value, text) {
       return items.length ? '<optgroup label="' + label + '">' + items.map(item => '<option value="' + escape(value(item)) + '">' + escape(text(item)) + '</option>').join('') + '</optgroup>' : '';
+    }
+
+    // "Subtract my water": shown once water is entered on Use rate.
+    function renderWaterToggle() {
+      const state = getState();
+      const toggle = element('blendWaterToggle');
+      if (!toggle) return;
+      const water = waterOf();
+      toggle.classList.toggle('hidden', !Object.keys(water).length);
+      element('blendUseWater').checked = state.blend.useWater;
+      element('blendUseWater').onchange = () => {
+        state.blend.useWater = element('blendUseWater').checked;
+        clearResult();
+      };
+      const summary = ['Ca', 'Mg', 'S', 'N', 'K'].filter(key => water[key]).map(key => key + ' ' + format(water[key], 1)).join(' · ');
+      if (element('blendWaterSummary')) element('blendWaterSummary').textContent = summary ? '(' + summary + ' ppm, from Use rate)' : '(from Use rate)';
+    }
+
+    // Use rate's water changed: show or hide the switch; a result solved with the old water is out of date.
+    function waterChanged() {
+      renderWaterToggle();
+      if (getState().blend.result && getState().blend.useWater) clearResult();
     }
 
     function clearResult() {
@@ -245,6 +270,7 @@
       element('blendElement').value = state.blend.targetElement;
       element('blendLevel').innerHTML = ELEMENT_LEVELS[state.blend.targetElement].map(level => '<option value="' + level + '"' + (level === state.blend.targetLevel ? ' selected' : '') + '>' + level + '</option>').join('');
       element('blendLevelControl').classList.toggle('hidden', !state.blend.targetId);
+      renderWaterToggle();
 
       const refill = () => {
         fillTargetFromProduct();
@@ -323,14 +349,15 @@
 
     let feedOpen = false;
 
-    // The solved recipe scaled so it delivers each N level; ppm and doses scale with it.
+    // The solved recipe scaled so the tank (recipe plus any source water) holds each N level.
     function feedHtml(result, selectedProducts) {
       const nitrogen = number(result.ppm.N);
       if (nitrogen <= 0) return '<p class="muted">Blend contains no nitrogen.</p>';
-      return levels.map(targetN => {
-        const factor = targetN / nitrogen;
+      const water = result.water || {};
+      return levels.filter(targetN => targetN > number(water.N)).map(targetN => {
+        const factor = (targetN - number(water.N)) / nitrogen;
         const total = result.doses.reduce((sum, dose) => sum + dose, 0) * factor;
-        const chips = keys => keys.map(key => chip(key, format(result.ppm[key] * factor, digitsFor(key)))).join('');
+        const chips = keys => keys.map(key => chip(key, format(result.ppm[key] * factor + number(water[key]), digitsFor(key)))).join('');
         const doses = selectedProducts.map((product, index) => result.doses[index] > 0
           ? '<li>' + escape(shortName(product)) + ' — <b>' + doseText(product, result.doses[index] * factor) + '</b></li>'
           : '').join('');
@@ -356,7 +383,11 @@
       const selectedProducts = result.ids.map(catalog.product).filter(Boolean);
       const total = result.doses.reduce((sum, dose) => sum + dose, 0);
       element('blendResult').classList.remove('hidden');
-      element('fit').innerHTML = 'Fit to target: ' + fitBadgeHtml(result.rms, format) + ' <small class="muted">How close the blend gets across the elements you set. Under 100% means your sources can\'t make the target exactly; the boxes below show where it falls short.</small>';
+      const water = result.water || {};
+      const hasWater = Object.keys(water).length > 0;
+      // What's in the tank: the recipe plus the water it was solved with.
+      const inTank = result.total || result.ppm;
+      element('fit').innerHTML = 'Fit to target: ' + fitBadgeHtml(result.rms, format) + '<small class="muted fit-note">How close the blend gets across the elements you set' + (hasWater ? ', counting your water' : '') + '. Under 100% means your sources can\'t make the target exactly; the boxes below show where it falls short.</small>';
       // Products the recipe uses first, then the ones it doesn't need.
       const order = selectedProducts.map((product, index) => index).sort((a, b) => result.doses[b] - result.doses[a]);
       element('weights').innerHTML = order.map(index => {
@@ -365,9 +396,11 @@
         return '<div class="pill' + (grams > 0 ? '' : ' unused') + '"><small class="muted">' + escape(product.custom ? 'Custom' : product.brand) + '</small><b>' + escape(product.custom ? product.name : catalog.displayFormula(product)) + '</b><span>' +
           (grams > 0 ? doseText(product, grams) + ' · ' + format(grams / total * 100, 1) + '% of mass' : 'Not needed') + '</span></div>';
       }).join('');
-      element('blendVsTarget').innerHTML = versusTargetHtml(result.ppm, result.target, format);
+      element('blendVsTarget').innerHTML = versusTargetHtml(inTank, result.target, format);
       const lines = selectedProducts.map((product, index) => ({product, gramsPerLiter: result.doses[index] / chemistry.US_GALLON_LITERS}));
-      element('blendNitrogen').innerHTML = nitrogenFormsHtml(chemistry.recipeAtDoses(lines).nitrogenForms, result.ppm.N, format, escape, result.target);
+      const forms = chemistry.recipeAtDoses(lines).nitrogenForms;
+      solver.FORM_KEYS.forEach(key => { if (water[key]) forms[key] = number(forms[key]) + water[key]; });
+      element('blendNitrogen').innerHTML = nitrogenFormsHtml(forms, inTank.N, format, escape, result.target);
       element('blendClosest').innerHTML = closestProducts(result).map(item => '<div class="selected-line"><div class="selected-line-head"><div><b>' + escape(item.title) + '</b>' + (item.value === state.blend.targetId ? ' <small class="cmp-only">your target</small>' : '') + '<div class="muted">' + escape(item.formula) + '</div></div>' + fitBadgeHtml(item.distance, format) + '</div></div>').join('');
       element('feed').innerHTML = feedHtml(result, selectedProducts);
       const cards = document.querySelectorAll('.blend-feed-card');
@@ -396,13 +429,16 @@
         notify('N form targets add up to ' + format(formsTotal, 1) + ' ppm, more than the N target (' + format(number(state.blend.target.N), 1) + ' ppm).', 'warn');
         return;
       }
+      const water = state.blend.useWater ? waterOf() : {};
       state.blend.result = {
         ids: selectedProducts.map(product => product.id),
         target: {...state.blend.target},
-        ...solver.solveDoses(selectedProducts, state.blend.target, chemistry)
+        ...solver.solveWithWater(selectedProducts, state.blend.target, water, chemistry)
       };
       save();
       renderResult();
+      const covered = state.blend.result.covered.map(key => (FORM_LABELS[key] || key) + ' (' + format(water[key], digitsFor(key)) + ' ppm, target ' + format(state.blend.target[key], digitsFor(key)) + ')');
+      if (covered.length) notify('Your water already supplies ' + covered.join(', ') + ', so nothing is added for ' + (covered.length > 1 ? 'them' : 'it') + '.', 'warn');
     }
 
     function render() {
@@ -413,7 +449,7 @@
       renderResult();
     }
 
-    return Object.freeze({render, renderSources, renderTarget, renderResult, solve});
+    return Object.freeze({render, renderSources, renderTarget, renderResult, solve, waterChanged});
   }
 
   return Object.freeze({FIELDS, ELEMENT_LEVELS, versusTargetHtml, fitClass, fitBadgeHtml, createComponent});

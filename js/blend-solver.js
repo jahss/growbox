@@ -140,7 +140,34 @@
     return {doses, ppm, rms: relativeError(ppm, target)};
   }
 
+  // What the nutrients still have to supply once the source water is in: target minus
+  // water, per matched key. Keys the water alone already meets drop out (listed in `covered`).
+  function subtractWater(target, water) {
+    const remaining = {};
+    const covered = [];
+    FIT_KEYS.forEach(key => {
+      const goal = number(target && target[key]);
+      const supplied = number(water && water[key]);
+      remaining[key] = goal > 0 ? Math.max(0, goal - supplied) : 0;
+      if (goal > 0 && supplied >= goal) covered.push(key);
+    });
+    return {target: remaining, covered};
+  }
+
+  // Doses for what the water doesn't already supply. `ppm` is the nutrients alone,
+  // `total` adds the water (every key it has, e.g. Na), and the fit scores the total.
+  function solveWithWater(products, target, water, chemistry) {
+    const {target: remaining, covered} = subtractWater(target, water);
+    const doses = fitRows(remaining).length ? solveDoses(products, remaining, chemistry).doses : products.map(() => 0);
+    const ppm = deliveredPpm(products, doses, chemistry);
+    const total = {...(water || {})};
+    Object.keys(ppm).forEach(key => { total[key] = number(total[key]) + ppm[key]; });
+    return {doses, ppm, total, water: {...(water || {})}, covered, rms: relativeError(total, target)};
+  }
+
   return Object.freeze({
+    subtractWater,
+    solveWithWater,
     MACRO_KEYS: Object.freeze([...MACRO_KEYS]),
     MICRO_KEYS: Object.freeze([...MICRO_KEYS]),
     PPM_KEYS: Object.freeze([...PPM_KEYS]),

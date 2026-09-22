@@ -100,3 +100,29 @@ test('matches N-form targets from sources with a published N split', () => {
   const unsplit = solver.solveDoses([{analysis: {N: 10}}], {nitrateN: 100}, chemistry);
   closeTo(unsplit.doses[0], 0, 1e-12);
 });
+
+test('subtracts source water from the target; elements the water already covers are not matched', () => {
+  const {target, covered} = solver.subtractWater({N: 160, Ca: 50, Mg: 0, nitrateN: 150}, {N: 10, Ca: 60, Mg: 5, nitrateN: 10});
+  assert.equal(target.N, 150);
+  assert.equal(target.Ca, 0);
+  assert.equal(target.Mg, 0);
+  assert.equal(target.nitrateN, 140);
+  assert.deepEqual(covered, ['Ca']);
+});
+
+test('solving with water makes up only the difference and scores the total in solution', () => {
+  const byId = new Map(loadProducts().map(product => [product.id, product]));
+  const sources = ['calcium-nitrate-tetrahydrate', 'potassium-nitrate'].map(id => byId.get(id));
+  const water = {Ca: 40, Na: 25};
+  const result = solver.solveWithWater(sources, {N: 150, Ca: 120}, water, chemistry);
+  closeTo(result.ppm.Ca + 40, 120, 1e-6);
+  closeTo(result.total.Ca, 120, 1e-6);
+  closeTo(result.total.N, 150, 1e-6);
+  assert.equal(result.total.Na, 25, 'water-only ions carry into the total');
+  closeTo(result.rms, 0, 1e-9);
+  assert.deepEqual(result.water, water);
+  // Nothing left to match: zero doses, no crash.
+  const covered = solver.solveWithWater(sources, {Ca: 30}, {Ca: 60}, chemistry);
+  assert.deepEqual(covered.doses, [0, 0]);
+  assert.deepEqual(covered.covered, ['Ca']);
+});

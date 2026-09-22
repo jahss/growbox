@@ -18,12 +18,14 @@ function loadDatabase() {
 }
 
 function fakeElement() {
-  return {innerHTML: '', textContent: '', value: '', disabled: false, onchange: null, oninput: null};
+  const classes = new Set();
+  return {innerHTML: '', textContent: '', value: '', disabled: false, checked: false, onchange: null, oninput: null,
+    classList: {toggle(name, on) { if (on) classes.add(name); else classes.delete(name); }, contains: name => classes.has(name)}};
 }
 
 function fixture() {
   const {products, systems} = loadDatabase();
-  const ids = ['useRateProduct', 'useRatePreset', 'useRatePresetNote', 'useRateIdentity', 'useRateInputs', 'useRateSummary', 'useRateResult', 'useRateNitrogen', 'useRateCopy'];
+  const ids = ['useRateProduct', 'useRatePreset', 'useRatePresetNote', 'useRateIdentity', 'useRateInputs', 'useRateSummary', 'useRateResult', 'useRateNitrogen', 'useRateCopy', 'useRateWaterNote', 'waterInputs', 'waterSummary', 'waterRo'];
   const elements = Object.fromEntries(ids.map(id => [id, fakeElement()]));
   const document = {
     getElementById(id) { return elements[id]; },
@@ -177,4 +179,18 @@ test('exports the calculated recipe and its normalized component doses', () => {
   assert.match(rows[1][0], /Jack's Nutrients — RO/);
   assert.deepEqual(rows[3], ['Component', 'Entered rate', 'Unit', 'Normalized g/L']);
   assert.equal(rows[4][2], 'g/gal');
+});
+
+test('source water: RO adds nothing; entered values add to the totals and carry to Blend', () => {
+  assert.deepEqual(useRateModule.waterPpm({ro: true, values: {Ca: 40}}), {});
+  assert.deepEqual(useRateModule.waterPpm({ro: false, values: {Ca: 40, Na: 25, alkalinity: 120}}), {Ca: 40, Na: 25, alkalinity: 120});
+  const view = fixture();
+  view.state.water = {ro: false, values: {Ca: 40, Mg: 10, nitrateN: 5, N: 5, Na: 25, alkalinity: 120, ec: 0.4}};
+  view.component.render();
+  const nutrients = view.component.currentResult().ppm;
+  assert.match(view.elements.useRateResult.innerHTML, new RegExp('<small>Ca</small><b>' + (Math.round((nutrients.Ca + 40) * 10) / 10) + '</b><small>\\+40 water</small>'));
+  assert.match(view.elements.useRateWaterNote.textContent, /Na 25 ppm · alkalinity 120 ppm CaCO₃ · EC 0\.4 mS\/cm/);
+  view.elements.useRateCopy.onclick();
+  assert.equal(view.state.blend.target.Ca, nutrients.Ca + 40, 'Blend target is the total in solution');
+  assert.equal(view.state.blend.target.nitrateN, view.component.currentResult().nitrogenForms.nitrateN + 5);
 });

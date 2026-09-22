@@ -36,6 +36,21 @@
       '<p class="muted n-share">Ammonium is ' + format(ammoniumShare, 1) + '% of N' + (unpublished > 0.05 ? ' (some N has no published form)' : '') + '. Most hydro recipes keep ammonium under about 10–15% of N.</p>';
   }
 
+  // Source water, in JR Peters water-report order. ppm unless noted; N as N, S as S.
+  const WATER_FIELDS = [
+    ['ec', 'Soluble salts', 'mS/cm'], ['alkalinity', 'Total alkalinity', 'ppm CaCO₃'], ['N', 'Total N', 'ppm'],
+    ['P', 'Phosphorus', 'ppm'], ['K', 'Potassium', 'ppm'], ['Ca', 'Calcium', 'ppm'], ['Mg', 'Magnesium', 'ppm'], ['S', 'Sulfur', 'ppm'],
+    ['Fe', 'Iron', 'ppm'], ['Mn', 'Manganese', 'ppm'], ['Cu', 'Copper', 'ppm'], ['B', 'Boron', 'ppm'], ['Zn', 'Zinc', 'ppm'], ['Mo', 'Molybdenum', 'ppm'],
+    ['Na', 'Sodium', 'ppm'], ['Cl', 'Chlorides', 'ppm']
+  ];
+  const WATER_EXTRAS = [['Na', 'Na', 'ppm'], ['Cl', 'Cl', 'ppm'], ['alkalinity', 'alkalinity', 'ppm CaCO₃'], ['ec', 'EC', 'mS/cm']];
+
+  // What the source water adds, as a plain {key: value} of what was entered; RO adds nothing.
+  function waterPpm(water) {
+    if (!water || water.ro !== false) return {};
+    return Object.fromEntries(Object.entries(water.values || {}).filter(([, value]) => number(value) > 0).map(([key, value]) => [key, number(value)]));
+  }
+
   function number(value) {
     return Number.isFinite(Number(value)) ? Number(value) : 0;
   }
@@ -111,6 +126,9 @@
     const format = options.format;
     const escape = options.escape;
     const onCopied = options.onCopied || (() => {});
+    const onWaterChange = options.onWaterChange || (() => {});
+    const nitrogenFieldHtml = options.nitrogenFieldHtml;
+    const bindNitrogenField = options.bindNitrogenField || (() => {});
     const element = id => document.getElementById(id);
 
     function currentEntry() {
@@ -214,15 +232,30 @@
       });
     }
 
+    // Nutrients plus source water: what's actually in the tank.
+    function inSolution(result) {
+      const water = waterPpm(getState().water);
+      const ppm = {};
+      PPM_COLUMNS.forEach(([key]) => { ppm[key] = number(result.ppm[key]) + number(water[key]); });
+      const forms = {...result.nitrogenForms};
+      ['nitrateN', 'ammoniacalN', 'ureaN'].forEach(key => { if (water[key]) forms[key] = number(forms[key]) + water[key]; });
+      return {ppm, forms, water};
+    }
+
     function renderResult() {
       const result = currentResult();
       if (!result) return;
+      const solution = inSolution(result);
       const estimateNote = result.approximateDensity
         ? '<br><small class="muted">Approximate: a volume dose uses the midpoint of a published SDS density range.</small>'
         : '';
       element('useRateSummary').innerHTML = 'Product weight <b>' + format(result.totalGPerLiter * chemistry.US_GALLON_LITERS, 3) + ' g/gal</b> <span class="muted">· ' + format(result.totalGPerLiter, 3) + ' g/L</span>' + estimateNote;
-      element('useRateResult').innerHTML = PPM_COLUMNS.map(([key, label]) => '<span class="cmp-chip"><small>' + label + '</small><b>' + format(result.ppm[key], MICRO_KEYS.includes(key) ? 3 : 1) + '</b></span>').join('');
-      element('useRateNitrogen').innerHTML = nitrogenFormsHtml(result.nitrogenForms, result.ppm.N, format, escape);
+      const digits = key => MICRO_KEYS.includes(key) ? 3 : 1;
+      element('useRateResult').innerHTML = PPM_COLUMNS.map(([key, label]) => '<span class="cmp-chip"><small>' + label + '</small><b>' + format(solution.ppm[key], digits(key)) + '</b>' +
+        (solution.water[key] ? '<small>+' + format(solution.water[key], digits(key)) + ' water</small>' : '') + '</span>').join('');
+      const extras = WATER_EXTRAS.filter(([key]) => solution.water[key]).map(([key, label, unit]) => label + ' ' + format(solution.water[key], key === 'ec' ? 2 : 1) + ' ' + unit);
+      if (element('useRateWaterNote')) element('useRateWaterNote').textContent = extras.length ? 'From your water: ' + extras.join(' · ') : '';
+      element('useRateNitrogen').innerHTML = nitrogenFormsHtml(solution.forms, solution.ppm.N, format, escape);
     }
 
     // Hands the exact delivered ppm to the Blend finder as a custom target, so stage
@@ -232,9 +265,11 @@
       const entry = currentEntry();
       const result = currentResult();
       if (!entry || !result) return;
-      PPM_COLUMNS.forEach(([key]) => { state.blend.target[key] = number(result.ppm[key]); });
-      // Form targets only when the labels account for all of the N.
-      const split = chemistry.fullNitrogenSplit(result.nitrogenForms, result.ppm.N);
+      // The target is what's in the tank, water included; Blend subtracts the water again.
+      const solution = inSolution(result);
+      PPM_COLUMNS.forEach(([key]) => { state.blend.target[key] = solution.ppm[key]; });
+      // Form targets only when the labels (and water report) account for all of the N.
+      const split = chemistry.fullNitrogenSplit(solution.forms, solution.ppm.N);
       ['nitrateN', 'ammoniacalN', 'ureaN'].forEach(key => { state.blend.target[key] = split ? number(split[key]) : 0; });
       state.blend.targetId = '';
       state.blend.result = null;
@@ -247,17 +282,61 @@
       const entry = currentEntry();
       const result = currentResult();
       if (!entry || !result) return [];
-      const formKeys = Object.keys(result.nitrogenForms);
+      const solution = inSolution(result);
+      const formKeys = Object.keys(solution.forms);
+      const withWater = Object.keys(solution.water).length ? ' incl. water' : '';
       return [
-        ['Program', 'Total g/L', 'Total g/gal', ...PPM_COLUMNS.map(column => column[0] + ' ppm'), ...formKeys.map(key => (NITROGEN_FORM_LABELS[key] || key) + ' ppm')],
-        [catalog.entryTitle(entry.record), result.totalGPerLiter, result.totalGPerLiter * chemistry.US_GALLON_LITERS, ...PPM_COLUMNS.map(([key]) => result.ppm[key]), ...formKeys.map(key => result.nitrogenForms[key])],
+        ['Program', 'Total g/L', 'Total g/gal', ...PPM_COLUMNS.map(column => column[0] + ' ppm' + withWater), ...formKeys.map(key => (NITROGEN_FORM_LABELS[key] || key) + ' ppm' + withWater)],
+        [catalog.entryTitle(entry.record), result.totalGPerLiter, result.totalGPerLiter * chemistry.US_GALLON_LITERS, ...PPM_COLUMNS.map(([key]) => solution.ppm[key]), ...formKeys.map(key => solution.forms[key])],
         [],
         ['Component', 'Entered rate', 'Unit', 'Normalized g/L'],
         ...result.lines.map(line => [line.label, line.amount, line.unit, line.gramsPerLiter])
       ];
     }
 
+    // "Your water" card: RO switch, report fields, and a one-line summary.
+    function renderWater() {
+      const water = getState().water;
+      const card = element('waterCard');
+      if (!element('waterInputs')) return;
+      const changed = () => { save(); renderWaterSummary(); renderResult(); onWaterChange(); };
+      element('waterRo').checked = water.ro;
+      element('waterRo').onchange = () => {
+        water.ro = element('waterRo').checked;
+        element('waterInputs').classList.toggle('hidden', water.ro);
+        changed();
+      };
+      element('waterInputs').classList.toggle('hidden', water.ro);
+      const step = key => ['Fe', 'Mn', 'Cu', 'B', 'Zn', 'Mo', 'ec'].includes(key) ? '.01' : '1';
+      element('waterInputs').innerHTML = WATER_FIELDS.map(([key, label, unit]) => {
+        const value = number(water.values[key]);
+        const input = '<input' + (key === 'N' ? ' id="wtN"' : '') + ' class="wti" data-k="' + key + '" type="number" min="0" step="' + step(key) + '" placeholder="0" value="' + (value > 0 ? format(value, 4) : '') + '">';
+        return key === 'N' && nitrogenFieldHtml
+          ? nitrogenFieldHtml('wt', label + ' ' + unit, input, 'wti', water.values, 'ppm', 'From the report\'s nitrate, ammonium and urea nitrogen. With N blank, these fill it in.', format)
+          : '<label>' + label + ' ' + unit + input + '</label>';
+      }).join('');
+      document.querySelectorAll('.wti').forEach(input => {
+        input.oninput = () => {
+          water.values[input.dataset.k] = Math.max(0, number(input.value));
+          changed();
+        };
+      });
+      bindNitrogenField(document, 'wt', format);
+      if (card && !water.ro && !Object.keys(waterPpm(water)).length) card.open = true;
+      renderWaterSummary();
+    }
+
+    function renderWaterSummary() {
+      const water = getState().water;
+      const entered = waterPpm(water);
+      const short = {alkalinity: 'Alk', ec: 'EC'};
+      const parts = WATER_FIELDS.filter(([key]) => entered[key] && !['nitrateN', 'ammoniacalN', 'ureaN'].includes(key))
+        .map(([key]) => (short[key] || key) + ' ' + format(entered[key], key === 'ec' ? 2 : 1));
+      if (element('waterSummary')) element('waterSummary').textContent = water.ro ? 'RO / distilled · adds nothing' : (parts.length ? parts.join(' · ') : 'Nothing entered yet');
+    }
+
     function render() {
+      renderWater();
       renderPicker();
       const entry = currentEntry();
       if (!entry) return;
@@ -270,5 +349,5 @@
     return Object.freeze({render, renderResult, applyPreset, currentEntry, currentResult, csvRows, copyToBlend});
   }
 
-  return Object.freeze({PPM_COLUMNS, nitrogenFormsHtml, doseUnits, resolveEntry, presetDoses, calculateRecipe, createComponent});
+  return Object.freeze({PPM_COLUMNS, WATER_FIELDS, waterPpm, nitrogenFormsHtml, doseUnits, resolveEntry, presetDoses, calculateRecipe, createComponent});
 });

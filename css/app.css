@@ -79,3 +79,14 @@
 .selected-line .line-x{flex:none;min-height:40px;min-width:40px;margin:-9px -9px 0 0;padding:0;border:0;background:none;color:var(--muted);font-size:1.3rem;line-height:1}
 .selected-line .line-x:hover,.selected-line .line-x:focus-visible{color:var(--bad)}
 .sort-hint{font-size:.78rem;margin-top:6px}
+.water-card summary{cursor:pointer;display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 10px}
+.water-title{font-size:1.15rem;font-weight:700}
+.water-card #waterSummary{font-size:.85rem}
+.water-ro{margin:8px 0}
+.water-note{font-size:.85rem;margin-top:6px}
+.water-note:empty{display:none}
+.water-toggle{display:flex;flex-wrap:wrap;gap:4px 6px;margin-top:10px;font-size:.9rem}
+#fit .fit-badge{display:inline-flex;align-items:baseline;gap:6px;flex-wrap:wrap}
+#fit .fit-badge small::before{content:'· '}
+.fit-note{display:block;margin-top:6px}
+.water-hint{font-size:.82rem}
