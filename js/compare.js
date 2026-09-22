@@ -59,7 +59,8 @@
 
     function entryCell(entry) {
       const profile = entry.profileLabel ? ' · ' + entry.profileLabel + ' profile' : '';
-      return escape(catalog.entryTitle(entry)) + '<br><small class="muted">' + escape(displayFormula(entry)) + ' · ' + escape(displayParts(entry)) + escape(profile) + '</small>';
+      const estimate = entry.kind === 'system' && entry.mix && entry.mix.approximateDensity ? ' · approx. density' : '';
+      return escape(catalog.entryTitle(entry)) + '<br><small class="muted">' + escape(displayFormula(entry)) + ' · ' + escape(displayParts(entry)) + escape(profile + estimate) + '</small>';
     }
 
     function selectionCount() {
@@ -195,7 +196,8 @@
         if (item.form === 'liquid' && number(item.densityGPerMl) > 0) return escape(entry.system.components[index].label) + ' ' + format(grams / item.densityGPerMl, 3) + ' mL/gal' + constraint;
         return escape(entry.system.components[index].label) + ' ' + format(grams, 3) + ' g/gal' + constraint;
       });
-      return format(totalGrams, 3) + ' g/gal total<br><small class="muted">' + pieces.join(' + ') + '</small>';
+      const estimate = entry.mix.approximateDensity ? '<br><small class="muted">Approximate: volume-to-mass conversion uses midpoint(s) of published SDS density range(s).</small>' : '';
+      return format(totalGrams, 3) + ' g/gal total<br><small class="muted">' + pieces.join(' + ') + '</small>' + estimate;
     }
 
     function renderTables() {
