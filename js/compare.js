@@ -14,6 +14,7 @@
     ['Fe', 'Fe'], ['Mn', 'Mn'], ['Zn', 'Zn'], ['B', 'B'], ['Cu', 'Cu'], ['Mo', 'Mo']
   ];
   const MICRO_KEYS = ['Fe', 'Mn', 'Zn', 'B', 'Cu', 'Mo'];
+  const MAX_LINES = 10;
   const ELEMENT_LEVELS = {
     N: range(50, 300, 10),
     P: range(10, 150, 10),
@@ -140,8 +141,8 @@
     function addItem(value) {
       if (!value) return;
       const state = getState();
-      if (selectionCount() >= 5) {
-        notify('Comparison is limited to 5 product lines. Remove one before adding another.', 'warn');
+      if (selectionCount() >= MAX_LINES) {
+        notify('Comparison is limited to ' + MAX_LINES + ' product lines. Remove one before adding another.', 'warn');
         return;
       }
       const [kind, id] = value.split(':');
@@ -193,8 +194,8 @@
         : '';
 
       element('productPicker').innerHTML = '<option value="">Add product line…</option>' + group('1-Part', onePart, 'p') + group('2-Part', twoPart, 's') + group('3-Part', threePart, 's');
-      element('productPicker').disabled = selectionCount() >= 5;
-      element('compareCount').textContent = selectionCount() + ' / 5 selected';
+      element('productPicker').disabled = selectionCount() >= MAX_LINES;
+      element('compareCount').textContent = selectionCount() + ' / ' + MAX_LINES + ' selected';
 
       const selected = [];
       state.compare.map(product).filter(Boolean).forEach(item => selected.push({
@@ -249,7 +250,7 @@
 
     function selectedEntries() {
       const state = getState();
-      return catalog.selectedCompareEntries(state.compare, state.systemCompare, state.systemParts, state.systemProfiles).slice(0, 5);
+      return catalog.selectedCompareEntries(state.compare, state.systemCompare, state.systemParts, state.systemProfiles).slice(0, MAX_LINES);
     }
 
     function productDoseText(item, grams) {

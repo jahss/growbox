@@ -6,7 +6,7 @@
   'use strict';
 
   const STORAGE_KEY = 'growbox-fert-tool-v07';
-  const MAX_COMPARE_LINES = 5;
+  const MAX_COMPARE_LINES = 10;
 
   function freshState() {
     return {

@@ -74,7 +74,7 @@ test('identifies a sole nitrogen-bearing component', () => {
 test('renders grouped complete-line choices and the three default selections', () => {
   const view = fixture();
   view.component.render();
-  assert.equal(view.elements.compareCount.textContent, '3 / 5 selected');
+  assert.equal(view.elements.compareCount.textContent, '3 / 10 selected');
   assert.match(view.elements.productPicker.innerHTML, /optgroup label="1-Part"/);
   assert.match(view.elements.productPicker.innerHTML, /optgroup label="2-Part"/);
   assert.doesNotMatch(view.elements.productPicker.innerHTML, /MKP 0-52-34/);
@@ -160,7 +160,7 @@ test('comparison controls update mode, nitrogen target, and selection state', ()
 
   view.elements.productPicker.onchange({target: {value: 'p:jacks-15-5-20-tap'}});
   assert.ok(view.state.compare.includes('jacks-15-5-20-tap'));
-  assert.equal(view.elements.compareCount.textContent, '4 / 5 selected');
+  assert.equal(view.elements.compareCount.textContent, '4 / 10 selected');
   assert.ok(view.saves >= 4);
 });
 

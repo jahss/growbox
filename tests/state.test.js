@@ -86,16 +86,19 @@ test('loadState recovers when storage access is unavailable', () => {
   assert.deepEqual(state.systemCompare, ['athena-pro-veg']);
 });
 
-test('normalization enforces the five-line comparison limit', () => {
+test('normalization enforces the ten-line comparison limit, dropping systems first', () => {
+  assert.equal(stateModule.MAX_COMPARE_LINES, 10);
+  const manyProducts = Array.from({length: 8}, (_, i) => ({id: 'p' + i, compareGroup: '1-part'}));
+  const manySystems = Array.from({length: 5}, (_, i) => ({id: 's' + i}));
   const state = stateModule.normalizeState({
-    compare: ['megacrop-11-5-14', 'jacks-12-4-16', 'one-c', 'one-d'],
-    systemCompare: ['athena-pro-veg', 'system-b', 'system-c'],
+    compare: manyProducts.map(item => item.id),
+    systemCompare: manySystems.map(item => item.id),
     systemParts: {},
     compareMode: 'percent'
-  }, products, systems);
-  assert.equal(state.compare.length + state.systemCompare.length, 5);
-  assert.deepEqual(state.compare, ['megacrop-11-5-14', 'jacks-12-4-16', 'one-c', 'one-d']);
-  assert.deepEqual(state.systemCompare, ['athena-pro-veg']);
+  }, manyProducts, manySystems);
+  assert.equal(state.compare.length + state.systemCompare.length, 10);
+  assert.deepEqual(state.compare, manyProducts.map(item => item.id));
+  assert.deepEqual(state.systemCompare, ['s0', 's1']);
 });
 
 test('normalization removes invalid and all-zero saved system ratios', () => {
