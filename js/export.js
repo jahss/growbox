@@ -39,8 +39,9 @@
 
   function comparisonRows(state, chemistry, entries, exportLabel) {
     const rows = [['Product / system', 'Total g/gal', ...ALL_KEYS]];
+    const element = state.compareElement || 'N';
     entries.forEach(entry => {
-      const dose = chemistry.standardizedNitrogenDose(entry.analysis, state.n);
+      const dose = chemistry.standardizedDose(entry.analysis, element, state.n);
       const ppm = dose === null ? null : chemistry.ppmAtDose(entry.analysis, dose);
       rows.push([exportLabel(entry), dose, ...(ppm ? ALL_KEYS.map(key => ppm[key]) : ALL_KEYS.map(() => ''))]);
     });

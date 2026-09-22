@@ -14,6 +14,24 @@
     ['Fe', 'Fe'], ['Mn', 'Mn'], ['Zn', 'Zn'], ['B', 'B'], ['Cu', 'Cu'], ['Mo', 'Mo']
   ];
   const MICRO_KEYS = ['Fe', 'Mn', 'Zn', 'B', 'Cu', 'Mo'];
+  const ELEMENT_LEVELS = {
+    N: range(50, 300, 10),
+    P: range(10, 150, 10),
+    K: range(50, 300, 10)
+  };
+
+  // Inclusive arithmetic range: [start, end] step by `step`.
+  function range(start, end, step) {
+    const values = [];
+    for (let value = start; value <= end; value += step) values.push(value);
+    return values;
+  }
+
+  // Nearest value from `levels` to `target`, for snapping a persisted level
+  // into the active element's range after the element changes.
+  function nearestLevel(levels, target) {
+    return levels.reduce((best, value) => Math.abs(value - target) < Math.abs(best - target) ? value : best, levels[0]);
+  }
 
   function number(value) {
     return Number.isFinite(Number(value)) ? Number(value) : 0;
@@ -212,9 +230,10 @@
           PERCENT_COLUMNS.map(([key]) => '<td class="' + highlightClass(rows, key, index) + '">' + format(row.values[key], MICRO_KEYS.includes(key) ? (key === 'Mo' ? 4 : 3) : 2) + '</td>').join('') + '</tr>').join('') +
           '</tbody>';
       } else {
-        element('comparisonHeading').textContent = 'Elemental ppm @ ' + state.n + ' ppm N';
+        const standardElement = state.compareElement || 'N';
+        element('comparisonHeading').textContent = 'Elemental ppm @ ' + state.n + ' ppm ' + standardElement;
         const rows = entries.map(entry => {
-          const dose = chemistry.standardizedNitrogenDose(entry.analysis, state.n);
+          const dose = chemistry.standardizedDose(entry.analysis, standardElement, state.n);
           const values = dose === null ? null : chemistry.ppmAtDose(entry.analysis, dose);
           return {entry, dose, values: values || {}};
         });
@@ -236,6 +255,13 @@
         addItem(event.target.value);
         event.target.value = '';
       };
+      element('nElement').onchange = event => {
+        state.compareElement = event.target.value;
+        const levels = ELEMENT_LEVELS[state.compareElement];
+        state.n = nearestLevel(levels, state.n);
+        save();
+        render();
+      };
       element('nLevel').onchange = event => {
         state.n = Number(event.target.value);
         save();
@@ -253,7 +279,12 @@
       };
 
       renderControls();
+      // Rebuild the level options so the visible range matches the element.
+      element('nElement').value = state.compareElement || 'N';
+      const levels = ELEMENT_LEVELS[state.compareElement || 'N'];
+      element('nLevel').innerHTML = levels.map(level => '<option value="' + level + '"' + (level === state.n ? ' selected' : '') + '>' + level + '</option>').join('');
       element('nLevel').value = state.n;
+      element('nLevel').disabled = false;
       element('percentView').classList.toggle('active', state.compareMode === 'percent');
       element('ppmView').classList.toggle('active', state.compareMode === 'ppm');
       element('nControl').classList.toggle('hidden', state.compareMode !== 'ppm');
@@ -263,5 +294,9 @@
     return Object.freeze({render, renderControls, renderTables, selectedEntries, addItem, removeItem, setSystemProfile});
   }
 
-  return Object.freeze({highlightClass, soleNitrogenSourceIndex, createComponent});
+  return Object.freeze({range, nearestLevel, ELEMENT_LEVELS: Object.freeze({
+    N: Object.freeze([...ELEMENT_LEVELS.N]),
+    P: Object.freeze([...ELEMENT_LEVELS.P]),
+    K: Object.freeze([...ELEMENT_LEVELS.K])
+  }), highlightClass, soleNitrogenSourceIndex, createComponent});
 });

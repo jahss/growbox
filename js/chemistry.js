@@ -95,12 +95,20 @@
   }
 
   function standardizedNitrogenDose(productOrAnalysis, targetNppm) {
-    const analysis = analysisOf(productOrAnalysis);
-    const nitrogenPercent = number(analysis.N);
-    const target = number(targetNppm);
-    if (target < 0) throw new RangeError('Nitrogen target must be nonnegative.');
-    if (nitrogenPercent <= 0) return null;
-    return target / (MG_PER_L_PER_G_PER_GAL * nitrogenPercent / 100);
+    return standardizedDose(productOrAnalysis, 'N', targetNppm);
+  }
+
+  // Dose (in g per US gal) required to reach `targetPpm` of the *elemental*
+  // `key` (one of N, P, K). Returns null when the element is absent from the
+  // analysis (no dose can reach a nonzero target of it).
+  function standardizedDose(productOrAnalysis, key, targetPpm) {
+    if (ELEMENT_KEYS.indexOf(key) < 0) throw new RangeError('Unsupported standardization element: ' + key);
+    const elemental = elementalAnalysis(productOrAnalysis);
+    const percent = number(elemental[key]);
+    const target = number(targetPpm);
+    if (target < 0) throw new RangeError('Standardization target must be nonnegative.');
+    if (percent <= 0) return null;
+    return target / (MG_PER_L_PER_G_PER_GAL * percent / 100);
   }
 
   function requireDensity(product) {
@@ -178,6 +186,7 @@
     ppmAtGramsPerLiter,
     recipeAtDoses,
     standardizedNitrogenDose,
+    standardizedDose,
     rateMassGPerGal,
     mixSystem
   });

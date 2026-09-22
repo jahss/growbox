@@ -37,11 +37,25 @@
     });
   }
 
+  // Same as feedRows but anchored to an elemental key (e.g. 'P' or 'K') so the
+  // dose is chosen to reach `target` ppm of that element instead of nitrogen.
+  function feedRowsFor(analysis, key, levels, chemistry) {
+    return levels.map(target => {
+      const dose = chemistry.standardizedDose(analysis, key, target);
+      return {target, dose, ppm: dose === null ? null : chemistry.ppmAtDose(analysis, dose)};
+    });
+  }
+
   function feedTableHtml(analysis, levels, chemistry, format) {
-    return '<thead><tr><th>N target</th><th>g/gal</th><th>N</th><th>P</th><th>K</th><th>Ca</th><th>Mg</th><th>S</th></tr></thead><tbody>' +
-      feedRows(analysis, levels, chemistry).map(row => {
-        if (row.dose === null) return '<tr><td>' + row.targetN + '</td><td colspan="7">N must be greater than 0%</td></tr>';
-        return '<tr><td>' + row.targetN + '</td><td>' + format(row.dose, 3) + '</td>' + FEED_KEYS.map(key => '<td>' + format(row.ppm[key], 1) + '</td>').join('') + '</tr>';
+    return feedTableHtmlFor(analysis, 'N', levels, chemistry, format);
+  }
+
+  function feedTableHtmlFor(analysis, key, levels, chemistry, format) {
+    const title = {N: 'N target', P: 'P target', K: 'K target'}[key] || key + ' target';
+    return '<thead><tr><th>' + title + '</th><th>g/gal</th><th>N</th><th>P</th><th>K</th><th>Ca</th><th>Mg</th><th>S</th></tr></thead><tbody>' +
+      feedRowsFor(analysis, key, levels, chemistry).map(row => {
+        if (row.dose === null) return '<tr><td>' + row.target + '</td><td colspan="7">' + key + ' must be greater than 0%</td></tr>';
+        return '<tr><td>' + row.target + '</td><td>' + format(row.dose, 3) + '</td>' + FEED_KEYS.map(feedKey => '<td>' + format(row.ppm[feedKey], 1) + '</td>').join('') + '</tr>';
       }).join('') + '</tbody>';
   }
 
@@ -49,11 +63,15 @@
     const document = options.document;
     const chemistry = options.chemistry;
     const levels = options.levels;
+    const pLevels = options.pLevels;
+    const kLevels = options.kLevels;
     const format = options.format;
 
     function renderOutput(analysis) {
       document.getElementById('gaElemental').innerHTML = elementalTableHtml(analysis, chemistry, format);
       document.getElementById('gaFeed').innerHTML = feedTableHtml(analysis, levels, chemistry, format);
+      if (document.getElementById('gaFeedP')) document.getElementById('gaFeedP').innerHTML = feedTableHtmlFor(analysis, 'P', pLevels, chemistry, format);
+      if (document.getElementById('gaFeedK')) document.getElementById('gaFeedK').innerHTML = feedTableHtmlFor(analysis, 'K', kLevels, chemistry, format);
     }
 
     function render(analysis, onChange) {
@@ -73,9 +91,11 @@
   return Object.freeze({
     INPUT_FIELDS: Object.freeze(INPUT_FIELDS.map(field => Object.freeze([...field]))),
     feedRows,
+    feedRowsFor,
+    feedTableHtml,
+    feedTableHtmlFor,
     inputsHtml,
     elementalTableHtml,
-    feedTableHtml,
     createComponent
   });
 });

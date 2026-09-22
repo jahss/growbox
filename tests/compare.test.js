@@ -32,7 +32,7 @@ function fakeElement() {
 
 function fixture() {
   const {products, systems} = loadDatabase();
-  const ids = ['productPicker', 'compareCount', 'selectedLines', 'nLevel', 'percentView', 'ppmView', 'nControl', 'comparisonHeading', 'analysisCompare'];
+  const ids = ['productPicker', 'compareCount', 'selectedLines', 'nElement', 'nLevel', 'percentView', 'ppmView', 'nControl', 'comparisonHeading', 'analysisCompare'];
   const elements = Object.fromEntries(ids.map(id => [id, fakeElement()]));
   const document = {
     getElementById(id) { return elements[id]; },
@@ -88,6 +88,47 @@ test('renders standardized elemental ppm for each selected line', () => {
   assert.equal(view.elements.comparisonHeading.textContent, 'Elemental ppm @ 160 ppm N');
   assert.match(view.elements.analysisCompare.innerHTML, /N ppm/);
   assert.match(view.elements.analysisCompare.innerHTML, /Core [\d.]+ g\/gal/);
+});
+
+test('switching the standardized element retargets the dose and heading', () => {
+  const view = fixture();
+  view.component.render();
+  // Default is N-standardized over the 50-300 level set (bottom 50, no 10).
+  assert.equal(view.elements.nElement.value, 'N');
+  assert.equal(view.elements.comparisonHeading.textContent, 'Elemental ppm @ 160 ppm N');
+  assert.match(view.elements.nLevel.innerHTML, />50</);
+  assert.match(view.elements.nLevel.innerHTML, />300</);
+  assert.doesNotMatch(view.elements.nLevel.innerHTML, />10</);
+
+  // Switch to P: heading changes and the level snaps into the 10-150 range.
+  view.elements.nElement.onchange({target: {value: 'P'}});
+  assert.equal(view.state.compareElement, 'P');
+  assert.equal(view.state.n, 150, '160 snaps to the nearest P level');
+  assert.equal(view.elements.comparisonHeading.textContent, 'Elemental ppm @ 150 ppm P');
+  assert.match(view.elements.nLevel.innerHTML, />10</);
+  assert.match(view.elements.nLevel.innerHTML, />150</);
+  assert.doesNotMatch(view.elements.nLevel.innerHTML, />160</);
+
+  // Switch to K: heading changes; K carries the wide 50-300 range.
+  view.elements.nElement.onchange({target: {value: 'K'}});
+  assert.equal(view.state.compareElement, 'K');
+  assert.equal(view.elements.comparisonHeading.textContent, 'Elemental ppm @ 150 ppm K');
+  assert.match(view.elements.nLevel.innerHTML, />290</);
+  assert.match(view.elements.nLevel.innerHTML, />300</);
+});
+
+test('element level ranges are N 50-300, P 10-150, K 50-300 step 10', () => {
+  const compareModule = require('../js/compare.js');
+  const levels = compareModule.ELEMENT_LEVELS;
+  assert.equal(levels.N.length, 26);
+  assert.equal(levels.N[0], 50);
+  assert.equal(levels.N[25], 300);
+  assert.equal(levels.P.length, 15);
+  assert.equal(levels.P[0], 10);
+  assert.equal(levels.P[14], 150);
+  assert.equal(levels.K.length, 26);
+  assert.equal(levels.K[0], 50);
+  assert.equal(levels.K[25], 300);
 });
 
 test('comparison controls update mode, nitrogen target, and selection state', () => {

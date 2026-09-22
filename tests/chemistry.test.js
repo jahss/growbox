@@ -44,6 +44,25 @@ test("standardizes Jack's 12-4-16 and preserves elemental relationships", () => 
   closeTo(ppm.K, 177.09888, 0.000001);
 });
 
+test('standardizes by elemental P and K as independent anchors', () => {
+  const analysis = {N: 12, P2O5: 4, K2O: 16, Ca: 7, Mg: 2, S: 0};
+  // P is 4% P2O5 = 1.745704% elemental P; K is 16% K2O = 13.282416% elemental K.
+  const pDose = chemistry.standardizedDose(analysis, 'P', 60);
+  closeTo(chemistry.ppmAtDose(analysis, pDose).P, 60, 0.000001);
+  const kDose = chemistry.standardizedDose(analysis, 'K', 120);
+  closeTo(chemistry.ppmAtDose(analysis, kDose).K, 120, 0.000001);
+  // The generalized function must agree with the nitrogen wrapper for N.
+  closeTo(chemistry.standardizedDose(analysis, 'N', 160), chemistry.standardizedNitrogenDose(analysis, 160), 1e-9);
+});
+
+test('standardizedDose returns null when the anchor element is absent', () => {
+  assert.equal(chemistry.standardizedDose({N: 0, P2O5: 0, K2O: 16}, 'N', 160), null);
+  assert.equal(chemistry.standardizedDose({N: 12, P2O5: 0, K2O: 16}, 'P', 60), null);
+  assert.equal(chemistry.standardizedDose({N: 12, P2O5: 4, K2O: 0}, 'K', 60), null);
+  assert.throws(() => chemistry.standardizedDose({N: 12, P2O5: 4, K2O: 16}, 'N', -1), /nonnegative/);
+  assert.throws(() => chemistry.standardizedDose({N: 12, P2O5: 4, K2O: 16}, 'X', 10), /unsupported/i);
+});
+
 test("combines Jack's 3-2-1 components on a mass basis", () => {
   const system = {
     ratioBasis: 'mass',

@@ -17,6 +17,7 @@
       systemProfiles: {},
       compareMode: 'ppm',
       n: 160,
+      compareElement: 'N',
       manual: {
         N: 12, P2O5: 4, K2O: 16, Ca: 7, Mg: 2, S: 0,
         Fe: 0.15, Mn: 0.05, Zn: 0.035, B: 0.02, Cu: 0.02, Mo: 0.001
@@ -91,6 +92,7 @@
     if (!state.systemProfiles || typeof state.systemProfiles !== 'object' || Array.isArray(state.systemProfiles)) state.systemProfiles = {};
     else state.systemProfiles = {...state.systemProfiles};
     if (!['percent', 'ppm'].includes(state.compareMode)) state.compareMode = 'ppm';
+    if (!['N', 'P', 'K'].includes(state.compareElement)) state.compareElement = 'N';
 
     state.compare = (Array.isArray(state.compare) ? state.compare : []).filter(id => {
       const product = availableProducts.find(candidate => candidate.id === id);
