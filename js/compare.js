@@ -167,6 +167,8 @@
       save();
       renderControls();
       renderTables();
+      const item = kind === 'product' ? product(id) : catalog.system(id);
+      if (item) notify('Removed “' + item.brand + ' — ' + displayProgram(item) + '”. Add it back from the list above.');
     }
 
     function systemMix(system) {
@@ -230,7 +232,8 @@
         selected.push({kind: 'system', id: system.id, brand: system.brand, program: displayProgram(system), formula: displayFormula(system), parts: partsLabel, controls, constraintNote, ratioNote: system.ratioNote || '', settingsLabel: profiles.length ? 'Comparison profile and balance' : 'Adjust component balance'});
       });
 
-      element('selectedLines').innerHTML = selected.map(item => '<div class="selected-line"><div class="selected-line-head"><div><b>' + escape(item.brand + ' — ' + item.program) + '</b><div>' + escape(item.formula) + '</div><div class="muted">' + escape(item.parts) + '</div></div><button class="removeLine" data-kind="' + item.kind + '" data-id="' + escape(item.id) + '" type="button">Remove</button></div>' + (item.controls ? '<details><summary>' + escape(item.settingsLabel) + '</summary><div style="margin-top:7px">' + item.controls + '</div>' + (item.ratioNote ? '<p class="muted ratio-note">' + escape(item.ratioNote) + '</p>' : '') + (item.constraintNote ? '<p class="muted ratio-note"><b>Fixed-N behavior:</b> ' + escape(item.constraintNote) + '</p>' : '') + '</details>' : '') + '</div>').join('');
+      // Tap the card's name area to remove it; the settings below stay separate so they never remove.
+      element('selectedLines').innerHTML = selected.map(item => '<div class="selected-line"><button type="button" class="line-remove removeLine" data-kind="' + item.kind + '" data-id="' + escape(item.id) + '" aria-label="Remove ' + escape(item.brand + ' — ' + item.program) + '"><span class="source-x" aria-hidden="true">×</span><b>' + escape(item.brand + ' — ' + item.program) + '</b><span>' + escape(item.formula) + '</span><span class="muted">' + escape(item.parts) + '</span></button>' + (item.controls ? '<details><summary>' + escape(item.settingsLabel) + '</summary><div style="margin-top:7px">' + item.controls + '</div>' + (item.ratioNote ? '<p class="muted ratio-note">' + escape(item.ratioNote) + '</p>' : '') + (item.constraintNote ? '<p class="muted ratio-note"><b>Fixed-N behavior:</b> ' + escape(item.constraintNote) + '</p>' : '') + '</details>' : '') + '</div>').join('');
 
       document.querySelectorAll('.removeLine').forEach(button => {
         button.onclick = () => removeItem(button.dataset.kind, button.dataset.id);

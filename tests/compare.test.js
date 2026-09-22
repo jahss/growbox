@@ -237,3 +237,24 @@ test('a system with a part left out compares only the remaining part', () => {
   assert.match(view.elements.selectedLines.innerHTML, /class="spx"[^>]*data-i="1" type="checkbox" checked>/);
   assert.match(view.elements.selectedLines.innerHTML, /Comparing Grow only/);
 });
+
+test('tapping a line card removes it with a notice; settings stay outside the button', () => {
+  const view = fixture();
+  const cards = [];
+  view.component.render();
+  const html = view.elements.selectedLines.innerHTML;
+  assert.match(html, /<button type="button" class="line-remove removeLine" data-kind="system" data-id="athena-pro-veg" aria-label="Remove Athena — Pro Veg"><span class="source-x" aria-hidden="true">×<\/span>/);
+  assert.match(html, /<\/button><details>/, 'the settings sit after the button, not inside it');
+  assert.doesNotMatch(html, />Remove</);
+
+  const document = {getElementById: id => view.elements[id], querySelectorAll: selector => selector === '.removeLine' ? cards : []};
+  const component = compareModule.createComponent({
+    document, products: view.products, systems: view.systems, chemistry, catalog: view.catalog,
+    format: v => String(v), escape: String, getState: () => view.state, save() {}, notify: (...args) => view.notices.push(args)
+  });
+  cards.push({dataset: {kind: 'system', id: 'athena-pro-veg'}});
+  component.render();
+  cards[0].onclick();
+  assert.deepEqual(view.state.systemCompare, []);
+  assert.match(view.notices.at(-1)[0], /Removed “Athena — Pro Veg”\. Add it back from the list above\./);
+});
