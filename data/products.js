@@ -454,6 +454,84 @@ window.FERTILIZER_PRODUCTS = [
     source:{url:'https://generalhydroponics.com/products/gh-florapro-bloom',type:'official-product-page',checked:'2026-09-21'},
     analysisSource:{url:'https://generalhydroponics.com/wp-content/uploads/assets/GH-FloraPro-Bloom-5-lb-CFL.pdf',type:'official-product-label',checked:'2026-09-21'}
   },
+
+  // General Hydroponics FloraSeries — current true 3-part liquid base system.
+  {
+    id:'gh-floraseries-micro', compareGroup:'component', manufacturer:'General Hydroponics', brand:'General Hydroponics', displayFormula:'5-0-1 (FloraMicro)', componentName:'FloraMicro', name:'FloraMicro 5-0-1', form:'liquid', densityGPerMl:1.25,
+    analysis:{N:5,P2O5:0,K2O:1,Ca:5,Mg:0,S:0,Fe:.1,Mn:.05,Zn:.015,B:.01,Cu:.01,Mo:.0008},
+    nitrogenForms:{nitrateN:4.7,ammoniacalN:.3}, useRates:[],
+    source:{url:'https://generalhydroponics.com/products/gh-flora-micro',type:'official-product-page',checked:'2026-09-21'},
+    analysisSource:{url:'https://generalhydroponics.com/wp-content/uploads/assets/HGC718014-01-GENERAL-HYDROPONICS-FLORASERIES-PERFORMANCE-PACK-71OZ-LIQIUD-BASE-NUTRIENT-3-16OZ-LIQUID-SUPPLEMENTS-2-8OZ-1-4OZ-3-1OZ052620SSL.pdf',type:'official-label',checked:'2026-09-21'},
+    densitySource:{type:'official-sds',checked:'2026-09-21',original:'Relative density 1.25'}
+  },
+  {
+    id:'gh-floraseries-gro', compareGroup:'component', manufacturer:'General Hydroponics', brand:'General Hydroponics', displayFormula:'2-1-6 (FloraGro)', componentName:'FloraGro', name:'FloraGro 2-1-6', form:'liquid', densityGPerMl:1.138,
+    analysis:{N:2,P2O5:1,K2O:6,Ca:0,Mg:.5,S:0,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0},
+    nitrogenForms:{nitrateN:1.75,ammoniacalN:.25}, useRates:[],
+    source:{url:'https://generalhydroponics.com/products/gh-flora-gro',type:'official-product-page',checked:'2026-09-21'},
+    analysisSource:{url:'https://generalhydroponics.com/wp-content/uploads/General-Hydroponics_label_floragro.pdf',type:'official-label',checked:'2026-09-21'},
+    densitySource:{type:'official-sds',checked:'2026-09-21',original:'Density 1.138 g/cm3'}
+  },
+  {
+    id:'gh-floraseries-bloom', compareGroup:'component', manufacturer:'General Hydroponics', brand:'General Hydroponics', displayFormula:'0-5-4 (FloraBloom)', componentName:'FloraBloom', name:'FloraBloom 0-5-4', form:'liquid', densityGPerMl:1.17,
+    analysis:{N:0,P2O5:5,K2O:4,Ca:0,Mg:1.5,S:1,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0},
+    useRates:[],
+    source:{url:'https://generalhydroponics.com/products/gh-flora-bloom',type:'official-product-page',checked:'2026-09-21'},
+    analysisSource:{url:'https://generalhydroponics.com/wp-content/uploads/assets/florabloom.pdf',type:'official-label',checked:'2026-09-21'},
+    densitySource:{type:'manufacturer-sds',checked:'2026-09-21',original:'Relative density 1.170'}
+  },
+
+  // GreenPlanet GP3 — current true 3-part liquid base system.
+  {
+    id:'greenplanet-gp3-grow', compareGroup:'component', manufacturer:'GreenPlanet Nutrients', brand:'GreenPlanet Nutrients', displayFormula:'2-1-6 (GP3 Grow)', componentName:'GP3 Grow', name:'GP3 Grow 2-1-6', form:'liquid', densityGPerMl:1.148,
+    analysis:{N:2,P2O5:1,K2O:6,Ca:0,Mg:.5,S:.7,Fe:0,Mn:0,Zn:0,B:0,Cu:.006,Mo:.0008},
+    nitrogenForms:{nitrateN:1.75,ammoniacalN:.25}, useRates:[],
+    source:{url:'https://greenplanetnutrients.com/product/greenplanet-nutrients-3-part-gp3-grow',type:'official-product-page',checked:'2026-09-21'},
+    densitySource:{url:'https://greenplanetnutrients.ca/wp-content/uploads/2022/07/1657293029_CoA-GP3-Grow-35960622.pdf',type:'official-coa',checked:'2026-09-21',original:'Specific gravity result 1.148 g/mL; product specification 1.143 ± 0.01 g/mL'},
+    notes:'Density is a manufacturer COA lot result rather than a fixed SDS value; formulation specification allows small lot variation.'
+  },
+  {
+    id:'greenplanet-gp3-micro', compareGroup:'component', manufacturer:'GreenPlanet Nutrients', brand:'GreenPlanet Nutrients', displayFormula:'5-0-1 (GP3 Micro)', componentName:'GP3 Micro', name:'GP3 Micro 5-0-1', form:'liquid', densityGPerMl:1.23,
+    analysis:{N:5,P2O5:0,K2O:1,Ca:6,Mg:0,S:0,Fe:.1,Mn:.05,Zn:.025,B:.01,Cu:.004,Mo:.0008},
+    nitrogenForms:{nitrateN:4.5,ammoniacalN:.5}, useRates:[],
+    source:{url:'https://greenplanetnutrients.com/product/greenplanet-nutrients-3-part-gp3-micro',type:'official-product-page',checked:'2026-09-21'},
+    analysisSource:{url:'https://greenplanetnutrients.ca/blog/all/why-growers-should-read-the-guaranteed-analysis-on-fertilizer/',type:'official-guaranteed-analysis',checked:'2026-09-21'},
+    densitySource:{url:'https://greenplanetnutrients.ca/wp-content/uploads/2020/12/GP3-Micro-SDS-08_03_16.pdf',type:'official-sds',checked:'2026-09-21',original:'Relative density 1.23 g/mL'}
+  },
+  {
+    id:'greenplanet-gp3-bloom', compareGroup:'component', manufacturer:'GreenPlanet Nutrients', brand:'GreenPlanet Nutrients', displayFormula:'0-5-4 (GP3 Bloom)', componentName:'GP3 Bloom', name:'GP3 Bloom 0-5-4', form:'liquid', densityGPerMl:1.17,
+    analysis:{N:0,P2O5:5,K2O:4,Ca:0,Mg:1.5,S:2,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0},
+    useRates:[],
+    source:{url:'https://greenplanetnutrients.com/product/greenplanet-nutrients-3-part-gp3-bloom/',type:'official-product-page',checked:'2026-09-21'},
+    analysisSource:{url:'https://greenplanetnutrients.com/wp-content/uploads/2021/03/1614792538_02_21_GPN_WEB_Booklet_Interactive_WithFeedchart_compressed.pdf',type:'official-product-guide',checked:'2026-09-21'},
+    densitySource:{url:'https://www.greenplanetnutrients.ca/wp-content/uploads/2020/12/GP3-Bloom-SDS-08_03_16.pdf',type:'official-sds',checked:'2026-09-21',original:'Relative density 1.17 g/mL'}
+  },
+
+  // Emerald Harvest Professional 3-Part — Grow / Micro / Bloom.
+  {
+    id:'emerald-3part-grow', compareGroup:'component', manufacturer:'Emerald Harvest', brand:'Emerald Harvest', displayFormula:'2-1-6 (Grow)', componentName:'Grow', name:'Emerald Harvest Grow 2-1-6', form:'liquid', densityGPerMl:1.14,
+    analysis:{N:2,P2O5:1,K2O:6,Ca:0,Mg:.2,S:.5,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0},
+    nitrogenForms:{nitrateN:1.5,ammoniacalN:.5}, useRates:[],
+    source:{url:'https://emeraldharvest.co/product/grow-micro-bloom/',type:'official-product-page',checked:'2026-09-21'},
+    analysisSource:{url:'https://emeraldharvest.co/wp-content/uploads/2019/06/EH_Product_Guide_LR_2023_02_24.pdf',type:'official-product-guide',checked:'2026-09-21'},
+    densitySource:{url:'https://emeraldharvest.co/wp-content/uploads/2019/06/Grow-SDS-2019-10-22.pdf',type:'official-sds',checked:'2026-09-21',original:'Relative density 1.14 kg/L'}
+  },
+  {
+    id:'emerald-3part-micro', compareGroup:'component', manufacturer:'Emerald Harvest', brand:'Emerald Harvest', displayFormula:'5-0-1 (Micro)', componentName:'Micro', name:'Emerald Harvest Micro 5-0-1', form:'liquid', densityGPerMl:1.16,
+    analysis:{N:5,P2O5:0,K2O:1,Ca:4,Mg:0,S:0,Fe:.1,Mn:.04,Zn:.03,B:.02,Cu:.005,Mo:.002},
+    nitrogenForms:{nitrateN:4,ammoniacalN:.5,ureaN:.5}, useRates:[],
+    source:{url:'https://emeraldharvest.co/product/grow-micro-bloom/',type:'official-product-page',checked:'2026-09-21'},
+    analysisSource:{url:'https://emeraldharvest.co/wp-content/uploads/2019/06/EH_Product_Guide_LR_2023_02_24.pdf',type:'official-product-guide',checked:'2026-09-21'},
+    densitySource:{url:'https://emeraldharvest.co/wp-content/uploads/2019/06/Micro-SDS-2019-10-22.pdf',type:'official-sds',checked:'2026-09-21',original:'Relative density 1.16 kg/L'}
+  },
+  {
+    id:'emerald-3part-bloom', compareGroup:'component', manufacturer:'Emerald Harvest', brand:'Emerald Harvest', displayFormula:'0-5-4 (Bloom)', componentName:'Bloom', name:'Emerald Harvest Bloom 0-5-4', form:'liquid', densityGPerMl:1.12,
+    analysis:{N:0,P2O5:5,K2O:4,Ca:0,Mg:.5,S:1,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0},
+    useRates:[],
+    source:{url:'https://emeraldharvest.co/product/grow-micro-bloom/',type:'official-product-page',checked:'2026-09-21'},
+    analysisSource:{url:'https://emeraldharvest.co/wp-content/uploads/2019/06/EH_Product_Guide_LR_2023_02_24.pdf',type:'official-product-guide',checked:'2026-09-21'},
+    densitySource:{url:'https://emeraldharvest.co/wp-content/uploads/2019/06/Bloom-SDS-2019-10-22.pdf',type:'official-sds',checked:'2026-09-21',original:'Relative density 1.12 kg/L'}
+  },
   {
     id:'mkp-0-52-34', compareGroup:'salt', brand:'Generic salt', name:'MKP 0-52-34', form:'dry',
     analysis:{N:0,P2O5:52,K2O:34,Ca:0,Mg:0,S:0,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, useRates:[]
@@ -792,6 +870,93 @@ window.FERTILIZER_SYSTEMS = [
     ],
     source:{url:'https://generalhydroponics.com/wp-content/uploads/assets/FloraPro-Expert-FeedCharts.pdf',type:'official-feed-chart',checked:'2026-09-21'}
   },
+
+  {
+    id:'gh-floraseries-3part', partCount:3, manufacturer:'General Hydroponics', brand:'General Hydroponics', program:'FloraSeries 3-Part', displayFormula:'5-0-1 (FloraMicro) + 2-1-6 (FloraGro) + 0-5-4 (FloraBloom)', name:'FloraSeries 3-Part',
+    ratioBasis:'volume', components:[
+      {productId:'gh-floraseries-micro',label:'FloraMicro',defaultParts:4.2},
+      {productId:'gh-floraseries-gro',label:'FloraGro',defaultParts:3.8},
+      {productId:'gh-floraseries-bloom',label:'FloraBloom',defaultParts:3}
+    ],
+    defaultProfile:'medium-early-growth', profiles:[
+      {id:'medium-early-growth',label:'Medium · Early Growth',parts:[4.2,3.8,3]},
+      {id:'medium-late-growth',label:'Medium · Late Growth',parts:[6.8,6.4,4.8]},
+      {id:'medium-early-bloom',label:'Medium · Early Bloom',parts:[6.1,5.3,6.6]},
+      {id:'medium-mid-late-bloom',label:'Medium · Mid-Late Bloom',parts:[5.3,5.3,7.6]}
+    ],
+    ratioNote:'Current 2026 core FloraSeries 3-Part chart. Comparison profiles use the manufacturer Medium Feed growth-stage ratios; all three base components remain active and their balance changes by stage.',
+    useRates:[
+      {profileId:'medium-early-growth',label:'Official Medium — Early Growth',components:[{productId:'gh-floraseries-micro',mLPerGal:4.2},{productId:'gh-floraseries-gro',mLPerGal:3.8},{productId:'gh-floraseries-bloom',mLPerGal:3}]},
+      {profileId:'medium-late-growth',label:'Official Medium — Late Growth',components:[{productId:'gh-floraseries-micro',mLPerGal:6.8},{productId:'gh-floraseries-gro',mLPerGal:6.4},{productId:'gh-floraseries-bloom',mLPerGal:4.8}]},
+      {profileId:'medium-early-bloom',label:'Official Medium — Early Bloom',components:[{productId:'gh-floraseries-micro',mLPerGal:6.1},{productId:'gh-floraseries-gro',mLPerGal:5.3},{productId:'gh-floraseries-bloom',mLPerGal:6.6}]},
+      {profileId:'medium-mid-late-bloom',label:'Official Medium — Mid-Late Bloom',components:[{productId:'gh-floraseries-micro',mLPerGal:5.3},{productId:'gh-floraseries-gro',mLPerGal:5.3},{productId:'gh-floraseries-bloom',mLPerGal:7.6}]}
+    ],
+    source:{url:'https://generalhydroponics.com/cdn/shop/files/FloraSeries-Basic-Feed-Charts.pdf',type:'official-feed-chart',checked:'2026-09-21',original:'2026 Professional 3-Part Medium Feed: Early Growth 4.2/3.8/3.0; Late Growth 6.8/6.4/4.8; Early Bloom 6.1/5.3/6.6; Mid-Late Bloom 5.3/5.3/7.6 mL/US gal Micro/Gro/Bloom'}
+  },
+
+  {
+    id:'greenplanet-gp3', partCount:3, manufacturer:'GreenPlanet Nutrients', brand:'GreenPlanet Nutrients', program:'GP3', displayFormula:'2-1-6 (Grow) + 5-0-1 (Micro) + 0-5-4 (Bloom)', name:'GP3 3-Part',
+    ratioBasis:'volume', components:[
+      {productId:'greenplanet-gp3-grow',label:'GP3 Grow',defaultParts:5},
+      {productId:'greenplanet-gp3-micro',label:'GP3 Micro',defaultParts:5},
+      {productId:'greenplanet-gp3-bloom',label:'GP3 Bloom',defaultParts:4}
+    ],
+    defaultProfile:'veg-w3', profiles:[
+      {id:'veg-w1',label:'Veg W1',parts:[1,2,1]},
+      {id:'veg-w2',label:'Veg W2',parts:[5,4,1]},
+      {id:'veg-w3',label:'Veg W3',parts:[5,5,4]},
+      {id:'flower-w1',label:'Flower W1',parts:[6,6,6]},
+      {id:'flower-w2-5',label:'Flower W2-W5',parts:[1,4,6]},
+      {id:'flower-w6',label:'Flower W6',parts:[0,4,8]},
+      {id:'flower-w7',label:'Flower W7',parts:[0,3,8]}
+    ],
+    ratioNote:'Official drain-to-waste GP3 chart. Grow, Micro and Bloom are all used together through veg and most of flower; Grow is removed only in the final flowering weeks.',
+    useRates:[
+      {profileId:'veg-w1',label:'Official — Veg W1',components:[{productId:'greenplanet-gp3-grow',mLPerGal:1},{productId:'greenplanet-gp3-micro',mLPerGal:2},{productId:'greenplanet-gp3-bloom',mLPerGal:1}]},
+      {profileId:'veg-w2',label:'Official — Veg W2',components:[{productId:'greenplanet-gp3-grow',mLPerGal:5},{productId:'greenplanet-gp3-micro',mLPerGal:4},{productId:'greenplanet-gp3-bloom',mLPerGal:1}]},
+      {profileId:'veg-w3',label:'Official — Veg W3',components:[{productId:'greenplanet-gp3-grow',mLPerGal:5},{productId:'greenplanet-gp3-micro',mLPerGal:5},{productId:'greenplanet-gp3-bloom',mLPerGal:4}]},
+      {profileId:'flower-w1',label:'Official — Flower W1',components:[{productId:'greenplanet-gp3-grow',mLPerGal:6},{productId:'greenplanet-gp3-micro',mLPerGal:6},{productId:'greenplanet-gp3-bloom',mLPerGal:6}]},
+      {profileId:'flower-w2-5',label:'Official — Flower W2-W5',components:[{productId:'greenplanet-gp3-grow',mLPerGal:1},{productId:'greenplanet-gp3-micro',mLPerGal:4},{productId:'greenplanet-gp3-bloom',mLPerGal:6}]},
+      {profileId:'flower-w6',label:'Official — Flower W6',components:[{productId:'greenplanet-gp3-micro',mLPerGal:4},{productId:'greenplanet-gp3-bloom',mLPerGal:8}]},
+      {profileId:'flower-w7',label:'Official — Flower W7',components:[{productId:'greenplanet-gp3-micro',mLPerGal:3},{productId:'greenplanet-gp3-bloom',mLPerGal:8}]}
+    ],
+    source:{url:'https://k6n9c8k4.delivery.rocketcdn.me/wp-content/uploads/2021/01/06_20_GPN_WEB_Feedchart_3part-GP3_USA.pdf',type:'official-feed-chart',checked:'2026-09-21',original:'Drain-to-waste GP3 base rows transcribed directly from manufacturer chart; additives excluded'}
+  },
+
+  {
+    id:'emerald-harvest-3part', partCount:3, manufacturer:'Emerald Harvest', brand:'Emerald Harvest', program:'3-Part', displayFormula:'2-1-6 (Grow) + 5-0-1 (Micro) + 0-5-4 (Bloom)', name:'Professional 3-Part Nutrient Series',
+    ratioBasis:'volume', components:[
+      {productId:'emerald-3part-grow',label:'Grow',defaultParts:6},
+      {productId:'emerald-3part-micro',label:'Micro',defaultParts:3},
+      {productId:'emerald-3part-bloom',label:'Bloom',defaultParts:2}
+    ],
+    defaultProfile:'early-veg', profiles:[
+      {id:'seedling',label:'Seedlings & Cuttings',parts:[2,2,2]},
+      {id:'transplant',label:'Transplants',parts:[4,2,1]},
+      {id:'early-veg',label:'Early Vegetative',parts:[6,3,2]},
+      {id:'late-veg',label:'Late Vegetative',parts:[8,4,2]},
+      {id:'transition',label:'Transition',parts:[4,4,4]},
+      {id:'early-flower',label:'Early Flower W2-W3',parts:[2,4,8]},
+      {id:'mid-flower',label:'Mid Flower W4-W5',parts:[2,5,10]},
+      {id:'late-flower',label:'Late Flower W6-W7',parts:[0,6,11]},
+      {id:'ripen-w8',label:'Ripening W8',parts:[0,4,11]},
+      {id:'ripen-w9',label:'Ripening W9',parts:[2,2,2]}
+    ],
+    ratioNote:'Official 3-Part gallon feed chart. Only Grow, Micro and Bloom are represented here; all optional boosters and supplements shown on the full chart are intentionally excluded.',
+    useRates:[
+      {profileId:'seedling',label:'Official — Seedlings & Cuttings',components:[{productId:'emerald-3part-grow',mLPerGal:2},{productId:'emerald-3part-micro',mLPerGal:2},{productId:'emerald-3part-bloom',mLPerGal:2}]},
+      {profileId:'transplant',label:'Official — Transplants',components:[{productId:'emerald-3part-grow',mLPerGal:4},{productId:'emerald-3part-micro',mLPerGal:2},{productId:'emerald-3part-bloom',mLPerGal:1}]},
+      {profileId:'early-veg',label:'Official — Early Vegetative',components:[{productId:'emerald-3part-grow',mLPerGal:6},{productId:'emerald-3part-micro',mLPerGal:3},{productId:'emerald-3part-bloom',mLPerGal:2}]},
+      {profileId:'late-veg',label:'Official — Late Vegetative',components:[{productId:'emerald-3part-grow',mLPerGal:8},{productId:'emerald-3part-micro',mLPerGal:4},{productId:'emerald-3part-bloom',mLPerGal:2}]},
+      {profileId:'transition',label:'Official — Transition',components:[{productId:'emerald-3part-grow',mLPerGal:4},{productId:'emerald-3part-micro',mLPerGal:4},{productId:'emerald-3part-bloom',mLPerGal:4}]},
+      {profileId:'early-flower',label:'Official — Early Flower W2-W3',components:[{productId:'emerald-3part-grow',mLPerGal:2},{productId:'emerald-3part-micro',mLPerGal:4},{productId:'emerald-3part-bloom',mLPerGal:8}]},
+      {profileId:'mid-flower',label:'Official — Mid Flower W4-W5',components:[{productId:'emerald-3part-grow',mLPerGal:2},{productId:'emerald-3part-micro',mLPerGal:5},{productId:'emerald-3part-bloom',mLPerGal:10}]},
+      {profileId:'late-flower',label:'Official — Late Flower W6-W7',components:[{productId:'emerald-3part-micro',mLPerGal:6},{productId:'emerald-3part-bloom',mLPerGal:11}]},
+      {profileId:'ripen-w8',label:'Official — Ripening W8',components:[{productId:'emerald-3part-micro',mLPerGal:4},{productId:'emerald-3part-bloom',mLPerGal:11}]},
+      {profileId:'ripen-w9',label:'Official — Ripening W9',components:[{productId:'emerald-3part-grow',mLPerGal:2},{productId:'emerald-3part-micro',mLPerGal:2},{productId:'emerald-3part-bloom',mLPerGal:2}]}
+    ],
+    source:{url:'https://emeraldharvest.co/wp-content/uploads/2019/06/EH-Feed-Chart-2-3-pt-ENG-gal.pdf',type:'official-feed-chart',checked:'2026-09-21',original:'3-Part Grow/Micro/Bloom rows transcribed directly from manufacturer gallon chart; additives excluded'}
+  },
   {
     id:'cropsalt-veg', partCount:2, manufacturer:'CS Consulting', brand:'CropSalt', program:'Veg', displayFormula:'3-7-16 (Veg A) + 14-0-0 (Veg B)', name:'CropSalt Veg',
     ratioBasis:'mass', components:[
@@ -922,3 +1087,43 @@ window.FERTILIZER_PENDING_SYSTEMS = [
     notes:'Rates are captured, but system remains pending because the public complete guaranteed analyses for Prime/Push are not yet available.'
   }
 ];
+
+
+window.FERTILIZER_PENDING_PRODUCTS.push(
+  {
+    id:'ces-grow', manufacturer:'Cutting Edge Solutions', brand:'Cutting Edge Solutions', program:'Base Family', displayFormula:'2-1-6 (Grow)', componentName:'Grow', name:'Grow 2-1-6', form:'liquid',
+    knownAnalysis:{N:2,P2O5:1,K2O:6,Ca:0,Mg:0,S:0,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0},
+    nitrogenForms:{nitrateN:1.8,ammoniacalN:.2},
+    missingData:['densityGPerMl'],
+    source:{url:'https://www.cuttingedgesolutions.com/products/grow',type:'official-product-page',checked:'2026-09-21'}
+  },
+  {
+    id:'ces-micro', manufacturer:'Cutting Edge Solutions', brand:'Cutting Edge Solutions', program:'Base Family', displayFormula:'6-0-0 (Micro)', componentName:'Micro', name:'Micro 6-0-0', form:'liquid',
+    knownAnalysis:{N:6,P2O5:0,K2O:0,Ca:5,Mg:0,S:0,Fe:.1,Mn:.05,Zn:0,B:.02,Cu:0,Mo:.0008},
+    nitrogenForms:{nitrateN:5.7,ammoniacalN:.3},
+    missingData:['densityGPerMl'],
+    source:{url:'https://www.cuttingedgesolutions.com/products/micro',type:'official-product-page',checked:'2026-09-21'},
+    notes:'Zinc nitrate appears in the derived-from list but no zinc percentage is guaranteed on the current product page; Growbox does not infer one.'
+  },
+  {
+    id:'ces-bloom', manufacturer:'Cutting Edge Solutions', brand:'Cutting Edge Solutions', program:'Base Family', displayFormula:'0-6-5 (Bloom)', componentName:'Bloom', name:'Bloom 0-6-5', form:'liquid',
+    knownAnalysis:{N:0,P2O5:6,K2O:5,Ca:0,Mg:1,S:2,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0},
+    missingData:['densityGPerMl'],
+    source:{url:'https://www.cuttingedgesolutions.com/products/bloom',type:'official-product-page',checked:'2026-09-21'}
+  }
+);
+
+window.FERTILIZER_PENDING_SYSTEMS.push(
+  {
+    id:'ces-3part-base', manufacturer:'Cutting Edge Solutions', brand:'Cutting Edge Solutions', program:'Base Family 3-Part', partCount:3,
+    components:['ces-grow','ces-micro','ces-bloom'],
+    knownRates:[
+      {label:'Vegetative',growMlPerGal:15,microMlPerGal:6,bloomMlPerGal:5},
+      {label:'Transition',growMlPerGal:5,microMlPerGal:6,bloomMlPerGal:15},
+      {label:'Flower',growMlPerGal:0,microMlPerGal:6,bloomMlPerGal:20}
+    ],
+    missingData:['densityGPerMl for Grow','densityGPerMl for Micro','densityGPerMl for Bloom'],
+    source:{url:'https://www.cuttingedgesolutions.com/collections/base-family',type:'official-product-family',checked:'2026-09-21'},
+    notes:'Current manufacturer pages verify the 3-part base chemistry and reservoir rates. System remains pending because exact liquid densities have not yet been verified.'
+  }
+);
