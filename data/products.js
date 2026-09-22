@@ -354,6 +354,83 @@ window.FERTILIZER_PRODUCTS = [
     densityEstimate:{method:'midpoint-of-official-sds-range',min:1.197,max:1.220},
     notes:'Current official product page lists this line for Europe, Canada and Brazil. Zeros mean no guaranteed percentage located in the cited label copy.'
   },
+
+  // Advanced Nutrients Sensi Professional Series water-soluble powder.
+  // Advanced Nutrients announced global discontinuation in April 2026; retained here as a
+  // legacy commercial program because existing users may still have inventory and compare recipes.
+  {
+    id:'advanced-sensi-wsp-grow-a', compareGroup:'component', manufacturer:'Advanced Nutrients', brand:'Advanced Nutrients', displayFormula:'9-10-28 (Grow A)', componentName:'Grow A', name:'Sensi Professional WSP Grow A 9-10-28', form:'dry', lifecycle:'discontinued-2026',
+    analysis:{N:9,P2O5:10,K2O:28,Ca:0,Mg:3,S:4.8,Fe:.2,Mn:.2,Zn:.03,B:.04,Cu:.002,Mo:.0005},
+    nitrogenForms:{nitrateN:6.23,ammoniacalN:.3,ureaN:2.17}, useRates:[],
+    source:{url:'https://www.advancednutrients.com/articles/sensi-wsp-discontinued/',type:'official-discontinuation-notice',checked:'2026-09-21'},
+    analysisSource:{url:'https://hydrobuilder.com/products/advanced-nutrients-sensi-professional-series-grow-a-soluble',type:'reputable-distributor-label-copy',checked:'2026-09-21'}
+  },
+  {
+    id:'advanced-sensi-wsp-grow-b', compareGroup:'component', manufacturer:'Advanced Nutrients', brand:'Advanced Nutrients', displayFormula:'15-0-0 (Grow B)', componentName:'Grow B', name:'Sensi Professional WSP Grow B 15-0-0', form:'dry', lifecycle:'discontinued-2026',
+    analysis:{N:15,P2O5:0,K2O:0,Ca:18.5,Mg:0,S:0,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0},
+    nitrogenForms:{nitrateN:14,ammoniacalN:1}, useRates:[],
+    source:{url:'https://www.advancednutrients.com/articles/sensi-wsp-discontinued/',type:'official-discontinuation-notice',checked:'2026-09-21'},
+    analysisSource:{url:'https://hydrobuilder.com/products/advanced-nutrients-sensi-professional-series-grow-b-soluble',type:'reputable-distributor-label-copy',checked:'2026-09-21'}
+  },
+  {
+    id:'advanced-sensi-wsp-bloom-a', compareGroup:'component', manufacturer:'Advanced Nutrients', brand:'Advanced Nutrients', displayFormula:'10-14-26 (Bloom A)', componentName:'Bloom A', name:'Sensi Professional WSP Bloom A 10-14-26', form:'dry', lifecycle:'discontinued-2026',
+    analysis:{N:10,P2O5:14,K2O:26,Ca:0,Mg:2.85,S:3.78,Fe:.15,Mn:.15,Zn:.04,B:.04,Cu:.002,Mo:.0005},
+    nitrogenForms:{nitrateN:5.86,ammoniacalN:.69,ureaN:3.45}, useRates:[],
+    source:{url:'https://www.advancednutrients.com/articles/sensi-wsp-discontinued/',type:'official-discontinuation-notice',checked:'2026-09-21'},
+    analysisSource:{url:'https://hydrobuilder.com/products/advanced-nutrients-sensi-professional-series-bloom-a-soluble',type:'reputable-distributor-label-copy',checked:'2026-09-21'}
+  },
+  {
+    id:'advanced-sensi-wsp-bloom-b', compareGroup:'component', manufacturer:'Advanced Nutrients', brand:'Advanced Nutrients', displayFormula:'17-0-6 (Bloom B)', componentName:'Bloom B', name:'Sensi Professional WSP Bloom B 17-0-6', form:'dry', lifecycle:'discontinued-2026',
+    analysis:{N:17,P2O5:0,K2O:6,Ca:14,Mg:0,S:0,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0},
+    nitrogenForms:{nitrateN:14.2,ammoniacalN:2.8}, useRates:[],
+    source:{url:'https://www.advancednutrients.com/articles/sensi-wsp-discontinued/',type:'official-discontinuation-notice',checked:'2026-09-21'},
+    analysisSource:{url:'https://hydrobuilder.com/products/advanced-nutrients-sensi-professional-series-bloom-b-soluble',type:'reputable-distributor-label-copy',checked:'2026-09-21'}
+  },
+
+  // Advanced Nutrients Cultivator Series — current three-part professional WSP.
+  {
+    id:'advanced-cultivator-base', compareGroup:'component', manufacturer:'Advanced Nutrients', brand:'Advanced Nutrients', displayFormula:'14-0-0 (Base)', componentName:'Base', name:'Cultivator Series Base 14-0-0', form:'dry',
+    analysis:{N:14,P2O5:0,K2O:0,Ca:17,Mg:0,S:0,Fe:.32,Mn:0,Zn:0,B:0,Cu:0,Mo:0},
+    nitrogenForms:{nitrateN:13.1,ammoniacalN:.9}, useRates:[],
+    source:{url:'https://www.advancednutrients.com/products/cultivator-series/',type:'official-product-page-and-feed-chart',checked:'2026-09-21'},
+    analysisSource:{url:'https://hydrobuilder.com/products/advanced-nutrients-cultivator-series-base',type:'reputable-distributor-label-copy',checked:'2026-09-21'},
+    notes:'Current Base formula reflects the 2025 pharmaceutical-grade chelated-iron update.'
+  },
+  {
+    id:'advanced-cultivator-grow', compareGroup:'component', manufacturer:'Advanced Nutrients', brand:'Advanced Nutrients', displayFormula:'2-9-24 (Grow)', componentName:'Grow', name:'Cultivator Series Grow 2-9-24', form:'dry',
+    analysis:{N:2,P2O5:9,K2O:24,Ca:0,Mg:3.8,S:8,Fe:.199,Mn:.256,Zn:.042,B:.051,Cu:.004,Mo:.0007},
+    nitrogenForms:{nitrateN:1.96,ureaN:.04}, useRates:[],
+    source:{url:'https://www.advancednutrients.com/products/cultivator-series/',type:'official-product-page-and-feed-chart',checked:'2026-09-21'},
+    analysisSource:{url:'https://hydrobuilder.com/products/advanced-nutrients-cultivator-series-grow',type:'reputable-distributor-label-copy',checked:'2026-09-21'}
+  },
+  {
+    id:'advanced-cultivator-bloom', compareGroup:'component', manufacturer:'Advanced Nutrients', brand:'Advanced Nutrients', displayFormula:'3-13-26 (Bloom)', componentName:'Bloom', name:'Cultivator Series Bloom 3-13-26', form:'dry',
+    analysis:{N:3,P2O5:13,K2O:26,Ca:0,Mg:3,S:7,Fe:.124,Mn:.174,Zn:.059,B:.051,Cu:.004,Mo:.0007},
+    nitrogenForms:{nitrateN:2.64,ureaN:.36}, useRates:[],
+    source:{url:'https://www.advancednutrients.com/products/cultivator-series/',type:'official-product-page-and-feed-chart',checked:'2026-09-21'},
+    analysisSource:{url:'https://hydrobuilder.com/products/advanced-nutrients-cultivator-series-bloom',type:'reputable-distributor-label-copy',checked:'2026-09-21'}
+  },
+
+  // Front Row Ag — current 3-part dry program.
+  {
+    id:'frontrow-part-a', compareGroup:'component', manufacturer:'Front Row Ag LLC', brand:'Front Row Ag', displayFormula:'14-0-8 (Part A)', componentName:'Part A', name:'Front Row Ag Part A 14-0-8', form:'dry',
+    analysis:{N:14,P2O5:0,K2O:8,Ca:14,Mg:0,S:0,Fe:.35,Mn:.10,Zn:.05,B:.05,Cu:.05,Mo:.003},
+    nitrogenForms:{nitrateN:14}, useRates:[],
+    source:{url:'https://www.frontrowag.com/pages/resources',type:'official-product-label-index',checked:'2026-09-21'},
+    analysisSource:{url:'https://hydrobuilder.com/products/front-row-ag-part-a-14-0-8-25-lb',type:'reputable-distributor-copy-of-official-label',checked:'2026-09-21'}
+  },
+  {
+    id:'frontrow-part-b', compareGroup:'component', manufacturer:'Front Row Ag LLC', brand:'Front Row Ag', displayFormula:'2-13-17 (Part B)', componentName:'Part B', name:'Front Row Ag Part B 2-13-17', form:'dry',
+    analysis:{N:2,P2O5:13,K2O:17,Ca:0,Mg:5,S:7,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0},
+    nitrogenForms:{nitrateN:2}, useRates:[],
+    source:{url:'https://cdn.shopify.com/s/files/1/0049/3987/4378/files/FrontRowAg-5lbBag-PartB-ForReading.pdf?v=1698102765',type:'official-product-label',checked:'2026-09-21'}
+  },
+  {
+    id:'frontrow-bloom', compareGroup:'component', manufacturer:'Front Row Ag LLC', brand:'Front Row Ag', displayFormula:'0-35-29 (Bloom)', componentName:'Bloom', name:'Front Row Ag Bloom 0-35-29', form:'dry',
+    analysis:{N:0,P2O5:35,K2O:29,Ca:0,Mg:1.5,S:4,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0},
+    useRates:[],
+    source:{url:'https://cdn.shopify.com/s/files/1/0049/3987/4378/files/FrontRowAg-5lbBag-BLOOM-ForReading.pdf?v=1698102765',type:'official-product-label',checked:'2026-09-21'}
+  },
   {
     id:'mkp-0-52-34', compareGroup:'salt', brand:'Generic salt', name:'MKP 0-52-34', form:'dry',
     analysis:{N:0,P2O5:52,K2O:34,Ca:0,Mg:0,S:0,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, useRates:[]
@@ -568,6 +645,75 @@ window.FERTILIZER_SYSTEMS = [
     useRates:[{profileId:'1to1',label:'Bloom W1-W7 — 4 mL/L each',components:[{productId:'advanced-connoisseur-bloom-a',mLPerGal:15.141647136},{productId:'advanced-connoisseur-bloom-b',mLPerGal:15.141647136}]}],
     source:{url:'https://www.advancednutrients.com/products/ph-perfect-connoisseur-grow-bloom/',type:'official-product-page-feed-chart',checked:'2026-09-21',original:'Europe/Canada/Brazil; 1:1 by volume; Bloom W1-W7 = 4 mL/L each'}
   },
+
+  {
+    id:'advanced-sensi-wsp-grow', partCount:2, manufacturer:'Advanced Nutrients', brand:'Advanced Nutrients', program:'Sensi Professional WSP Grow', displayFormula:'9-10-28 (Grow A) + 15-0-0 (Grow B)', name:'Sensi Professional WSP Grow', lifecycle:'discontinued-2026',
+    ratioBasis:'mass', components:[
+      {productId:'advanced-sensi-wsp-grow-a',label:'Grow A',defaultParts:1},
+      {productId:'advanced-sensi-wsp-grow-b',label:'Grow B',defaultParts:1}
+    ],
+    defaultProfile:'1to1', profiles:[{id:'1to1',label:'Legacy 1:1',parts:[1,1]}],
+    ratioNote:'Legacy Sensi Professional WSP powder system, discontinued globally by Advanced Nutrients in April 2026. Historical directions used equal Grow A and Grow B dry weights.',
+    useRates:[
+      {profileId:'1to1',label:'Legacy published range — low',components:[{productId:'advanced-sensi-wsp-grow-a',gPerGal:2},{productId:'advanced-sensi-wsp-grow-b',gPerGal:2}]},
+      {profileId:'1to1',label:'Legacy published range — high',components:[{productId:'advanced-sensi-wsp-grow-a',gPerGal:2.7},{productId:'advanced-sensi-wsp-grow-b',gPerGal:2.7}]}
+    ],
+    source:{url:'https://www.advancednutrients.com/articles/sensi-wsp-discontinued/',type:'official-discontinuation-notice',checked:'2026-09-21'},
+    rateSource:{type:'reputable-distributor-label-copy',checked:'2026-09-21',original:'Grow A and B equal parts; 2–2.7 g/US gal each'}
+  },
+  {
+    id:'advanced-sensi-wsp-bloom', partCount:2, manufacturer:'Advanced Nutrients', brand:'Advanced Nutrients', program:'Sensi Professional WSP Bloom', displayFormula:'10-14-26 (Bloom A) + 17-0-6 (Bloom B)', name:'Sensi Professional WSP Bloom', lifecycle:'discontinued-2026',
+    ratioBasis:'mass', components:[
+      {productId:'advanced-sensi-wsp-bloom-a',label:'Bloom A',defaultParts:1},
+      {productId:'advanced-sensi-wsp-bloom-b',label:'Bloom B',defaultParts:1}
+    ],
+    defaultProfile:'1to1', profiles:[{id:'1to1',label:'Legacy 1:1',parts:[1,1]}],
+    ratioNote:'Legacy Sensi Professional WSP powder system, discontinued globally by Advanced Nutrients in April 2026. Historical directions used equal Bloom A and Bloom B dry weights.',
+    useRates:[
+      {profileId:'1to1',label:'Legacy published range — low',components:[{productId:'advanced-sensi-wsp-bloom-a',gPerGal:3.1},{productId:'advanced-sensi-wsp-bloom-b',gPerGal:3.1}]},
+      {profileId:'1to1',label:'Legacy published range — high',components:[{productId:'advanced-sensi-wsp-bloom-a',gPerGal:4.1},{productId:'advanced-sensi-wsp-bloom-b',gPerGal:4.1}]}
+    ],
+    source:{url:'https://www.advancednutrients.com/articles/sensi-wsp-discontinued/',type:'official-discontinuation-notice',checked:'2026-09-21'},
+    rateSource:{type:'reputable-distributor-label-copy',checked:'2026-09-21',original:'Bloom A and B equal parts; 3.1–4.1 g/US gal each'}
+  },
+  {
+    id:'advanced-cultivator-series', partCount:3, manufacturer:'Advanced Nutrients', brand:'Advanced Nutrients', program:'Cultivator Series', displayFormula:'14-0-0 (Base) + 2-9-24 (Grow) + 3-13-26 (Bloom)', name:'Cultivator Series',
+    ratioBasis:'mass', components:[
+      {productId:'advanced-cultivator-base',label:'Base',defaultParts:4},
+      {productId:'advanced-cultivator-grow',label:'Grow',defaultParts:4},
+      {productId:'advanced-cultivator-bloom',label:'Bloom',defaultParts:0}
+    ],
+    defaultProfile:'grow', profiles:[
+      {id:'grow',label:'Grow W1-W4',parts:[4,4,0]},
+      {id:'bloom-early',label:'Bloom W1-W3',parts:[4,0,4]},
+      {id:'bloom-mid',label:'Bloom W4-W7',parts:[3,0,6]},
+      {id:'bloom-late',label:'Bloom W8',parts:[2,0,4]},
+      {id:'bloom-finish',label:'Bloom W9',parts:[0,0,4]}
+    ],
+    ratioNote:'Official phase-specific dry weights. Grow and Bloom are not used simultaneously; Base tapers through bloom and is removed for week 9.',
+    useRates:[
+      {profileId:'grow',label:'Official — Grow W1-W4',components:[{productId:'advanced-cultivator-base',gPerGal:4},{productId:'advanced-cultivator-grow',gPerGal:4}]},
+      {profileId:'bloom-early',label:'Official — Bloom W1-W3',components:[{productId:'advanced-cultivator-base',gPerGal:4},{productId:'advanced-cultivator-bloom',gPerGal:4}]},
+      {profileId:'bloom-mid',label:'Official — Bloom W4-W7',components:[{productId:'advanced-cultivator-base',gPerGal:3},{productId:'advanced-cultivator-bloom',gPerGal:6}]},
+      {profileId:'bloom-late',label:'Official — Bloom W8',components:[{productId:'advanced-cultivator-base',gPerGal:2},{productId:'advanced-cultivator-bloom',gPerGal:4}]},
+      {profileId:'bloom-finish',label:'Official — Bloom W9',components:[{productId:'advanced-cultivator-bloom',gPerGal:4}]}
+    ],
+    source:{url:'https://www.advancednutrients.com/products/cultivator-series/',type:'official-product-page-and-feed-chart',checked:'2026-09-21',original:'Grow W1-W4 Base 4 + Grow 4 g/gal; Bloom W1-W3 Base 4 + Bloom 4; W4-W7 3 + 6; W8 2 + 4; W9 Bloom 4 only'}
+  },
+  {
+    id:'frontrow-3-2-2', partCount:3, manufacturer:'Front Row Ag LLC', brand:'Front Row Ag', program:'3-2-2', displayFormula:'14-0-8 (Part A) + 2-13-17 (Part B) + 0-35-29 (Bloom)', name:'Front Row Ag 3-2-2',
+    ratioBasis:'mass', components:[
+      {productId:'frontrow-part-a',label:'Part A',defaultParts:3},
+      {productId:'frontrow-part-b',label:'Part B',defaultParts:2},
+      {productId:'frontrow-bloom',label:'Bloom',defaultParts:2}
+    ],
+    defaultProfile:'3-2-2', profiles:[{id:'3-2-2',label:'3-2-2',parts:[3,2,2]}],
+    ratioNote:'Front Row Ag identifies 3:2:2 as the dry-to-reservoir product ratio for Part A:Part B:Bloom. Total dose is adjusted to the crop/EC target rather than fixed to one universal g/gal.',
+    useRates:[
+      {label:'Official clone DTR',components:[{productId:'frontrow-part-a',gPerGal:2},{productId:'frontrow-part-b',gPerGal:1.4}]}
+    ],
+    source:{url:'https://www.frontrowag.com/pages/resources',type:'official-labels-and-faq',checked:'2026-09-21',original:'3:2:2 relative dry ratio; clone DTR 2.0 g/gal Part A + 1.4 g/gal Part B'}
+  },
   {
     id:'cropsalt-veg', partCount:2, manufacturer:'CS Consulting', brand:'CropSalt', program:'Veg', displayFormula:'3-7-16 (Veg A) + 14-0-0 (Veg B)', name:'CropSalt Veg',
     ratioBasis:'mass', components:[
@@ -651,3 +797,50 @@ window.FERTILIZER_PRODUCTS.push(
     nitrogenForms:{nitrateN:14.5,ammoniacalN:1}, useRates:[], source:{type:'uploaded-label',checked:'2026-09-19'}
   }
 );
+
+
+/*
+  Pending verified-data records are intentionally excluded from FERTILIZER_PRODUCTS/SYSTEMS.
+  Missing guaranteed percentages must be resolved before these can enter chemistry calculations.
+*/
+window.FERTILIZER_PENDING_PRODUCTS = [
+  {
+    id:'advanced-cs2-prime', manufacturer:'Advanced Nutrients', brand:'Advanced Nutrients', program:'CS2', displayFormula:'13-0-0 (Prime)', componentName:'Prime', name:'CS2 Prime 13-0-0', form:'dry',
+    knownAnalysis:{N:13,Ca:17},
+    knownContents:['calcium nitrate','chelated micronutrients','Tetraplex Iron'],
+    missingGuaranteedAnalysis:['nitrogen forms','Fe','Mn','Zn','B','Cu','Mo'],
+    source:{url:'https://8thgeneration.advancednutrients.com/products/cs2/',type:'official-product-page',checked:'2026-09-21'},
+    notes:'Official Advanced Nutrients article confirms 13% N and 17% Ca. Full public guaranteed-analysis percentages were not located, so this record is not used in ppm calculations.'
+  },
+  {
+    id:'advanced-cs2-push', manufacturer:'Advanced Nutrients', brand:'Advanced Nutrients', program:'CS2', displayFormula:'0-11-24 (Push)', componentName:'Push', name:'CS2 Push 0-11-24', form:'dry',
+    knownAnalysis:{N:0,P2O5:11,K2O:24},
+    knownContents:['magnesium','sulfur','targeted micronutrients'],
+    missingGuaranteedAnalysis:['Mg','S','Fe','Mn','Zn','B','Cu','Mo'],
+    source:{url:'https://8thgeneration.advancednutrients.com/products/cs2/',type:'official-product-page',checked:'2026-09-21'},
+    notes:'Official page confirms 0-11-24 and that Push supplies Mg and S, but not their guaranteed percentages. Excluded from ppm calculations until the complete label is sourced.'
+  }
+];
+
+window.FERTILIZER_PENDING_SYSTEMS = [
+  {
+    id:'advanced-cs2-prime-push', manufacturer:'Advanced Nutrients', brand:'Advanced Nutrients', program:'CS2 Prime & Push', partCount:2,
+    components:['advanced-cs2-prime','advanced-cs2-push'],
+    regularEcRates:[
+      {label:'Clone',primeGPerGal:3,pushGPerGal:3},
+      {label:'Veg W1-W4',primeGPerGal:4,pushGPerGal:4},
+      {label:'Bloom W1-W3',primeGPerGal:4,pushGPerGal:4},
+      {label:'Bloom W4-W6',primeGPerGal:4,pushGPerGal:6},
+      {label:'Bloom W7-W8',primeGPerGal:0,pushGPerGal:4}
+    ],
+    highEcRates:[
+      {label:'Clone',primeGPerGal:4,pushGPerGal:4},
+      {label:'Veg W1-W4',primeGPerGal:6,pushGPerGal:6},
+      {label:'Bloom W1-W3',primeGPerGal:6,pushGPerGal:6},
+      {label:'Bloom W4-W6',primeGPerGal:6,pushGPerGal:8},
+      {label:'Bloom W7-W8',primeGPerGal:0,pushGPerGal:6}
+    ],
+    source:{url:'https://8thgeneration.advancednutrients.com/products/cs2/',type:'official-product-page-and-feeding-guide',checked:'2026-09-21'},
+    notes:'Rates are captured, but system remains pending because the public complete guaranteed analyses for Prime/Push are not yet available.'
+  }
+];
