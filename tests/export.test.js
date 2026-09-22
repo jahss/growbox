@@ -57,6 +57,16 @@ test('builds comparison rows and leaves zero-nitrogen dose fields empty', () => 
   assert.ok(rows[2].slice(2).every(value => value === ''));
 });
 
+test('Compare CSV follows the view: label % in Guaranteed %, ppm with the standardization named', () => {
+  const entries = [{id: 'complete', analysis: {N: 10, P2O5: 5, K2O: 10}}];
+  const context = {chemistry, entries, exportLabel: entry => entry.id};
+  const percent = exportModule.currentCsvRows({view: 'compare', compareMode: 'percent', n: 160, blend: {result: null}}, context);
+  assert.deepEqual(percent[0].slice(0, 4), ['Product / system', 'N %', 'P2O5 %', 'K2O %']);
+  assert.deepEqual(percent[1].slice(0, 4), ['complete', 10, 5, 10]);
+  const ppm = exportModule.currentCsvRows({view: 'compare', compareMode: 'ppm', compareElement: 'K', n: 120, blend: {result: null}}, context);
+  assert.deepEqual(ppm[0].slice(0, 3), ['Product / system', 'Total g/gal @ 120 ppm K', 'N ppm']);
+});
+
 test('uses Recipe Analyzer rows while the Use Rate view is active', () => {
   const expected = [['Program', 'N ppm'], ['Example', 160]];
   const rows = exportModule.currentCsvRows({view: 'useRate'}, {useRateRows: () => expected});

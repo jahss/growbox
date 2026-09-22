@@ -114,6 +114,22 @@ test('every volume-ratio system component has a density source', () => {
   });
 });
 
+test('every liquid dosed by volume has a density the math can use (an estimate sets it to the range midpoint)', () => {
+  const byVolume = new Set();
+  products.forEach(product => (product.useRates || []).forEach(rate => { if (rate.mLPerGal != null) byVolume.add(product.id); }));
+  systems.forEach(system => {
+    (system.useRates || []).forEach(rate => (rate.components || []).forEach(component => { if (component.mLPerGal != null) byVolume.add(component.productId); }));
+    if (system.ratioBasis === 'volume') system.components.forEach(component => byVolume.add(component.productId));
+  });
+  byVolume.forEach(id => {
+    const product = byId.get(id);
+    assert.ok(product.densityGPerMl > 0, id + ' is dosed by volume but has no densityGPerMl');
+    if (product.densityEstimate) {
+      assert.ok(Math.abs(product.densityGPerMl - (product.densityEstimate.min + product.densityEstimate.max) / 2) < 1e-9, id + ' densityGPerMl should be its estimate midpoint');
+    }
+  });
+});
+
 test('liquid products with mL rates carry a density source; dry products do not need one', () => {
   products.forEach(product => {
     const usesMl = (product.useRates || []).some(rate => rate.components

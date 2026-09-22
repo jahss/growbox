@@ -173,6 +173,23 @@ test('a program reproduced from its own parts matches exactly and ranks first', 
   assert.ok(view.state.blend.result.rms < 1e-6, 'its own parts reproduce the target ppm');
   assert.match(view.elements.fit.innerHTML, /fit-good"><b>100% match/);
   assert.match(view.elements.blendClosest.innerHTML, /^<div class="selected-line"><div class="selected-line-head"><div><b>Athena — Pro Bloom<\/b> <small class="cmp-only">your target<\/small>/);
+  // Closest products compare the 12 elements only; the blend's N-form ppm must not count against them.
+  assert.match(view.elements.blendClosest.innerHTML, /^[^]*?your target[^]*?<b>100% match<\/b>/);
+});
+
+test('a solved result is dropped when one of its products no longer exists', () => {
+  const view = fixture();
+  view.component.render();
+  const saved = stateModule.saveCustomProduct(view.state, {name: 'My cal', analysis: {N: 15, Ca: 19}});
+  view.catalog.setCustomProducts(view.state.customProducts);
+  view.state.blend.ids = [saved.record.id, 'mkp-0-52-34'];
+  view.component.solve();
+  assert.ok(view.state.blend.result);
+  view.state.customProducts = [];
+  view.catalog.setCustomProducts([]);
+  view.component.renderResult();
+  assert.equal(view.state.blend.result, null, 'doses would otherwise shift onto the wrong products');
+  assert.equal(view.elements.blendResult.classList.contains('hidden'), true);
 });
 
 test('fit badges show match and difference, coloured by closeness', () => {

@@ -42,9 +42,16 @@
     return rows;
   }
 
+  const LABEL_KEYS = ['N', 'P2O5', 'K2O', 'Ca', 'Mg', 'S', 'Fe', 'Mn', 'Zn', 'B', 'Cu', 'Mo'];
+
+  // Whatever Compare is showing: label % in Guaranteed %, else ppm at the chosen standard.
   function comparisonRows(state, chemistry, entries, exportLabel) {
-    const rows = [['Product / system', 'Total g/gal', ...ALL_KEYS]];
+    if (state.compareMode === 'percent') {
+      return [['Product / system', ...LABEL_KEYS.map(key => key + ' %')],
+        ...entries.map(entry => [exportLabel(entry), ...LABEL_KEYS.map(key => Number(entry.analysis[key]) || 0)])];
+    }
     const element = state.compareElement || 'N';
+    const rows = [['Product / system', 'Total g/gal @ ' + state.n + ' ppm ' + element, ...ALL_KEYS.map(key => key + ' ppm')]];
     entries.forEach(entry => {
       const dose = chemistry.standardizedDose(entry.analysis, element, state.n);
       const ppm = dose === null ? null : chemistry.ppmAtDose(entry.analysis, dose);

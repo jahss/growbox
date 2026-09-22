@@ -277,8 +277,8 @@ test('CSV export produces well-formed quoted rows through the real download path
   assert.match(downloads[0].type, /^text\/csv/);
   const csv = downloads[0].text;
   // Header row is quoted and includes the expected macro + micro columns.
-  assert.match(csv, /^"Product \/ system","Total g\/gal","N"/);
-  assert.match(csv, /"Ca","Mg","S","Fe","Mn","Zn","B","Cu","Mo"/);
+  assert.match(csv, /^"Product \/ system","Total g\/gal @ 160 ppm N","N ppm"/);
+  assert.match(csv, /"Ca ppm","Mg ppm","S ppm","Fe ppm","Mn ppm","Zn ppm","B ppm","Cu ppm","Mo ppm"/);
   // The default lines (Athena Pro Bloom, CropSalt Bloom, Jack's A/B 0-12-26) render rows; blank values
   // are preserved as empty quoted fields.
   const rows = csv.split('\n').filter(line => line.length > 0);

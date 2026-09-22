@@ -299,6 +299,8 @@
     function closestProducts(result) {
       const reference = referenceElement(result.ppm);
       if (!reference) return [];
+      // The 12 elements only: products don't carry N-form ppm, so those rows would count against every one.
+      const elements = Object.fromEntries(solver.PPM_KEYS.map(key => [key, result.ppm[key]]));
       const candidates = [
         ...catalog.customProducts().map(item => ({value: 'p:' + item.id, title: 'Custom — ' + item.name, formula: catalog.displayFormula(item), analysis: item.analysis})),
         ...products.filter(item => item.compareGroup === '1-part').map(item => ({value: 'p:' + item.id, title: catalog.entryTitle(item), formula: catalog.displayFormula(item), analysis: item.analysis})),
@@ -307,7 +309,7 @@
       return candidates
         .map(item => {
           const dose = chemistry.standardizedDose(item.analysis, reference, result.ppm[reference]);
-          return dose === null ? null : {...item, distance: solver.relativeError(chemistry.ppmAtDose(item.analysis, dose), result.ppm)};
+          return dose === null ? null : {...item, distance: solver.relativeError(chemistry.ppmAtDose(item.analysis, dose), elements)};
         })
         .filter(Boolean)
         .sort((a, b) => a.distance - b.distance)
@@ -340,6 +342,12 @@
 
     function renderResult() {
       const state = getState();
+      // A result whose products no longer all exist (a deleted custom product) is out of date:
+      // its doses would line up with the wrong products.
+      if (state.blend.result && state.blend.result.ids.some(id => !catalog.product(id))) {
+        state.blend.result = null;
+        save();
+      }
       const result = state.blend.result;
       if (!result) {
         element('blendResult').classList.add('hidden');
