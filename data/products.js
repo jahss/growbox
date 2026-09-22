@@ -527,13 +527,13 @@ window.FERTILIZER_PRODUCTS = [
     densitySource:{url:'https://emeraldharvest.co/wp-content/uploads/2019/06/Bloom-SDS-2019-10-22.pdf',type:'official-sds',checked:'2026-09-21',original:'Relative density 1.12 kg/L'}
   },
   {
-    id:'calcium-nitrate', compareGroup:'salt', brand:'Salt', name:'Calcium nitrate — fertilizer grade', chemicalFormula:'5Ca(NO₃)₂·NH₄NO₃·10H₂O', form:'dry',
+    id:'calcium-nitrate', compareGroup:'salt', brand:'Salt', name:'Calcium nitrate', chemicalFormula:'5Ca(NO₃)₂·NH₄NO₃·10H₂O', form:'dry',
     analysis:{N:15.5,P2O5:0,K2O:0,Ca:19,Mg:0,S:0,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, useRates:[],
     source:{type:'fertilizer-grade',checked:'2026-09-22'},
     notes:'Standard fertilizer-grade analysis of the calcium ammonium nitrate double salt (about 14.4% nitrate-N, 1.1% ammonium-N).'
   },
   {
-    id:'calcium-nitrate-tetrahydrate', compareGroup:'salt', brand:'Salt', name:'Calcium nitrate tetrahydrate — technical grade', chemicalFormula:'Ca(NO₃)₂·4H₂O', form:'dry',
+    id:'calcium-nitrate-tetrahydrate', compareGroup:'salt', brand:'Salt', name:'Calcium nitrate — no ammonium', chemicalFormula:'Ca(NO₃)₂·4H₂O', form:'dry',
     analysis:{N:11.86,P2O5:0,K2O:0,Ca:16.97,Mg:0,S:0,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, useRates:[],
     source:{type:'stoichiometry',checked:'2026-09-22'},
     notes:'Pure calcium nitrate with no ammonium. Theoretical analysis from the chemical formula (standard atomic weights); fertilizer grades can run slightly lower.'
@@ -569,19 +569,19 @@ window.FERTILIZER_PRODUCTS = [
     notes:'Theoretical analysis from the chemical formula (standard atomic weights); fertilizer grades can run slightly lower.'
   },
   {
-    id:'magnesium-sulfate', compareGroup:'salt', brand:'Salt', name:'Magnesium sulfate heptahydrate — Epsom salt', chemicalFormula:'MgSO₄·7H₂O', form:'dry',
+    id:'magnesium-sulfate', compareGroup:'salt', brand:'Salt', name:'Magnesium sulfate — Epsom salt', chemicalFormula:'MgSO₄·7H₂O', form:'dry',
     analysis:{N:0,P2O5:0,K2O:0,Ca:0,Mg:9.86,S:13.01,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, useRates:[],
     source:{type:'stoichiometry',checked:'2026-09-22'},
     notes:'Theoretical analysis from the chemical formula (standard atomic weights); fertilizer grades can run slightly lower.'
   },
   {
-    id:'magnesium-sulfate-monohydrate', compareGroup:'salt', brand:'Salt', name:'Magnesium sulfate monohydrate — Kieserite', chemicalFormula:'MgSO₄·H₂O', form:'dry',
+    id:'magnesium-sulfate-monohydrate', compareGroup:'salt', brand:'Salt', name:'Magnesium sulfate — Kieserite', chemicalFormula:'MgSO₄·H₂O', form:'dry',
     analysis:{N:0,P2O5:0,K2O:0,Ca:0,Mg:17.56,S:23.17,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, useRates:[],
     source:{type:'stoichiometry',checked:'2026-09-22'},
     notes:'Theoretical analysis from the chemical formula (standard atomic weights); fertilizer grades can run slightly lower.'
   },
   {
-    id:'magnesium-nitrate', compareGroup:'salt', brand:'Salt', name:'Magnesium nitrate hexahydrate', chemicalFormula:'Mg(NO₃)₂·6H₂O', form:'dry',
+    id:'magnesium-nitrate', compareGroup:'salt', brand:'Salt', name:'Magnesium nitrate', chemicalFormula:'Mg(NO₃)₂·6H₂O', form:'dry',
     analysis:{N:10.93,P2O5:0,K2O:0,Ca:0,Mg:9.48,S:0,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, useRates:[],
     source:{type:'stoichiometry',checked:'2026-09-22'},
     notes:'Theoretical analysis from the chemical formula (standard atomic weights); fertilizer grades can run slightly lower.'

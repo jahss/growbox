@@ -183,7 +183,7 @@ test('salts are dry, unbranded, named by chemistry, and carry their chemical for
     assert.ok(typeof salt.chemicalFormula === 'string' && salt.chemicalFormula.length > 0, salt.id + ' needs a chemical formula');
     assert.ok(salt.source && salt.source.type, salt.id + ' needs a source type');
   });
-  assert.equal(byId.get('magnesium-sulfate').name, 'Magnesium sulfate heptahydrate — Epsom salt');
+  assert.equal(byId.get('magnesium-sulfate').name, 'Magnesium sulfate — Epsom salt');
   assert.ok(!byId.has('jacks-epsom'), "Epsom salt is a generic salt, not a Jack's product");
   assert.deepEqual([...systemById.get('jacks-321').components.map(component => component.productId)], ['jacks-5-12-26-a', 'jacks-15-0-0-b', 'magnesium-sulfate']);
 });
@@ -205,9 +205,9 @@ test('salt display names carry the label N-P-K and other nutrients', () => {
   const productModel = require('../js/product-model.js');
   const format = (value, digits = 2) => Number(value).toFixed(digits).replace(/(\.\d*?[1-9])0+$|\.0+$/, '$1');
   const catalog = productModel.createCatalog(products, systems, chemistry, format);
-  assert.equal(catalog.displayFormula(byId.get('magnesium-sulfate')), 'Magnesium sulfate heptahydrate — Epsom salt · 0-0-0 + 9.9 Mg, 13 S');
+  assert.equal(catalog.displayFormula(byId.get('magnesium-sulfate')), 'Magnesium sulfate — Epsom salt · 0-0-0 + 9.9 Mg, 13 S');
   assert.equal(catalog.displayFormula(byId.get('mkp-0-52-34')), 'Monopotassium phosphate — MKP · 0-52.2-34.6');
   assert.equal(catalog.displayFormula(byId.get('dipotassium-phosphate')), 'Dipotassium phosphate — DKP · 0-40.8-54.1');
   assert.equal(catalog.displayFormula(byId.get('urea')), 'Urea · 46.7-0-0');
-  assert.equal(catalog.displayFormula(byId.get('calcium-nitrate-tetrahydrate')), 'Calcium nitrate tetrahydrate — technical grade · 11.9-0-0 + 17 Ca');
+  assert.equal(catalog.displayFormula(byId.get('calcium-nitrate-tetrahydrate')), 'Calcium nitrate — no ammonium · 11.9-0-0 + 17 Ca');
 });

@@ -74,7 +74,7 @@
 
     function displayFormula(item) {
       // Salts are known by name, with their label N-P-K and any other nutrients:
-      // "Magnesium sulfate heptahydrate — Epsom salt · 0-0-0 + 9.9 Mg, 13 S".
+      // "Magnesium sulfate — Epsom salt · 0-0-0 + 9.9 Mg, 13 S".
       if (item.compareGroup === 'salt') return item.name + ' · ' + saltLabel(item.analysis || {});
       if (item.displayFormula && item.partCount > 1) return item.displayFormula.replace(/\(([^()]+)\)/g, (all, label) => '(' + partLabel(item, label) + ')');
       if (item.displayFormula) return item.displayFormula;
