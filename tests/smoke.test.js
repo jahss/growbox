@@ -65,8 +65,8 @@ const ELEMENT_IDS = [
   'useRateProduct', 'useRatePreset', 'useRatePresetNote', 'useRateIdentity',
   'useRateInputs', 'useRateSummary', 'useRateResult', 'useRateNitrogen',
   'gaInputs', 'gaElemental', 'gaFeed', 'gaName', 'gaAdd', 'gaSaved',
-  'blendChecks', 'blendInputs', 'labelMode', 'elementMode', 'solve',
-  'blendResult', 'fit', 'weights', 'labelResult', 'elementResult', 'feed',
+  'blendTarget', 'blendSourcePicker', 'blendSources', 'blendInputs', 'labelMode', 'elementMode', 'solve',
+  'blendResult', 'fit', 'weights', 'blendBasisTitle', 'blendVsTarget', 'blendClosest', 'feed',
   'notice', 'csv', 'json', 'reset'
 ];
 
@@ -220,9 +220,10 @@ test('app boots and renders all four views without exceptions', () => {
   assert.ok(dom.elements.gaInputs.innerHTML.includes('placeholder="e.g. 12"'));
   assert.ok(dom.elements.gaFeed.innerHTML.includes('Enter a label above'));
 
-  // Blend view: renders fertilizer and salt checkboxes.
-  assert.match(dom.elements.blendChecks.innerHTML, /Fertilizers & components/);
-  assert.match(dom.elements.blendChecks.innerHTML, /Ingredient salts/);
+  // Blend view: target and source dropdowns, with the default sources listed.
+  assert.match(dom.elements.blendTarget.innerHTML, /Custom — enter values below/);
+  assert.match(dom.elements.blendSourcePicker.innerHTML, /Ingredient salts/);
+  assert.match(dom.elements.blendSources.innerHTML, /removeSource/);
 });
 
 test('tabs switch the active view across all four views', () => {
@@ -252,9 +253,9 @@ test('solve produces a blend with sensible nonnegative weights and a feed chart'
   dom.elements.solve.onclick();
   assert.ok(dom.elements.blendResult.classList.contains('hidden') === false, 'blend result should be visible after solve');
   assert.match(dom.elements.weights.innerHTML, /% by mass/);
-  assert.ok(dom.elements.feed.innerHTML.includes('N target'), 'feed chart should render for a nitrogen-bearing blend');
   // Fresh-state blend (jacks + a + b + epsom + mkp) has N>0, so feed must render rows.
-  assert.match(dom.elements.feed.innerHTML, /120/);
+  assert.ok(dom.elements.feed.innerHTML.includes('ppm N'), 'feed chart should render for a nitrogen-bearing blend');
+  assert.match(dom.elements.feed.innerHTML, /50 ppm N/);
 });
 
 test('blend label and elemental modes both render their target fields and labels', () => {
@@ -275,8 +276,10 @@ test('blend label and elemental modes both render their target fields and labels
 
   // Solving renders both the label-basis and elemental-basis result tables.
   elements.solve.onclick();
-  assert.ok(elements.labelResult.innerHTML.length > 0, 'label basis table renders after solve');
-  assert.ok(elements.elementResult.innerHTML.length > 0, 'elemental basis table renders after solve');
+  // Solving shows the result in the chosen (elemental) basis only.
+  assert.match(elements.blendVsTarget.innerHTML, /<small>K<\/small>/);
+  assert.doesNotMatch(elements.blendVsTarget.innerHTML, /K₂O/);
+  assert.ok(elements.blendClosest.innerHTML.length > 0, 'closest products render after solve');
 });
 
 test('CSV export produces well-formed quoted rows through the real download path', () => {

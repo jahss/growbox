@@ -23,7 +23,8 @@
   function blendRows(state, levels, chemistry, product) {
     const result = state.blend.result;
     const products = result.ids.map(product);
-    const rows = [['Target N', ...products.map(item => item.name + ' g/gal'), 'Total g/gal', 'P', 'K', 'Ca', 'Mg', 'S']];
+    const ppmKeys = ALL_KEYS.filter(key => key !== 'N');
+    const rows = [['Target N', ...products.map(item => item.name + ' g/gal'), 'Total g/gal', ...ppmKeys]];
     const nitrogenPercent = result.element.N;
     if (nitrogenPercent > 0) {
       levels.forEach(targetN => {
@@ -32,7 +33,7 @@
           targetN,
           ...result.w.map(weight => total * weight),
           total,
-          ...['P', 'K', 'Ca', 'Mg', 'S'].map(key => chemistry.MG_PER_L_PER_G_PER_GAL * total * result.element[key] / 100)
+          ...ppmKeys.map(key => chemistry.MG_PER_L_PER_G_PER_GAL * total * (Number(result.element[key]) || 0) / 100)
         ]);
       });
     }

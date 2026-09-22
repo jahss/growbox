@@ -5,7 +5,7 @@
 })(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   'use strict';
 
-  const STORAGE_KEY = 'growbox-fert-tool-v07';
+  const STORAGE_KEY = 'growbox-fert-tool-v08';
   const MAX_COMPARE_LINES = 10;
   const MAX_CUSTOM_PRODUCTS = 20;
   const CUSTOM_ANALYSIS_KEYS = ['N', 'P2O5', 'K2O', 'Ca', 'Mg', 'S', 'Fe', 'Mn', 'Zn', 'B', 'Cu', 'Mo'];
@@ -34,7 +34,8 @@
       blend: {
         mode: 'label',
         ids: ['jacks-12-4-16', 'jacks-5-12-26-a', 'jacks-15-0-0-b', 'jacks-epsom', 'mkp-0-52-34'],
-        target: {N: 12, P2O5: 5, K2O: 16, P: 2.18, K: 13.28, Ca: 7, Mg: 2, S: 2},
+        target: {N: 12, P2O5: 5, K2O: 16, P: 2.18, K: 13.28, Ca: 7, Mg: 2, S: 2, Fe: 0, Mn: 0, Zn: 0, B: 0, Cu: 0, Mo: 0},
+        targetId: '',
         result: null
       }
     };
@@ -61,7 +62,6 @@
       ? {...defaults.blend.target, ...state.blend.target}
       : defaults.blend.target;
     if (!Array.isArray(state.blend.ids)) state.blend.ids = defaults.blend.ids;
-    state.blend.ids = state.blend.ids.filter(id => availableProducts.some(product => product.id === id));
     if (!['label', 'element'].includes(state.blend.mode)) state.blend.mode = defaults.blend.mode;
     if (!['compare', 'useRate', 'analysis', 'blend'].includes(state.view)) state.view = defaults.view;
 
@@ -116,6 +116,12 @@
         };
       });
     const keptCustomIds = new Set(state.customProducts.map(item => item.id));
+    state.blend.ids = [...new Set(state.blend.ids)].filter(id => keptCustomIds.has(id) || availableProducts.some(product => product.id === id));
+    const [targetKind, targetId] = String(state.blend.targetId || '').split(':');
+    const targetExists = targetKind === 'p'
+      ? availableProducts.some(product => product.id === targetId && product.compareGroup === '1-part')
+      : targetKind === 's' && availableSystems.some(system => system.id === targetId);
+    if (!targetExists) state.blend.targetId = '';
 
     state.compare = (Array.isArray(state.compare) ? state.compare : []).filter(id => {
       if (keptCustomIds.has(id)) return true;

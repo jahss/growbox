@@ -143,6 +143,7 @@
       return state.compare.length + state.systemCompare.length;
     }
 
+    // Planned: guests limited to 3 lines, accounts get MAX_LINES, once a backend exists. See README.
     function addItem(value) {
       if (!value) return;
       const state = getState();

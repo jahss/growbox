@@ -29,7 +29,7 @@ test('builds fixed-ratio blend feed-chart rows', () => {
   };
   const products = new Map([['a', {name: 'A'}], ['b', {name: 'B'}]]);
   const rows = exportModule.currentCsvRows(state, {levels, chemistry, product: id => products.get(id)});
-  assert.deepEqual(rows[0], ['Target N', 'A g/gal', 'B g/gal', 'Total g/gal', 'P', 'K', 'Ca', 'Mg', 'S']);
+  assert.deepEqual(rows[0], ['Target N', 'A g/gal', 'B g/gal', 'Total g/gal', 'P', 'K', 'Ca', 'Mg', 'S', 'Fe', 'Mn', 'Zn', 'B', 'Cu', 'Mo']);
   assert.equal(rows.length, 6);
   assert.ok(Math.abs(rows[1][1] + rows[1][2] - rows[1][3]) < 1e-12);
 });

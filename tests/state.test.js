@@ -206,3 +206,13 @@ test('default comparison lines exist in the product database', () => {
   const state = stateModule.normalizeState(stateModule.freshState(), context.window.FERTILIZER_PRODUCTS, context.window.FERTILIZER_SYSTEMS);
   assert.deepEqual(state.systemCompare, ['athena-pro-bloom', 'cropsalt-bloom', 'jacks-2part-0-12-26']);
 });
+
+test('normalization keeps a valid blend target choice and clears an unknown one', () => {
+  const keep = stateModule.normalizeState({blend: {targetId: 's:athena-pro-bloom'}}, products, systems);
+  assert.equal(keep.blend.targetId, 's:athena-pro-bloom');
+  const product = stateModule.normalizeState({blend: {targetId: 'p:jacks-12-4-16'}}, products, systems);
+  assert.equal(product.blend.targetId, 'p:jacks-12-4-16');
+  assert.equal(stateModule.normalizeState({blend: {targetId: 'p:component-a'}}, products, systems).blend.targetId, '');
+  assert.equal(stateModule.normalizeState({blend: {targetId: 's:missing'}}, products, systems).blend.targetId, '');
+  assert.equal(stateModule.STORAGE_KEY, 'growbox-fert-tool-v08');
+});

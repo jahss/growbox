@@ -71,3 +71,18 @@ test('preserves the current default Blend Finder regression result', () => {
 test('rejects an empty fertilizer selection', () => {
   assert.throws(() => solver.solveBlend([], {}, 'label', chemistry), /At least one fertilizer/);
 });
+
+test('micros only steer the fit when targeted, and never outweigh the macros', () => {
+  const plain = {analysis: {N: 10, P2O5: 0, K2O: 0, Ca: 0, Mg: 0, S: 0}};
+  const withIron = {analysis: {N: 10, P2O5: 0, K2O: 0, Ca: 0, Mg: 0, S: 0, Fe: 0.2}};
+  const noIronTarget = solver.solveBlend([plain, withIron], {N: 10}, 'label', chemistry);
+  closeTo(noIronTarget.rms, 0, 1e-9);
+  const ironTarget = solver.solveBlend([plain, withIron], {N: 10, Fe: 0.1}, 'label', chemistry);
+  closeTo(ironTarget.w[1], 0.5, 1e-6);
+  closeTo(ironTarget.label.Fe, 0.1, 1e-6);
+  // Matching N (a macro) wins over matching Fe when they conflict.
+  const lowN = {analysis: {N: 2, Fe: 0.2}};
+  const conflict = solver.solveBlend([plain, lowN], {N: 10, Fe: 0.2}, 'label', chemistry);
+  assert.ok(conflict.w[0] > 0.5, 'weights favor the N match: ' + conflict.w[0]);
+  assert.deepEqual(solver.allKeysForMode('element'), ['N', 'P', 'K', 'Ca', 'Mg', 'S', 'Fe', 'Mn', 'Zn', 'B', 'Cu', 'Mo']);
+});

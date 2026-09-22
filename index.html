@@ -18,7 +18,7 @@
 <script src="js/blend.js"></script>
 </head>
 <body>
-<header class="head"><div class="wrap"><div class="eyebrow">Prototype 0.7</div><h1>Growbox Fertilizer Toolbox</h1><p class="muted">Label analysis → elemental analysis → ppm → blend feed charts.</p></div></header>
+<header class="head"><div class="wrap"><div class="eyebrow">Version 0.8</div><h1>Growbox Fertilizer Toolbox</h1><p class="muted">Label analysis → elemental analysis → ppm → blend feed charts.</p></div></header>
 <main class="wrap">
 <nav class="tabs"><button class="tab active" data-view="compare">Compare</button><button class="tab" data-view="useRate">Use rate</button><button class="tab" data-view="analysis">Label → ppm</button><button class="tab" data-view="blend">Blend finder</button></nav>
 <div id="notice" class="notice hidden"></div>
@@ -36,12 +36,15 @@
 <div class="card"><h2>Standardized N — ppm feed chart</h2><p class="muted">Dose chosen to reach each elemental N target from 50 to 300 ppm; every other element in ppm at that dose.</p><div id="gaFeed" class="feed-rows"></div></div>
 </section>
 <section id="blend" class="view">
-<div class="card"><div class="toolbar" style="justify-content:space-between"><div><h2>Blend finder</h2><p class="muted">Select fertilizers and find the closest blend by mass.</p></div><div class="seg"><button id="labelMode" class="active">Label N-P₂O₅-K₂O</button><button id="elementMode">Elemental N-P-K</button></div></div>
-<div class="grid2" style="margin-top:12px"><div><h3>Available fertilizers</h3><div id="blendChecks" class="checks"></div></div><div><h3>Target analysis</h3><div id="blendInputs" class="inputs"></div><button id="solve" class="primary" style="width:100%;margin-top:10px">Find closest blend</button></div></div></div>
-<div id="blendResult" class="card hidden"><h2>Blend result</h2><p id="fit" class="muted"></p><div id="weights" class="result-grid"></div><div class="grid2" style="margin-top:12px"><div><h3>Label basis</h3><div class="table"><table id="labelResult"></table></div></div><div><h3>Elemental basis</h3><div class="table"><table id="elementResult"></table></div></div></div><h3>Feed chart — fixed blend ratio</h3><p class="muted">The solved blend ratio stays fixed and total dose scales to 120, 140, 160, 180 and 200 ppm N.</p><div class="table"><table id="feed"></table></div></div>
+<div class="card"><div class="toolbar" style="justify-content:space-between"><div><h2>Blend finder</h2><p class="muted">Pick a product to match, add what you have, and find the closest blend by mass.</p></div><div class="seg"><button id="labelMode" class="active">Label N-P₂O₅-K₂O</button><button id="elementMode">Elemental N-P-K</button></div></div>
+<div class="grid2" style="margin-top:12px"><div><h3>Target to match</h3><select id="blendTarget" class="wide-control"></select><div id="blendInputs" class="inputs"></div></div><div><h3>What you have</h3><select id="blendSourcePicker" class="wide-control"></select><div id="blendSources" class="selected-lines"></div></div></div><button id="solve" class="primary" style="width:100%;margin-top:14px">Find closest blend</button></div>
+<div id="blendResult" class="card hidden"><h2>Blend result</h2><p id="fit"></p><div id="weights" class="result-grid"></div>
+<h3 id="blendBasisTitle">Result vs target</h3><p class="muted">Green is within 5% of the target, amber is further off. Micros without a target are shown but not matched.</p><div id="blendVsTarget" class="cmp-chips ga-elements vs-chips"></div>
+<h3>Closest commercial products</h3><p class="muted">Products and programs whose analysis is nearest this blend, on the same basis.</p><div id="blendClosest" class="selected-lines"></div>
+<h3>Feed chart — fixed blend ratio</h3><p class="muted">The solved blend ratio stays fixed and total dose scales from 50 to 300 ppm N. Expand a row for micros and the dose of each product.</p><div id="feed" class="feed-rows"></div></div>
 </section>
 <div class="card"><div class="actions"><button id="csv">Download current CSV</button><button id="json">Download results JSON</button><button id="reset" class="danger">Reset session</button></div></div>
-<div class="footer">Session state is stored only for the current browser session. Prototype math: 1 g/US gal = 264.172052 mg/L; P = P₂O₅ × 0.436426; K = K₂O × 0.830151.</div>
+<div class="footer">Session state is stored only for the current browser session. Conversions: 1 g/US gal = 264.172052 mg/L; P = P₂O₅ × 0.436426; K = K₂O × 0.830151.</div>
 </main>
 <script src="js/app.js"></script>
 </body>

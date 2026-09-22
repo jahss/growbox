@@ -42,6 +42,15 @@ Prefer official manufacturer labels, technical sheets, and feed charts. Commerci
 
 Products entered on the Label → ppm tab are stored in `sessionStorage` with the rest of the session state, so they are lost when the tab closes. Keeping them permanently (or sharing them between devices) will need a proper backend; until then this is intentionally session-only.
 
+## Planned: account-only features
+
+Once a backend with user accounts exists, these become account-only. Until then they are open to everyone, and nothing in the code enforces a lock:
+
+- **Blend finder** — the whole tab (`js/blend.js`).
+- **Downloads** — CSV and JSON export (`exportCSV` / `exportJSON` in `js/app.js`).
+- **Compare beyond 3 lines** — guests compare up to 3 lines; accounts get the full 10 (`addItem` in `js/compare.js`, `MAX_COMPARE_LINES` in `js/state.js`).
+- **Custom products** — saved per account instead of per browser session (see above).
+
 ## Comparison profiles
 
 Multipart programs may define named comparison profiles when an official recipe changes the component balance, such as Jack's Fast Track Veg and Flower. Programs that use the same component balance throughout the crop cycle remain a single profile instead of being duplicated by stage. Users can switch a profiled program to Custom to edit its component balance directly.
