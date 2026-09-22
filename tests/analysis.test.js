@@ -86,6 +86,14 @@ test('feed chart shows every element per N target and adds mL/gal only with a de
   assert.match(analysisModule.inputsHtml({}, format), /data-k="N"[^>]*placeholder="e\.g\. 12" value=""/);
 });
 
+test('Label → ppm takes optional N forms and shows their share of N', () => {
+  assert.match(analysisModule.inputsHtml({nitrateN: 11, ammoniacalN: 1}, format), /<div id="gaNForms" class="n-forms"><label>Nitrate N %<input class="gai nf-ga" data-k="nitrateN"[^>]*value="11"/);
+  assert.equal(analysisModule.nitrogenShareHtml({N: 12}, format), '');
+  assert.match(analysisModule.nitrogenShareHtml({N: 12, nitrateN: 10.5, ammoniacalN: 1.5}, format), /Of the N: 87\.5% nitrate · 12\.5% ammonium\. Most hydro recipes keep ammonium under about 10–15% of N\./);
+  assert.match(analysisModule.nitrogenShareHtml({N: 12, nitrateN: 9}, format), /75% nitrate · 25% not given/);
+  assert.match(analysisModule.nitrogenShareHtml({N: 2, ureaN: 3}, format), /Nitrogen forms add up to 3%, more than total N \(2%\)/);
+});
+
 test('Add to Compare saves a named custom product, updates it by name, and deletes it', () => {
   const elements = {
     gaInputs: {innerHTML: ''}, gaElemental: {innerHTML: ''}, gaFeed: {innerHTML: ''},
@@ -103,10 +111,19 @@ test('Add to Compare saves a named custom product, updates it by name, and delet
   component.render(state.manual, () => {});
   elements.gaAdd.onclick();
   assert.equal(state.customProducts.length, 1);
-  assert.deepEqual(state.customProducts[0], {id: 'custom-1', name: 'My bloom', analysis: {N: 3, P2O5: 1, K2O: 5, Ca: 0, Mg: 0, S: 0, Fe: 0, Mn: 0, Zn: 0, B: 0, Cu: 0, Mo: 0}, densityGPerMl: 1.2});
+  assert.deepEqual(state.customProducts[0], {id: 'custom-1', name: 'My bloom', analysis: {N: 3, P2O5: 1, K2O: 5, Ca: 0, Mg: 0, S: 0, Fe: 0, Mn: 0, Zn: 0, B: 0, Cu: 0, Mo: 0}, nitrogenForms: {}, densityGPerMl: 1.2});
   assert.deepEqual(state.compare, ['a', 'custom-1']);
   assert.match(notices[0][0], /Added “My bloom” to Compare/);
   assert.match(elements.gaSaved.innerHTML, /My bloom.*3-1-5 · 1\.2 g\/mL/);
+
+  state.manual.nitrateN = 2.5;
+  state.manual.ammoniacalN = 0.5;
+  elements.gaAdd.onclick();
+  assert.deepEqual(state.customProducts[0].nitrogenForms, {nitrateN: 2.5, ammoniacalN: 0.5});
+  state.manual.ureaN = 1;
+  elements.gaAdd.onclick();
+  assert.match(notices.at(-1)[0], /Nitrogen forms add up to more than total N \(3%\)/);
+  delete state.manual.ureaN;
 
   state.manual.K2O = 6;
   elements.gaName.value = 'my BLOOM';
@@ -114,10 +131,45 @@ test('Add to Compare saves a named custom product, updates it by name, and delet
   assert.equal(state.customProducts.length, 1, 'same name (any case) updates');
   assert.equal(state.customProducts[0].analysis.K2O, 6);
   assert.deepEqual(state.compare, ['a', 'custom-1']);
-  assert.equal(refreshes, 2);
+  assert.equal(refreshes, 3);
 
   state.manual = {N: 0};
   component.render(state.manual, () => {});
   elements.gaAdd.onclick();
   assert.match(notices.at(-1)[0], /Enter the label analysis first/);
+});
+
+test('N forms fill a blank N with their total, never override a typed N, and toggle open', () => {
+  const field = value => Object.assign(new EventTarget(), {value});
+  const nInput = field('');
+  const forms = [field(''), field(''), field('')];
+  const hidden = new Set(['hidden']);
+  const box = {classList: {toggle(name) { if (hidden.has(name)) { hidden.delete(name); return false; } hidden.add(name); return true; }}};
+  const toggle = {textContent: 'N forms ▸', attrs: {}, setAttribute(key, value) { this.attrs[key] = value; }};
+  const elements = {xNToggle: toggle, xNForms: box, xN: nInput};
+  const document = {getElementById: id => elements[id], querySelectorAll: selector => selector === '.nf-x' ? forms : []};
+  let nEvents = 0;
+  nInput.addEventListener('input', () => { nEvents += 1; });
+  analysisModule.bindNitrogenField(document, 'x', format);
+  const type = (input, value) => { input.value = value; input.dispatchEvent(new Event('input')); };
+  type(forms[0], '10');
+  assert.equal(nInput.value, '10');
+  type(forms[1], '2.5');
+  assert.equal(nInput.value, '12.5');
+  assert.equal(nEvents, 2, 'N handlers see each fill');
+  type(nInput, '15');
+  type(forms[2], '1');
+  assert.equal(nInput.value, '15', 'a typed N is never overwritten');
+  toggle.onclick();
+  assert.equal(toggle.textContent, 'N forms ▾');
+  assert.equal(toggle.attrs['aria-expanded'], 'true');
+});
+
+test('arrow steps: 0.1 for macro and N-form %, 0.01 for micro %, 1 for N-form ppm', () => {
+  const html = analysisModule.inputsHtml({}, format);
+  assert.match(html, /data-k="N" type="number" min="0" step="\.1"/);
+  assert.match(html, /data-k="K2O" type="number" min="0" step="\.1"/);
+  assert.match(html, /data-k="Fe" type="number" min="0" step="\.01"/);
+  assert.match(html, /data-k="nitrateN" type="number" min="0" step="\.1"/);
+  assert.match(analysisModule.nitrogenFieldHtml('x', 'N ppm', '', 'bi', {}, 'ppm', '', format), /data-k="nitrateN" type="number" min="0" step="1"/);
 });

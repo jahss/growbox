@@ -72,6 +72,14 @@
     return ppm;
   }
 
+  // A label's N split, only when its forms account for all of its N (within 2%);
+  // otherwise null, since N can't be split into forms without the label.
+  function fullNitrogenSplit(forms, totalN) {
+    const total = number(totalN);
+    const sum = Object.values(forms || {}).reduce((acc, value) => acc + number(value), 0);
+    return total > 0 && Math.abs(sum - total) <= 0.02 * total ? forms : null;
+  }
+
   function recipeAtDoses(lines) {
     if (!Array.isArray(lines)) throw new TypeError('Recipe lines are required.');
     const ppm = {};
@@ -174,6 +182,7 @@
   }
 
   return Object.freeze({
+    fullNitrogenSplit,
     US_GALLON_LITERS,
     MG_PER_L_PER_G_PER_GAL,
     P_FROM_P2O5,

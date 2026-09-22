@@ -9,6 +9,8 @@
   const MAX_COMPARE_LINES = 10;
   const MAX_CUSTOM_PRODUCTS = 20;
   const CUSTOM_ANALYSIS_KEYS = ['N', 'P2O5', 'K2O', 'Ca', 'Mg', 'S', 'Fe', 'Mn', 'Zn', 'B', 'Cu', 'Mo'];
+  // Optional label split of total N, % by weight; blank (0) means not given.
+  const NITROGEN_FORM_KEYS = ['nitrateN', 'ammoniacalN', 'ureaN'];
 
   function freshState() {
     return {
@@ -34,7 +36,7 @@
       blend: {
         ids: ['jacks-12-4-16', 'jacks-5-12-26-a', 'jacks-15-0-0-b', 'magnesium-sulfate', 'mkp-0-52-34'],
         // Elemental ppm delivered in solution; 0 means "no target".
-        target: {N: 160, P: 50, K: 200, Ca: 120, Mg: 50, S: 60, Fe: 0, Mn: 0, Zn: 0, B: 0, Cu: 0, Mo: 0},
+        target: {N: 160, P: 50, K: 200, Ca: 120, Mg: 50, S: 60, Fe: 0, Mn: 0, Zn: 0, B: 0, Cu: 0, Mo: 0, nitrateN: 0, ammoniacalN: 0, ureaN: 0},
         targetId: '',
         targetElement: 'N',
         targetLevel: 160,
@@ -45,6 +47,17 @@
 
   function number(value) {
     return Number.isFinite(Number(value)) ? Number(value) : 0;
+  }
+
+  // Given forms only; null when they add up to more than total N.
+  function customNitrogenForms(forms, totalN) {
+    const clean = {};
+    NITROGEN_FORM_KEYS.forEach(key => {
+      const value = Math.max(0, number(forms && forms[key]));
+      if (value > 0) clean[key] = value;
+    });
+    const sum = Object.values(clean).reduce((total, value) => total + value, 0);
+    return sum > number(totalN) + 1e-9 ? null : clean;
   }
 
   function normalizeState(input, products, systems) {
@@ -121,6 +134,7 @@
           id: item.id,
           name: name || [analysis.N, analysis.P2O5, analysis.K2O].join('-'),
           analysis,
+          nitrogenForms: customNitrogenForms(item.nitrogenForms, analysis.N) || {},
           densityGPerMl: Math.max(0, number(item.densityGPerMl))
         };
       });
@@ -188,9 +202,12 @@
   }
 
   // Save a custom product into `state.customProducts`; the same name (any case)
-  // updates the existing one. Returns {record, updated}, or {error: 'limit'} when full.
+  // updates the existing one. Returns {record, updated}, {error: 'limit'} when full, or
+  // {error: 'nitrogen'} when the N forms add up to more than total N.
   function saveCustomProduct(state, input) {
     const name = String(input.name || '').trim().slice(0, 60);
+    const nitrogenForms = customNitrogenForms(input.nitrogenForms, input.analysis && input.analysis.N);
+    if (!nitrogenForms) return {error: 'nitrogen'};
     const existing = state.customProducts.find(item => item.name.toLowerCase() === name.toLowerCase());
     if (!existing && state.customProducts.length >= MAX_CUSTOM_PRODUCTS) return {error: 'limit'};
     const used = state.customProducts.map(item => parseInt(String(item.id).slice(7), 36)).filter(Number.isFinite);
@@ -198,6 +215,7 @@
       id: existing ? existing.id : 'custom-' + ((used.length ? Math.max(...used) : 0) + 1).toString(36),
       name,
       analysis: Object.fromEntries(CUSTOM_ANALYSIS_KEYS.map(key => [key, Math.max(0, number(input.analysis && input.analysis[key]))])),
+      nitrogenForms,
       densityGPerMl: Math.max(0, number(input.densityGPerMl))
     };
     state.customProducts = existing
@@ -210,6 +228,7 @@
     STORAGE_KEY,
     MAX_COMPARE_LINES,
     MAX_CUSTOM_PRODUCTS,
+    NITROGEN_FORM_KEYS,
     freshState,
     normalizeState,
     loadState,

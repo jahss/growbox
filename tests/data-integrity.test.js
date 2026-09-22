@@ -173,6 +173,13 @@ test('non-salt products and all systems carry source metadata with a checked dat
     assert.ok(Boolean(system.source.checked), `${system.id} source needs a checked date`);
   });
 });
+test('salts containing N split it into forms that add up to total N', () => {
+  products.filter(product => product.compareGroup === 'salt' && product.analysis.N > 0).forEach(salt => {
+    const sum = Object.values(salt.nitrogenForms || {}).reduce((total, value) => total + value, 0);
+    assert.ok(Math.abs(sum - salt.analysis.N) < 1e-9, salt.id + ' N forms add to ' + sum + ', not ' + salt.analysis.N);
+  });
+});
+
 test('salts are dry, unbranded, named by chemistry, and carry their chemical formula', () => {
   const salts = products.filter(product => product.compareGroup === 'salt');
   assert.ok(salts.length >= 10, 'expected a populated salt list, got ' + salts.length);

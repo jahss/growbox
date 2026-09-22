@@ -70,6 +70,10 @@
     const getState = options.getState;
     const save = options.save;
     const format = options.format;
+    const nitrogenFieldHtml = options.nitrogenFieldHtml;
+    const bindNitrogenField = options.bindNitrogenField || (() => {});
+    const labelStep = options.labelStep || (() => '.1');
+    const nitrogenFormsHtml = options.nitrogenFormsHtml;
     const escape = options.escape;
     const notify = options.notify;
     const levels = options.levels;
@@ -111,7 +115,7 @@
       renderResult();
     }
 
-    // What the grower has on hand: pick from a dropdown, listed below with Remove.
+    // What the grower has on hand: pick from a dropdown, listed below; tap a card to remove it.
     function renderSources() {
       const state = getState();
       const available = [...catalog.customProducts(), ...products].filter(product => !state.blend.ids.includes(product.id));
@@ -130,13 +134,15 @@
       };
       const chosen = state.blend.ids.map(catalog.product).filter(Boolean);
       element('blendSources').innerHTML = chosen.length
-        ? chosen.map(product => '<div class="selected-line"><div class="selected-line-head"><div><b>' + escape(productTitle(product)) + '</b><div class="muted">' + escape(sourceDetail(product)) + '</div></div><button class="removeSource" data-id="' + escape(product.id) + '" type="button">Remove</button></div></div>').join('')
+        ? chosen.map(product => '<button type="button" class="source-card removeSource" data-id="' + escape(product.id) + '" aria-label="Remove ' + escape(productTitle(product)) + '"><span class="source-x" aria-hidden="true">×</span><b>' + escape(productTitle(product)) + '</b><span class="muted">' + escape(sourceDetail(product)) + '</span></button>').join('')
         : '<p class="muted">Nothing added yet.</p>';
       document.querySelectorAll('.removeSource').forEach(button => {
         button.onclick = () => {
+          const product = catalog.product(button.dataset.id);
           state.blend.ids = state.blend.ids.filter(id => id !== button.dataset.id);
           renderSources();
           clearResult();
+          if (product) notify('Removed “' + productTitle(product) + '”. Add it back from the list above.');
         };
       });
     }
@@ -147,10 +153,16 @@
       const toggle = element('blendCustomToggle');
       if (!form || !toggle || !saveCustomProduct) return;
       form.innerHTML = '<label class="wide-control">Name<input id="blendCustomName" type="text" maxlength="60" placeholder="e.g. Local cal-mag"></label>' +
-        '<div class="inputs">' + LABEL_FIELDS.map(([key, label]) => '<label>' + label + ' %<input class="bci" data-k="' + key + '" type="number" min="0" step=".001" placeholder="0"></label>').join('') +
-        '<label class="density-field">Density, g/mL (liquids only)<input class="bci" data-k="densityGPerMl" type="number" min="0" step=".001" placeholder="blank for dry"></label></div>' +
+        '<div class="inputs">' + LABEL_FIELDS.map(([key, label]) => {
+          const input = '<input' + (key === 'N' ? ' id="bcN"' : '') + ' class="bci" data-k="' + key + '" type="number" min="0" step="' + labelStep(key) + '" placeholder="0">';
+          return key === 'N'
+            ? nitrogenFieldHtml('bc', label + ' %', input, 'bci', null, '%', 'From the label\'s Total Nitrogen breakdown. With N blank, these fill it in; they can\'t add up to more than N.', format)
+            : '<label>' + label + ' %' + input + '</label>';
+        }).join('') +
+        '<label class="density-field">Density, g/mL (liquids only)<input class="bci" data-k="densityGPerMl" type="number" min="0" step=".01" placeholder="blank for dry"></label></div>' +
         '<div class="actions"><button id="blendCustomAdd" class="primary" type="button">Add to what you have</button><button id="blendCustomCancel" type="button">Cancel</button></div>' +
         '<p class="muted session-note">Saved with your custom products for this browser session only.</p>';
+      bindNitrogenField(document, 'bc', format);
       toggle.onclick = () => {
         form.classList.toggle('hidden');
         toggle.classList.toggle('hidden', !form.classList.contains('hidden'));
@@ -163,10 +175,12 @@
       bind('blendCustomAdd', () => {
         const state = getState();
         const analysis = {};
+        const nitrogenForms = {};
         let densityGPerMl = 0;
         document.querySelectorAll('.bci').forEach(input => {
           const value = Math.max(0, number(input.value));
           if (input.dataset.k === 'densityGPerMl') densityGPerMl = value;
+          else if (input.dataset.k.endsWith('N') && input.dataset.k !== 'N') nitrogenForms[input.dataset.k] = value;
           else analysis[input.dataset.k] = value;
         });
         if (!LABEL_FIELDS.some(([key]) => analysis[key] > 0)) {
@@ -175,7 +189,11 @@
         }
         const formula = ['N', 'P2O5', 'K2O'].map(key => format(number(analysis[key]), 3)).join('-');
         const name = (element('blendCustomName').value || '').trim() || formula;
-        const saved = saveCustomProduct(state, {name, analysis, densityGPerMl});
+        const saved = saveCustomProduct(state, {name, analysis, nitrogenForms, densityGPerMl});
+        if (saved.error === 'nitrogen') {
+          notify('Nitrogen forms add up to more than total N (' + format(number(analysis.N), 3) + '%).', 'warn');
+          return;
+        }
         if (saved.error) {
           notify('You can save up to 20 custom products. Delete one on the Label → ppm tab first.', 'warn');
           return;
@@ -194,8 +212,8 @@
     // Label analysis and name of a target choice ('p:<id>', or 's:<id>' at its default ratio).
     function targetChoice(value) {
       const [kind, id] = String(value || '').split(':');
-      if (kind === 'p') { const item = catalog.product(id); return item ? {title: catalog.entryTitle(item), analysis: item.analysis} : null; }
-      if (kind === 's') { const item = catalog.system(id); return item ? {title: catalog.entryTitle(item), analysis: catalog.mixSystem(item).analysis} : null; }
+      if (kind === 'p') { const item = catalog.product(id); return item ? {title: catalog.entryTitle(item), analysis: item.analysis, nitrogenForms: item.nitrogenForms} : null; }
+      if (kind === 's') { const item = catalog.system(id); if (!item) return null; const mix = catalog.mixSystem(item); return {title: catalog.entryTitle(item), analysis: mix.analysis, nitrogenForms: mix.nitrogenForms}; }
       return null;
     }
 
@@ -211,6 +229,9 @@
       }
       const ppm = chemistry.ppmAtDose(choice.analysis, dose);
       FIELDS.forEach(([key]) => { state.blend.target[key] = number(ppm[key]); });
+      // Form targets only when the label accounts for all of its N.
+      const split = chemistry.fullNitrogenSplit(choice.nitrogenForms, choice.analysis.N);
+      solver.FORM_KEYS.forEach(key => { state.blend.target[key] = split ? number(ppm.N) * number(split[key]) / number(choice.analysis.N) : 0; });
     }
 
     function renderTarget() {
@@ -248,7 +269,10 @@
 
       element('blendInputs').innerHTML = FIELDS.map(([key, label]) => {
         const value = number(state.blend.target[key]);
-        return '<label>' + label + ' ppm<input class="bi" data-k="' + key + '" type="number" min="0" step="' + (MICRO_KEYS.includes(key) ? '.01' : '1') + '" placeholder="no target" value="' + (value > 0 ? format(value, digitsFor(key) + 1) : '') + '"></label>';
+        const input = '<input' + (key === 'N' ? ' id="btN"' : '') + ' class="bi" data-k="' + key + '" type="number" min="0" step="' + (MICRO_KEYS.includes(key) ? '.01' : '1') + '" placeholder="no target" value="' + (value > 0 ? format(value, digitsFor(key) + 1) : '') + '">';
+        return key === 'N'
+          ? nitrogenFieldHtml('bt', label + ' ppm', input, 'bi', state.blend.target, 'ppm', 'Blank means not matched. Only sources with a published N split can help match these.', format)
+          : '<label>' + label + ' ppm' + input + '</label>';
       }).join('');
       document.querySelectorAll('.bi').forEach(input => {
         input.oninput = () => {
@@ -262,6 +286,7 @@
           clearResult();
         };
       });
+      bindNitrogenField(document, 'bt', format);
     }
 
     // Element the blend is scaled and compared by: N if it delivers any, else K, else P.
@@ -323,7 +348,7 @@
       const selectedProducts = result.ids.map(catalog.product).filter(Boolean);
       const total = result.doses.reduce((sum, dose) => sum + dose, 0);
       element('blendResult').classList.remove('hidden');
-      element('fit').innerHTML = 'Fit to target: ' + fitBadgeHtml(result.rms, format) + ' <small class="muted">Relative RMS difference in delivered ppm; 0% different is exact.</small>';
+      element('fit').innerHTML = 'Fit to target: ' + fitBadgeHtml(result.rms, format) + ' <small class="muted">How close the blend gets across the elements you set. Under 100% means your sources can\'t make the target exactly; the boxes below show where it falls short.</small>';
       // Products the recipe uses first, then the ones it doesn't need.
       const order = selectedProducts.map((product, index) => index).sort((a, b) => result.doses[b] - result.doses[a]);
       element('weights').innerHTML = order.map(index => {
@@ -333,6 +358,8 @@
           (grams > 0 ? doseText(product, grams) + ' · ' + format(grams / total * 100, 1) + '% of mass' : 'Not needed') + '</span></div>';
       }).join('');
       element('blendVsTarget').innerHTML = versusTargetHtml(result.ppm, result.target, format);
+      const lines = selectedProducts.map((product, index) => ({product, gramsPerLiter: result.doses[index] / chemistry.US_GALLON_LITERS}));
+      element('blendNitrogen').innerHTML = nitrogenFormsHtml(chemistry.recipeAtDoses(lines).nitrogenForms, result.ppm.N, format, escape, result.target);
       element('blendClosest').innerHTML = closestProducts(result).map(item => '<div class="selected-line"><div class="selected-line-head"><div><b>' + escape(item.title) + '</b>' + (item.value === state.blend.targetId ? ' <small class="cmp-only">your target</small>' : '') + '<div class="muted">' + escape(item.formula) + '</div></div>' + fitBadgeHtml(item.distance, format) + '</div></div>').join('');
       element('feed').innerHTML = feedHtml(result, selectedProducts);
       const cards = document.querySelectorAll('.blend-feed-card');
@@ -354,6 +381,11 @@
       }
       if (!solver.fitRows(state.blend.target).length) {
         notify('Enter at least one target ppm.', 'warn');
+        return;
+      }
+      const formsTotal = solver.FORM_KEYS.reduce((sum, key) => sum + number(state.blend.target[key]), 0);
+      if (number(state.blend.target.N) > 0 && formsTotal > number(state.blend.target.N) + 1e-9) {
+        notify('N form targets add up to ' + format(formsTotal, 1) + ' ppm, more than the N target (' + format(number(state.blend.target.N), 1) + ' ppm).', 'warn');
         return;
       }
       state.blend.result = {

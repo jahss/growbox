@@ -528,19 +528,19 @@ window.FERTILIZER_PRODUCTS = [
   },
   {
     id:'calcium-nitrate', compareGroup:'salt', brand:'Raw salt', name:'Calcium nitrate', chemicalFormula:'5Ca(NO₃)₂·NH₄NO₃·10H₂O', form:'dry',
-    analysis:{N:15.5,P2O5:0,K2O:0,Ca:19,Mg:0,S:0,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, useRates:[],
+    analysis:{N:15.5,P2O5:0,K2O:0,Ca:19,Mg:0,S:0,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, nitrogenForms:{nitrateN:14.4,ammoniacalN:1.1}, useRates:[],
     source:{type:'fertilizer-grade',checked:'2026-09-22'},
     notes:'Standard fertilizer-grade analysis of the calcium ammonium nitrate double salt (about 14.4% nitrate-N, 1.1% ammonium-N).'
   },
   {
     id:'calcium-nitrate-tetrahydrate', compareGroup:'salt', brand:'Raw salt', name:'Calcium nitrate — no ammonium', chemicalFormula:'Ca(NO₃)₂·4H₂O', form:'dry',
-    analysis:{N:11.86,P2O5:0,K2O:0,Ca:16.97,Mg:0,S:0,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, useRates:[],
+    analysis:{N:11.86,P2O5:0,K2O:0,Ca:16.97,Mg:0,S:0,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, nitrogenForms:{nitrateN:11.86}, useRates:[],
     source:{type:'stoichiometry',checked:'2026-09-22'},
     notes:'Pure calcium nitrate with no ammonium. Theoretical analysis from the chemical formula (standard atomic weights); fertilizer grades can run slightly lower.'
   },
   {
     id:'potassium-nitrate', compareGroup:'salt', brand:'Raw salt', name:'Potassium nitrate — Saltpeter', chemicalFormula:'KNO₃', form:'dry',
-    analysis:{N:13.85,P2O5:0,K2O:46.58,Ca:0,Mg:0,S:0,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, useRates:[],
+    analysis:{N:13.85,P2O5:0,K2O:46.58,Ca:0,Mg:0,S:0,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, nitrogenForms:{nitrateN:13.85}, useRates:[],
     source:{type:'stoichiometry',checked:'2026-09-22'},
     notes:'Theoretical analysis from the chemical formula (standard atomic weights); fertilizer grades can run slightly lower.'
   },
@@ -552,7 +552,7 @@ window.FERTILIZER_PRODUCTS = [
   },
   {
     id:'monoammonium-phosphate', compareGroup:'salt', brand:'Raw salt', name:'Monoammonium phosphate — MAP', chemicalFormula:'NH₄H₂PO₄', form:'dry',
-    analysis:{N:12.18,P2O5:61.7,K2O:0,Ca:0,Mg:0,S:0,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, useRates:[],
+    analysis:{N:12.18,P2O5:61.7,K2O:0,Ca:0,Mg:0,S:0,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, nitrogenForms:{ammoniacalN:12.18}, useRates:[],
     source:{type:'stoichiometry',checked:'2026-09-22'},
     notes:'Theoretical analysis from the chemical formula (standard atomic weights); fertilizer grades can run slightly lower.'
   },
@@ -582,19 +582,19 @@ window.FERTILIZER_PRODUCTS = [
   },
   {
     id:'magnesium-nitrate', compareGroup:'salt', brand:'Raw salt', name:'Magnesium nitrate', chemicalFormula:'Mg(NO₃)₂·6H₂O', form:'dry',
-    analysis:{N:10.93,P2O5:0,K2O:0,Ca:0,Mg:9.48,S:0,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, useRates:[],
+    analysis:{N:10.93,P2O5:0,K2O:0,Ca:0,Mg:9.48,S:0,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, nitrogenForms:{nitrateN:10.93}, useRates:[],
     source:{type:'stoichiometry',checked:'2026-09-22'},
     notes:'Theoretical analysis from the chemical formula (standard atomic weights); fertilizer grades can run slightly lower.'
   },
   {
     id:'ammonium-sulfate', compareGroup:'salt', brand:'Raw salt', name:'Ammonium sulfate — AMS', chemicalFormula:'(NH₄)₂SO₄', form:'dry',
-    analysis:{N:21.2,P2O5:0,K2O:0,Ca:0,Mg:0,S:24.26,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, useRates:[],
+    analysis:{N:21.2,P2O5:0,K2O:0,Ca:0,Mg:0,S:24.26,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, nitrogenForms:{ammoniacalN:21.2}, useRates:[],
     source:{type:'stoichiometry',checked:'2026-09-22'},
     notes:'Theoretical analysis from the chemical formula (standard atomic weights); fertilizer grades can run slightly lower.'
   },
   {
     id:'urea', compareGroup:'salt', brand:'Raw salt', name:'Urea', chemicalFormula:'CO(NH₂)₂', form:'dry',
-    analysis:{N:46.65,P2O5:0,K2O:0,Ca:0,Mg:0,S:0,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, useRates:[],
+    analysis:{N:46.65,P2O5:0,K2O:0,Ca:0,Mg:0,S:0,Fe:0,Mn:0,Zn:0,B:0,Cu:0,Mo:0}, nitrogenForms:{ureaN:46.65}, useRates:[],
     source:{type:'stoichiometry',checked:'2026-09-22'},
     notes:'All nitrogen is urea-N, which converts to ammonium and then nitrate. Theoretical analysis from the chemical formula (standard atomic weights); fertilizer grades can run slightly lower.'
   }

@@ -229,7 +229,7 @@ test('saveCustomProduct adds, updates by name, and respects the limit', () => {
   const state = {customProducts: []};
   const first = stateModule.saveCustomProduct(state, {name: ' My bloom ', analysis: {N: 3, P2O5: 1, K2O: 5, Ca: -1}, densityGPerMl: 1.2});
   assert.equal(first.updated, false);
-  assert.deepEqual(first.record, {id: 'custom-1', name: 'My bloom', analysis: {N: 3, P2O5: 1, K2O: 5, Ca: 0, Mg: 0, S: 0, Fe: 0, Mn: 0, Zn: 0, B: 0, Cu: 0, Mo: 0}, densityGPerMl: 1.2});
+  assert.deepEqual(first.record, {id: 'custom-1', name: 'My bloom', analysis: {N: 3, P2O5: 1, K2O: 5, Ca: 0, Mg: 0, S: 0, Fe: 0, Mn: 0, Zn: 0, B: 0, Cu: 0, Mo: 0}, nitrogenForms: {}, densityGPerMl: 1.2});
   const again = stateModule.saveCustomProduct(state, {name: 'my BLOOM', analysis: {N: 4}});
   assert.equal(again.updated, true);
   assert.equal(state.customProducts.length, 1);
@@ -237,4 +237,9 @@ test('saveCustomProduct adds, updates by name, and respects the limit', () => {
   assert.equal(stateModule.saveCustomProduct(state, {name: 'Other', analysis: {N: 1}}).record.id, 'custom-2');
   state.customProducts = Array.from({length: stateModule.MAX_CUSTOM_PRODUCTS}, (_, i) => ({id: 'custom-' + (i + 1).toString(36), name: 'P' + i, analysis: {}}));
   assert.deepEqual(stateModule.saveCustomProduct(state, {name: 'One too many', analysis: {N: 1}}), {error: 'limit'});
+  assert.deepEqual(stateModule.saveCustomProduct({customProducts: []}, {name: 'Too much N', analysis: {N: 3}, nitrogenForms: {nitrateN: 2, ureaN: 2}}), {error: 'nitrogen'});
+  const split = stateModule.saveCustomProduct({customProducts: []}, {name: 'Split', analysis: {N: 3}, nitrogenForms: {nitrateN: '2.5', ammoniacalN: 0, ureaN: -1, bogus: 1}});
+  assert.deepEqual(split.record.nitrogenForms, {nitrateN: 2.5});
+  const reloaded = stateModule.normalizeState({customProducts: [{...split.record}, {id: 'custom-9', name: 'Bad', analysis: {N: 1}, nitrogenForms: {nitrateN: 4}}]}, [], []);
+  assert.deepEqual(reloaded.customProducts.map(item => item.nitrogenForms), [{nitrateN: 2.5}, {}]);
 });

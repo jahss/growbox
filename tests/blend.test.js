@@ -33,7 +33,7 @@ function fakeElement() {
 
 function fixture() {
   const {products, systems} = loadDatabase();
-  const ids = ['blendTarget', 'blendLevel', 'blendElement', 'blendLevelControl', 'blendSourcePicker', 'blendSources', 'blendInputs', 'blendResult', 'fit', 'weights', 'blendVsTarget', 'blendClosest', 'feed', 'solve'];
+  const ids = ['blendTarget', 'blendLevel', 'blendElement', 'blendLevelControl', 'blendSourcePicker', 'blendSources', 'blendInputs', 'blendResult', 'fit', 'weights', 'blendVsTarget', 'blendNitrogen', 'blendClosest', 'feed', 'solve'];
   const elements = Object.fromEntries(ids.map(id => [id, fakeElement()]));
   const document = {
     getElementById(id) { return elements[id]; },
@@ -48,6 +48,8 @@ function fixture() {
   let saves = 0;
   const notices = [];
   const component = blendModule.createComponent({
+    nitrogenFormsHtml: require('../js/use-rate.js').nitrogenFormsHtml,
+    nitrogenFieldHtml: require('../js/analysis.js').nitrogenFieldHtml,
     document, products, systems, chemistry, solver, catalog, format, escape,
     getState: () => state,
     save: () => { saves += 1; },
@@ -65,7 +67,7 @@ test('target fields are elemental ppm for all twelve elements', () => {
   assert.deepEqual(blendModule.FIELDS.map(field => field[0]), ['N', 'P', 'K', 'Ca', 'Mg', 'S', 'Fe', 'Mn', 'Zn', 'B', 'Cu', 'Mo']);
   const view = fixture();
   view.component.render();
-  assert.match(view.elements.blendInputs.innerHTML, /N ppm<input class="bi" data-k="N"/);
+  assert.match(view.elements.blendInputs.innerHTML, /N ppm<input id="btN" class="bi" data-k="N"/);
   assert.match(view.elements.blendInputs.innerHTML, /data-k="Fe"[^>]*placeholder="no target" value=""/);
   assert.doesNotMatch(view.elements.blendInputs.innerHTML, /P2O5|K2O/);
 });
@@ -87,7 +89,7 @@ test('source picker groups commercial products, system parts and salts; chosen s
   assert.match(picker, /optgroup label="System parts"/);
   assert.match(picker, /optgroup label="Raw salts"/);
   assert.match(view.elements.blendSources.innerHTML, /Jack&#39;s Nutrients — 12-4-16/);
-  assert.match(view.elements.blendSources.innerHTML, /class="removeSource" data-id="mkp-0-52-34"/);
+  assert.match(view.elements.blendSources.innerHTML, /class="source-card removeSource" data-id="mkp-0-52-34"/);
   assert.doesNotMatch(picker, /value="mkp-0-52-34"/);
   view.elements.blendSourcePicker.onchange({target: {value: 'magnesium-sulfate'}});
   assert.equal(view.state.blend.ids.filter(id => id === 'magnesium-sulfate').length, 1);
@@ -137,6 +139,8 @@ test('solves g/gal per source, lists the recipe, and scales the feed chart', () 
   assert.match(view.elements.feed.innerHTML, /<li>Jack&#39;s Nutrients [^—]+ — <b>[\d.]+ g\/gal/);
   assert.equal((view.elements.blendVsTarget.innerHTML.match(/class="cmp-chip/g) || []).length, 12);
   assert.equal((view.elements.blendClosest.innerHTML.match(/class="selected-line"/g) || []).length, 3);
+  assert.match(view.elements.blendNitrogen.innerHTML, /Nitrate N/);
+  assert.match(view.elements.blendNitrogen.innerHTML, /Ammonium is [\d.]+% of N/);
   assert.ok(view.saves >= 1);
 });
 
@@ -183,10 +187,10 @@ test('fit badges show match and difference, coloured by closeness', () => {
 
 test('"Enter your own product" saves a custom product and adds it to the sources', () => {
   const {products, systems} = loadDatabase();
-  const ids = ['blendTarget', 'blendLevel', 'blendElement', 'blendLevelControl', 'blendSourcePicker', 'blendSources', 'blendInputs', 'blendResult', 'fit', 'weights', 'blendVsTarget', 'blendClosest', 'feed', 'solve', 'blendCustomToggle', 'blendCustomForm', 'blendCustomName', 'blendCustomAdd', 'blendCustomCancel'];
+  const ids = ['blendTarget', 'blendLevel', 'blendElement', 'blendLevelControl', 'blendSourcePicker', 'blendSources', 'blendInputs', 'blendResult', 'fit', 'weights', 'blendVsTarget', 'blendNitrogen', 'blendClosest', 'feed', 'solve', 'blendCustomToggle', 'blendCustomForm', 'blendCustomName', 'blendCustomAdd', 'blendCustomCancel'];
   const elements = Object.fromEntries(ids.map(id => [id, fakeElement()]));
   elements.blendCustomForm.classList.add('hidden');
-  const inputs = [['N', '3'], ['P2O5', '1'], ['K2O', '5'], ['Ca', ''], ['densityGPerMl', '1.2']].map(([k, value]) => ({dataset: {k}, value}));
+  const inputs = [['N', '3'], ['P2O5', '1'], ['K2O', '5'], ['Ca', ''], ['nitrateN', '2'], ['ammoniacalN', '1'], ['ureaN', ''], ['densityGPerMl', '1.2']].map(([k, value]) => ({dataset: {k}, value}));
   const document = {getElementById: id => elements[id], querySelectorAll: selector => selector === '.bci' ? inputs : []};
   const format = (value, digits = 2) => Number(value).toFixed(digits).replace(/(\.\d*?[1-9])0+$|\.0+$/, '$1');
   const catalog = productModel.createCatalog(products, systems, chemistry, format);
@@ -194,6 +198,8 @@ test('"Enter your own product" saves a custom product and adds it to the sources
   const notices = [];
   let refreshed = 0;
   const component = blendModule.createComponent({
+    nitrogenFormsHtml: require('../js/use-rate.js').nitrogenFormsHtml,
+    nitrogenFieldHtml: require('../js/analysis.js').nitrogenFieldHtml,
     document, products, systems, chemistry, solver, catalog, format, escape: String, levels: [160],
     getState: () => state, save() {}, notify: (...args) => notices.push(args),
     saveCustomProduct: stateModule.saveCustomProduct,
@@ -203,6 +209,7 @@ test('"Enter your own product" saves a custom product and adds it to the sources
   elements.blendCustomToggle.onclick();
   assert.equal(elements.blendCustomForm.classList.contains('hidden'), false);
   assert.match(elements.blendCustomForm.innerHTML, /class="bci" data-k="P2O5"/);
+  assert.match(elements.blendCustomForm.innerHTML, /Ammoniacal N %<input class="bci nf-bc" data-k="ammoniacalN"/);
   elements.blendCustomName.value = 'Local cal-mag';
   elements.blendCustomAdd.onclick();
   assert.equal(state.customProducts.length, 1);
@@ -213,8 +220,52 @@ test('"Enter your own product" saves a custom product and adds it to the sources
   assert.equal(elements.blendCustomForm.classList.contains('hidden'), true);
   assert.match(elements.blendSources.innerHTML, /Custom — Local cal-mag/);
   assert.match(notices.at(-1)[0], /Added “Local cal-mag” to what you have/);
+  assert.deepEqual(state.customProducts[0].nitrogenForms, {nitrateN: 2, ammoniacalN: 1});
+  assert.equal(state.customProducts[0].analysis.nitrateN, undefined, 'forms are not analysis fields');
+
+  // Its N forms reach the Blend result.
+  state.blend.ids = [state.customProducts[0].id];
+  elements.solve.onclick();
+  assert.match(elements.blendNitrogen.innerHTML, /Ammoniacal N/);
+  assert.match(elements.blendNitrogen.innerHTML, /Ammonium is 33\.3% of N/);
+
+  inputs.find(input => input.dataset.k === 'nitrateN').value = '5';
+  elements.blendCustomAdd.onclick();
+  assert.match(notices.at(-1)[0], /Nitrogen forms add up to more than total N \(3%\)/);
+  assert.deepEqual(state.customProducts[0].nitrogenForms, {nitrateN: 2, ammoniacalN: 1}, 'rejected save leaves the product unchanged');
 
   inputs.forEach(input => { input.value = ''; });
   elements.blendCustomAdd.onclick();
   assert.match(notices.at(-1)[0], /Enter the label analysis first/);
+});
+
+test('form targets fill from a product only when its label splits all of its N', () => {
+  const view = fixture();
+  view.component.render();
+  view.elements.blendTarget.onchange({target: {value: 'p:jacks-12-4-16'}});
+  const target = view.state.blend.target;
+  assert.ok(target.nitrateN > 0 && target.ammoniacalN > 0);
+  assert.ok(Math.abs(target.nitrateN + target.ammoniacalN - target.N) < 1e-9);
+  view.elements.blendTarget.onchange({target: {value: 's:gh-florapro-veg'}});
+  assert.equal(view.state.blend.target.nitrateN, 0, 'FloraPro Grow publishes no split, so no form targets');
+  assert.ok(view.state.blend.target.N > 0);
+});
+
+test('solve refuses N-form targets that add up to more than the N target', () => {
+  const view = fixture();
+  view.component.render();
+  Object.assign(view.state.blend.target, {N: 160, nitrateN: 150, ammoniacalN: 20});
+  view.elements.solve.onclick();
+  assert.equal(view.state.blend.result, null);
+  assert.match(view.notices.at(-1)[0], /N form targets add up to 170 ppm, more than the N target \(160 ppm\)/);
+  view.state.blend.target.ammoniacalN = 10;
+  view.elements.solve.onclick();
+  assert.match(view.elements.blendNitrogen.innerHTML, /target 10 · [+−±]/);
+});
+
+test('tapping a source card removes it and says so', () => {
+  const view = fixture();
+  view.component.render();
+  assert.match(view.elements.blendSources.innerHTML, /<button type="button" class="source-card removeSource" data-id="mkp-0-52-34" aria-label="Remove [^"]+"><span class="source-x" aria-hidden="true">×<\/span>/);
+  assert.doesNotMatch(view.elements.blendSources.innerHTML, />Remove</);
 });

@@ -23,7 +23,7 @@ function fakeElement() {
 
 function fixture() {
   const {products, systems} = loadDatabase();
-  const ids = ['useRateProduct', 'useRatePreset', 'useRatePresetNote', 'useRateIdentity', 'useRateInputs', 'useRateSummary', 'useRateResult', 'useRateNitrogen'];
+  const ids = ['useRateProduct', 'useRatePreset', 'useRatePresetNote', 'useRateIdentity', 'useRateInputs', 'useRateSummary', 'useRateResult', 'useRateNitrogen', 'useRateCopy'];
   const elements = Object.fromEntries(ids.map(id => [id, fakeElement()]));
   const document = {
     getElementById(id) { return elements[id]; },
@@ -144,6 +144,30 @@ test('applying a preset clears stale doses for omitted components', () => {
   ]});
   view.component.applyPreset(entry.useRates.length - 1);
   assert.deepEqual(view.state.useRate.doses['magnesium-sulfate'], {amount: 0, unit: 'g/gal'});
+});
+
+test('copies the delivered ppm to the Blend finder as a custom target', () => {
+  const view = fixture();
+  view.component.render();
+  view.state.blend.targetId = 's:athena-pro-bloom';
+  view.state.blend.result = {stale: true};
+  view.elements.useRateCopy.onclick();
+  const ppm = view.component.currentResult().ppm;
+  assert.equal(view.state.blend.target.N, ppm.N);
+  assert.equal(view.state.blend.target.Mo, ppm.Mo);
+  const forms = view.component.currentResult().nitrogenForms;
+  assert.ok(view.state.blend.target.nitrateN > 0);
+  assert.equal(view.state.blend.target.nitrateN, forms.nitrateN);
+  assert.equal(view.state.blend.target.ammoniacalN, forms.ammoniacalN);
+  assert.equal(view.state.blend.targetId, '');
+  assert.equal(view.state.blend.result, null);
+});
+
+test('N-form cards show unpublished N and the ammonium share', () => {
+  const html = useRateModule.nitrogenFormsHtml({nitrateN: 90, ammoniacalN: 10}, 150, (v, d) => String(+Number(v).toFixed(d)), v => v);
+  assert.match(html, /<b>50 ppm<\/b><span>Form not published/);
+  assert.match(html, /Ammonium is 6\.7% of N \(some N has no published form\)\. Most hydro recipes keep ammonium under about 10–15% of N\./);
+  assert.match(useRateModule.nitrogenFormsHtml({}, 150, String, v => v), /No N-form breakdown/);
 });
 
 test('exports the calculated recipe and its normalized component doses', () => {

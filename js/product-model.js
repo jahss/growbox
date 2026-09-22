@@ -34,7 +34,7 @@
           id: item.id, custom: true, compareGroup: '1-part', partCount: 1,
           brand: 'Custom', manufacturer: 'Custom', program: item.name, name: item.name,
           form: density ? 'liquid' : 'dry', densityGPerMl: density || undefined,
-          analysis: {...item.analysis}
+          analysis: {...item.analysis}, nitrogenForms: {...item.nitrogenForms}
         };
       });
       customById = new Map(customList.map(item => [item.id, item]));

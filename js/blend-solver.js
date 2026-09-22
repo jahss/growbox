@@ -9,6 +9,10 @@
   const MACRO_KEYS = ['N', 'P', 'K', 'Ca', 'Mg', 'S'];
   const MICRO_KEYS = ['Fe', 'Mn', 'Zn', 'B', 'Cu', 'Mo'];
   const PPM_KEYS = [...MACRO_KEYS, ...MICRO_KEYS];
+  // N-form targets (ppm), matched like macros. Only sources with a published N split
+  // deliver them; N from a source without one counts toward N but no form.
+  const FORM_KEYS = ['nitrateN', 'ammoniacalN', 'ureaN'];
+  const FIT_KEYS = [...PPM_KEYS, ...FORM_KEYS];
   // All six micros together weigh about as much as one macro. A micro your sources
   // lack costs at most its full weight, so it never distorts N-P-K; a targeted micro
   // that would be heavily overdosed can still pull the dose down.
@@ -21,7 +25,7 @@
   // Elements the fit uses: only those with a target above 0 ppm. Errors are
   // relative to the target, so 10% off counts the same for N as for Ca.
   function fitRows(target) {
-    return PPM_KEYS
+    return FIT_KEYS
       .map(key => ({key, value: number(target && target[key]), weight: MICRO_KEYS.includes(key) ? MICRO_WEIGHT : 1}))
       .filter(row => row.value > 0);
   }
@@ -106,15 +110,17 @@
     return x.map(value => Math.max(0, value));
   }
 
-  // Elemental ppm delivered by 1 g/US gal of each product.
+  // Elemental (and N-form) ppm delivered by 1 g/US gal of each product.
   function ppmPerGram(product, chemistry) {
-    return chemistry.ppmAtDose(product.analysis, 1);
+    const ppm = chemistry.ppmAtDose(product.analysis, 1);
+    FORM_KEYS.forEach(key => { ppm[key] = chemistry.ppmAtDose({N: number(product.nitrogenForms && product.nitrogenForms[key])}, 1).N; });
+    return ppm;
   }
 
   function deliveredPpm(products, doses, chemistry) {
     const columns = products.map(product => ppmPerGram(product, chemistry));
     const ppm = {};
-    PPM_KEYS.forEach(key => {
+    FIT_KEYS.forEach(key => {
       ppm[key] = columns.reduce((sum, column, index) => sum + doses[index] * number(column[key]), 0);
     });
     return ppm;
@@ -138,6 +144,7 @@
     MACRO_KEYS: Object.freeze([...MACRO_KEYS]),
     MICRO_KEYS: Object.freeze([...MICRO_KEYS]),
     PPM_KEYS: Object.freeze([...PPM_KEYS]),
+    FORM_KEYS: Object.freeze([...FORM_KEYS]),
     fitRows,
     relativeError,
     nnls,

@@ -88,3 +88,15 @@ test('rejects an empty selection or a target with nothing to match', () => {
   assert.throws(() => solver.solveDoses([], {N: 100}, chemistry), /At least one fertilizer/);
   assert.throws(() => solver.solveDoses([{analysis: {N: 10}}], {N: 0}, chemistry), /at least one target ppm/);
 });
+
+test('matches N-form targets from sources with a published N split', () => {
+  const byId = new Map(loadProducts().map(product => [product.id, product]));
+  const sources = ['calcium-nitrate-tetrahydrate', 'potassium-nitrate', 'ammonium-sulfate'].map(id => byId.get(id));
+  const result = solver.solveDoses(sources, {N: 170, nitrateN: 150, ammoniacalN: 20}, chemistry);
+  closeTo(result.ppm.nitrateN, 150, 1e-6);
+  closeTo(result.ppm.ammoniacalN, 20, 1e-6);
+  closeTo(result.rms, 0, 1e-9);
+  // A source without a published split delivers N but no form.
+  const unsplit = solver.solveDoses([{analysis: {N: 10}}], {nitrateN: 100}, chemistry);
+  closeTo(unsplit.doses[0], 0, 1e-12);
+});

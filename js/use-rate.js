@@ -12,8 +12,29 @@
   const MICRO_KEYS = ['Fe', 'Mn', 'Zn', 'B', 'Cu', 'Mo'];
   const NITROGEN_FORM_LABELS = {
     nitrateN: 'Nitrate N', ammoniacalN: 'Ammoniacal N', ureaN: 'Urea N',
-    otherN: 'Other N', waterSolubleN: 'Other water-soluble N'
+    otherN: 'Other N', waterSolubleN: 'Other water-soluble N', unpublished: 'Form not published'
   };
+
+  // N-form cards plus ammonium's share of total N. N from products that don't publish
+  // their split shows as its own card, so the cards add up to total N.
+  function nitrogenFormsHtml(forms, totalN, format, escape, target) {
+    const entries = Object.entries(forms || {}).filter(([, value]) => value > 0);
+    if (!entries.length && !Object.keys(target || {}).some(key => key in NITROGEN_FORM_LABELS && number(target[key]) > 0)) return '<p class="muted">No N-form breakdown is published for these products.</p>';
+    const unpublished = number(totalN) - entries.reduce((sum, [, value]) => sum + value, 0);
+    if (unpublished > 0.05) entries.push(['unpublished', unpublished]);
+    const ammoniumShare = number(totalN) > 0 ? number(forms.ammoniacalN) / number(totalN) * 100 : 0;
+    const card = ([key, value]) => {
+      const goal = number(target && target[key]);
+      if (goal <= 0) return '<div class="pill"><b>' + format(value, 1) + ' ppm</b><span>' + escape(NITROGEN_FORM_LABELS[key] || key) + '</span></div>';
+      const diff = value - goal;
+      const rounded = format(Math.abs(diff), 1);
+      return '<div class="pill ' + (Math.abs(diff) <= 0.05 * goal ? 'diff-ok' : 'diff-off') + '"><b>' + format(value, 1) + ' ppm</b><span>' + escape(NITROGEN_FORM_LABELS[key] || key) + '</span><small>target ' + format(goal, 1) + ' · ' + (rounded === '0' ? '±' : diff > 0 ? '+' : '−') + rounded + '</small></div>';
+    };
+    // A targeted form the blend doesn't deliver still gets a card.
+    Object.keys(target || {}).filter(key => key in NITROGEN_FORM_LABELS && number(target[key]) > 0 && !entries.some(([k]) => k === key)).forEach(key => entries.push([key, 0]));
+    return '<h3>Nitrogen forms</h3><div class="result-grid">' + entries.map(card).join('') + '</div>' +
+      '<p class="muted n-share">Ammonium is ' + format(ammoniumShare, 1) + '% of N' + (unpublished > 0.05 ? ' (some N has no published form)' : '') + '. Most hydro recipes keep ammonium under about 10–15% of N.</p>';
+  }
 
   function number(value) {
     return Number.isFinite(Number(value)) ? Number(value) : 0;
@@ -89,6 +110,7 @@
     const save = options.save;
     const format = options.format;
     const escape = options.escape;
+    const onCopied = options.onCopied || (() => {});
     const element = id => document.getElementById(id);
 
     function currentEntry() {
@@ -200,10 +222,25 @@
         : '';
       element('useRateSummary').innerHTML = 'Product weight <b>' + format(result.totalGPerLiter * chemistry.US_GALLON_LITERS, 3) + ' g/gal</b> <span class="muted">· ' + format(result.totalGPerLiter, 3) + ' g/L</span>' + estimateNote;
       element('useRateResult').innerHTML = PPM_COLUMNS.map(([key, label]) => '<span class="cmp-chip"><small>' + label + '</small><b>' + format(result.ppm[key], MICRO_KEYS.includes(key) ? 3 : 1) + '</b></span>').join('');
-      const nitrogenForms = Object.entries(result.nitrogenForms).filter(([, value]) => value > 0);
-      element('useRateNitrogen').innerHTML = nitrogenForms.length
-        ? '<h3>Nitrogen forms</h3><div class="result-grid">' + nitrogenForms.map(([key, value]) => '<div class="pill"><b>' + format(value, 1) + ' ppm</b><span>' + escape(NITROGEN_FORM_LABELS[key] || key) + '</span></div>').join('') + '</div>'
-        : '<p class="muted">No N-form breakdown is published for this product.</p>';
+      element('useRateNitrogen').innerHTML = nitrogenFormsHtml(result.nitrogenForms, result.ppm.N, format, escape);
+    }
+
+    // Hands the exact delivered ppm to the Blend finder as a custom target, so stage
+    // rates and hand-typed doses carry over too.
+    function copyToBlend() {
+      const state = getState();
+      const entry = currentEntry();
+      const result = currentResult();
+      if (!entry || !result) return;
+      PPM_COLUMNS.forEach(([key]) => { state.blend.target[key] = number(result.ppm[key]); });
+      // Form targets only when the labels account for all of the N.
+      const split = chemistry.fullNitrogenSplit(result.nitrogenForms, result.ppm.N);
+      ['nitrateN', 'ammoniacalN', 'ureaN'].forEach(key => { state.blend.target[key] = split ? number(split[key]) : 0; });
+      state.blend.targetId = '';
+      state.blend.result = null;
+      save();
+      const rate = entry.useRates[Number(state.useRate.preset)];
+      onCopied(catalog.entryTitle(entry.record) + ' · ' + (state.useRate.preset !== 'custom' && rate ? rate.label : 'your rate'));
     }
 
     function csvRows() {
@@ -227,10 +264,11 @@
       renderPreset(entry);
       renderInputs(entry);
       renderResult();
+      element('useRateCopy').onclick = copyToBlend;
     }
 
-    return Object.freeze({render, renderResult, applyPreset, currentEntry, currentResult, csvRows});
+    return Object.freeze({render, renderResult, applyPreset, currentEntry, currentResult, csvRows, copyToBlend});
   }
 
-  return Object.freeze({PPM_COLUMNS, doseUnits, resolveEntry, presetDoses, calculateRecipe, createComponent});
+  return Object.freeze({PPM_COLUMNS, nitrogenFormsHtml, doseUnits, resolveEntry, presetDoses, calculateRecipe, createComponent});
 });
