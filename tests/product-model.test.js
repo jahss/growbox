@@ -93,3 +93,15 @@ test('comparison entries retain the selected system profile identity', () => {
   assert.equal(entries[0].profileLabel, 'Flower');
   assert.deepEqual(Array.from(entries[0].mix.parts), [5.68, 2.5]);
 });
+
+test('shortens part labels the line name already implies', () => {
+  const {products, systems} = loadDatabase();
+  const catalog = productModel.createCatalog(products, systems, chemistry, String);
+  const bySystem = id => systems.find(system => system.id === id);
+  assert.equal(catalog.displayFormula(bySystem('advanced-sensi-coco-bloom')), '4-0-0 (A) + 0-4-5 (B)');
+  assert.equal(catalog.partLabel(bySystem('advanced-sensi-coco-bloom'), 'Bloom A'), 'A');
+  assert.equal(catalog.partLabel({program: 'Blended Veg'}, 'Grow A'), 'Grow A');
+  assert.equal(catalog.partLabel({program: 'Anything'}, 'Part B'), 'B');
+  assert.equal(catalog.partLabel({program: 'Dual Fuel'}, 'Dual Fuel 2'), '2');
+  assert.equal(catalog.partLabel({program: 'Pro Veg'}, 'Core'), 'Core');
+});

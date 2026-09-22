@@ -61,7 +61,7 @@ function makeElement(id) {
 // index.html ids that app.js and the components write to / read from.
 const ELEMENT_IDS = [
   'compareCount', 'productPicker', 'selectedLines', 'percentView', 'ppmView',
-  'nControl', 'nElement', 'nLevel', 'analysisCompare', 'comparisonHeading',
+  'nControl', 'nElement', 'nLevel', 'analysisCompare', 'analysisCompareCards', 'comparisonHeading',
   'useRateProduct', 'useRatePreset', 'useRatePresetNote', 'useRateIdentity',
   'useRateInputs', 'useRateSummary', 'useRateResult', 'useRateNitrogen',
   'gaInputs', 'gaElemental', 'gaFeed',

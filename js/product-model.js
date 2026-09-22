@@ -32,7 +32,18 @@
       return item.program || item.name || '';
     }
 
+    // Drop part-label words the line name already says: "Part A" -> "A", and
+    // "Bloom A" -> "A" inside "Sensi Coco Bloom". Other labels stay as written.
+    function partLabel(item, label) {
+      const match = /^(.+) ([A-Z0-9])$/.exec(String(label || ''));
+      if (!match) return label;
+      const prefix = match[1].toLowerCase();
+      const name = ' ' + String(displayProgram(item)).toLowerCase() + ' ';
+      return prefix === 'part' || name.includes(' ' + prefix + ' ') ? match[2] : label;
+    }
+
     function displayFormula(item) {
+      if (item.displayFormula && item.partCount > 1) return item.displayFormula.replace(/\(([^()]+)\)/g, (all, label) => '(' + partLabel(item, label) + ')');
       if (item.displayFormula) return item.displayFormula;
       if (item.analysis) return format(item.analysis.N) + '-' + format(item.analysis.P2O5) + '-' + format(item.analysis.K2O);
       return item.name || '';
@@ -121,6 +132,7 @@
       displayProgram,
       displayFormula,
       displayParts,
+      partLabel,
       entryTitle,
       exportLabel,
       systemProfile,

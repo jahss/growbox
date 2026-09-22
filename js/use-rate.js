@@ -41,7 +41,7 @@
       return {
         kind, id, record: system,
         products: system.components.map(component => catalog.product(component.productId)),
-        components: system.components,
+        components: system.components.map(component => ({...component, label: catalog.partLabel(system, component.label)})),
         useRates: system.useRates || []
       };
     }

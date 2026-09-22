@@ -75,10 +75,61 @@
     const displayFormula = catalog.displayFormula;
     const displayParts = catalog.displayParts;
 
-    function entryCell(entry) {
+    // Mobile cards open and close together; kept across re-renders.
+    let cardsOpen = false;
+
+    function entrySubtitle(entry) {
       const profile = entry.profileLabel ? ' · ' + entry.profileLabel + ' profile' : '';
       const estimate = entry.kind === 'system' && entry.mix && entry.mix.approximateDensity ? ' · approx. density' : '';
-      return escape(catalog.entryTitle(entry)) + '<br><small class="muted">' + escape(displayFormula(entry)) + ' · ' + escape(displayParts(entry)) + escape(profile + estimate) + '</small>';
+      return escape(displayFormula(entry)) + ' · ' + escape(displayParts(entry)) + escape(profile + estimate);
+    }
+
+    function entryCell(entry) {
+      return escape(catalog.entryTitle(entry)) + '<br><small class="muted">' + entrySubtitle(entry) + '</small>';
+    }
+
+    // Short dose for the card's first line; the full breakdown goes in the body.
+    function shortDoseText(entry, grams) {
+      if (grams === null) return 'Cannot standardize';
+      if (entry.kind === 'system') return format(grams, 3) + ' g/gal';
+      const item = entry.product;
+      if (item.form === 'liquid' && number(item.densityGPerMl) > 0) return format(grams / item.densityGPerMl, 3) + ' mL/gal';
+      return format(grams, 3) + ' g/gal';
+    }
+
+    // Mobile layout: one collapsible card per entry. Line 1 is name + dose,
+    // line 2 the macro values; expanding shows micros and dose details. The
+    // summary also carries the micros, which CSS shows only on tablet widths.
+    function cardsHtml(rows, columns, unit, digits, doseHtml) {
+      const chips = (row, index, cols) => cols.map(([key, label]) =>
+        '<span class="cmp-chip ' + highlightClass(rows, key, index) + '"><small>' + label + '</small><b>' + format(row.values[key], digits(key)) + '</b></span>').join('');
+      return rows.map((row, index) => {
+        const entry = row.entry;
+        const key = entry.kind + ':' + entry.id;
+        const dose = doseHtml ? doseHtml(row) : null;
+        return '<details class="cmp-card" data-key="' + escape(key) + '"' + (cardsOpen ? ' open' : '') + '><summary>' +
+          '<div class="cmp-line1"><b class="cmp-name">' + escape(catalog.entryTitle(entry)) + '</b>' +
+          (dose ? '<span class="cmp-dose">' + escape(shortDoseText(entry, row.dose)) + '</span>' : '') +
+          '<span class="cmp-arrow" aria-hidden="true"></span></div>' +
+          '<div class="cmp-chips cmp-summary-chips">' + chips(row, index, columns.slice(0, 6)) + '<span class="cmp-micros">' + chips(row, index, columns.slice(6)) + '</span></div></summary>' +
+          '<div class="cmp-body"><div class="cmp-chips cmp-micros">' + chips(row, index, columns.slice(6)) + '</div>' +
+          '<small class="muted">' + unit + ' · ' + entrySubtitle(entry) + '</small>' +
+          (dose ? '<div class="cmp-dose-detail">' + dose + '</div>' : '') + '</div></details>';
+      }).join('');
+    }
+
+    function renderCards(html) {
+      const container = element('analysisCompareCards');
+      if (!container) return;
+      container.innerHTML = html;
+      const cards = document.querySelectorAll('.cmp-card');
+      cards.forEach(card => {
+        card.ontoggle = () => {
+          if (card.open === cardsOpen) return;
+          cardsOpen = card.open;
+          cards.forEach(other => { other.open = cardsOpen; });
+        };
+      });
     }
 
     function selectionCount() {
@@ -158,7 +209,7 @@
           ? '<label>Comparison profile <select class="sysProfile" data-sys="' + escape(system.id) + '">' + profiles.map(profile => '<option value="' + escape(profile.id) + '" ' + (profile.id === selectedProfile ? 'selected' : '') + '>' + escape(profile.label) + '</option>').join('') + '<option value="custom" ' + (selectedProfile === 'custom' ? 'selected' : '') + '>Custom</option></select></label>'
           : '';
         const partControls = (!profiles.length || selectedProfile === 'custom')
-          ? system.components.map((component, index) => '<label>' + escape(component.label) + ' <input class="spr" data-sys="' + escape(system.id) + '" data-i="' + index + '" type="number" min="0" step=".1" value="' + format(mix.parts[index], 3) + '"> ' + unit + ' parts</label>').join('')
+          ? system.components.map((component, index) => '<label>' + escape(catalog.partLabel(system, component.label)) + ' <input class="spr" data-sys="' + escape(system.id) + '" data-i="' + index + '" type="number" min="0" step=".1" value="' + format(mix.parts[index], 3) + '"> ' + unit + ' parts</label>').join('')
           : '';
         const controls = profileControl + (partControls ? '<div class="toolbar" style="margin-top:7px">' + partControls + '</div>' : '');
         const nitrogenSourceIndex = soleNitrogenSourceIndex(mix.products);
@@ -211,8 +262,9 @@
       const pieces = entry.mix.products.map((item, index) => {
         const grams = totalGrams * entry.mix.weights[index];
         const constraint = index === nitrogenSourceIndex ? ' (sets N target)' : '';
-        if (item.form === 'liquid' && number(item.densityGPerMl) > 0) return escape(entry.system.components[index].label) + ' ' + format(grams / item.densityGPerMl, 3) + ' mL/gal' + constraint;
-        return escape(entry.system.components[index].label) + ' ' + format(grams, 3) + ' g/gal' + constraint;
+        const label = escape(catalog.partLabel(entry.system, entry.system.components[index].label));
+        if (item.form === 'liquid' && number(item.densityGPerMl) > 0) return label + ' ' + format(grams / item.densityGPerMl, 3) + ' mL/gal' + constraint;
+        return label + ' ' + format(grams, 3) + ' g/gal' + constraint;
       });
       const estimate = entry.mix.approximateDensity ? '<br><small class="muted">Approximate: volume-to-mass conversion uses midpoint(s) of published SDS density range(s).</small>' : '';
       return format(totalGrams, 3) + ' g/gal total<br><small class="muted">' + pieces.join(' + ') + '</small>' + estimate;
@@ -225,6 +277,7 @@
       if (state.compareMode === 'percent') {
         element('comparisonHeading').textContent = 'Guaranteed analysis (%)';
         const rows = entries.map(entry => ({entry, values: entry.analysis}));
+        renderCards(cardsHtml(rows, PERCENT_COLUMNS, 'Guaranteed %', key => MICRO_KEYS.includes(key) ? (key === 'Mo' ? 4 : 3) : 2, null));
         element('analysisCompare').innerHTML = '<thead><tr><th>Product / system</th>' + PERCENT_COLUMNS.map(column => '<th>' + column[1] + ' %</th>').join('') + '</tr></thead><tbody>' +
           rows.map((row, index) => '<tr><td>' + entryCell(row.entry) + (row.entry.kind === 'system' ? ' <small class="muted">(combined)</small>' : '') + '</td>' +
           PERCENT_COLUMNS.map(([key]) => '<td class="' + highlightClass(rows, key, index) + '">' + format(row.values[key], MICRO_KEYS.includes(key) ? (key === 'Mo' ? 4 : 3) : 2) + '</td>').join('') + '</tr>').join('') +
@@ -237,6 +290,8 @@
           const values = dose === null ? null : chemistry.ppmAtDose(entry.analysis, dose);
           return {entry, dose, values: values || {}};
         });
+        renderCards(cardsHtml(rows, PPM_COLUMNS, 'Elemental ppm', key => MICRO_KEYS.includes(key) ? 3 : 1, row => row.dose === null ? 'Cannot standardize'
+          : (row.entry.kind === 'system' ? systemStandardDoseText(row.entry, row.dose) : productDoseText(row.entry.product, row.dose))));
         element('analysisCompare').innerHTML = '<thead><tr><th>Product / system</th><th>Dose</th>' + PPM_COLUMNS.map(column => '<th>' + column[1] + ' ppm</th>').join('') + '</tr></thead><tbody>' +
           rows.map((row, index) => {
             const entry = row.entry;

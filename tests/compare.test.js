@@ -32,7 +32,7 @@ function fakeElement() {
 
 function fixture() {
   const {products, systems} = loadDatabase();
-  const ids = ['productPicker', 'compareCount', 'selectedLines', 'nElement', 'nLevel', 'percentView', 'ppmView', 'nControl', 'comparisonHeading', 'analysisCompare'];
+  const ids = ['productPicker', 'compareCount', 'selectedLines', 'nElement', 'nLevel', 'percentView', 'ppmView', 'nControl', 'comparisonHeading', 'analysisCompare', 'analysisCompareCards'];
   const elements = Object.fromEntries(ids.map(id => [id, fakeElement()]));
   const document = {
     getElementById(id) { return elements[id]; },
@@ -88,6 +88,21 @@ test('renders standardized elemental ppm for each selected line', () => {
   assert.equal(view.elements.comparisonHeading.textContent, 'Elemental ppm @ 160 ppm N');
   assert.match(view.elements.analysisCompare.innerHTML, /N ppm/);
   assert.match(view.elements.analysisCompare.innerHTML, /Core [\d.]+ g\/gal/);
+});
+
+test('renders one collapsible mobile card per line with dose and macros in the summary', () => {
+  const view = fixture();
+  view.component.render();
+  const html = view.elements.analysisCompareCards.innerHTML;
+  assert.equal((html.match(/<details class="cmp-card"/g) || []).length, 3);
+  const summaries = html.match(/<summary>.*?<\/summary>/g);
+  assert.equal(summaries.length, 3);
+  summaries.forEach(summary => {
+    assert.match(summary, /class="cmp-dose">[\d.]+ (g|mL)\/gal</);
+    ['N', 'P', 'K', 'Ca', 'Mg', 'S'].forEach(key => assert.match(summary, new RegExp('<small>' + key + '</small>')));
+    assert.match(summary, /class="cmp-micros">.*<small>Fe<\/small>/);
+  });
+  assert.match(html, /class="cmp-body">.*<small>Fe<\/small>/);
 });
 
 test('switching the standardized element retargets the dose and heading', () => {
@@ -163,7 +178,7 @@ test('explains why Part B stays fixed for zero-nitrogen Part A systems', () => {
   view.component.render();
   assert.match(view.elements.selectedLines.innerHTML, /only nitrogen source/);
   assert.match(view.elements.selectedLines.innerHTML, /fixed by the selected N target/);
-  assert.match(view.elements.analysisCompare.innerHTML, /Part B [\d.]+ g\/gal \(sets N target\)/);
+  assert.match(view.elements.analysisCompare.innerHTML, /B [\d.]+ g\/gal \(sets N target\)/);
 });
 
 test('Part B dose is invariant when a zero-nitrogen Part A balance changes at fixed N', () => {
