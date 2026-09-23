@@ -24,7 +24,8 @@
       systemProfiles: {},
       systemExcluded: {},
       // Source water from a water report, ppm (alkalinity as CaCO3, ec in mS/cm). RO adds nothing.
-      water: {ro: true, values: {}},
+      // `acid` neutralizes alkalinity down to `target` ppm CaCO3; a blank id means none.
+      water: {ro: true, values: {}, acid: {id: '', target: 50}},
       // "Mix it" settings, shared by Use rate and Blend finder.
       mix: {mode: 'reservoir', tankSize: 100, tankUnit: 'gal', ratio: 100, heads: 2, stockSize: 50, stockUnit: 'gal'},
       customProducts: [],
@@ -103,7 +104,16 @@
     // The forms can add up to N but never exceed it.
     const formsSum = NITROGEN_FORM_KEYS.reduce((sum, key) => sum + number(values[key]), 0);
     if (formsSum > number(values.N)) values.N = formsSum;
-    state.water = {ro: water.ro !== false, values};
+    // The acid id is only shape-checked here; chemistry owns the list, and an id it
+    // doesn't know doses nothing.
+    const acid = water.acid && typeof water.acid === 'object' && !Array.isArray(water.acid) ? water.acid : defaults.water.acid;
+    state.water = {
+      ro: water.ro !== false, values,
+      acid: {
+        id: /^[a-z0-9]{1,32}$/.test(String(acid.id)) ? String(acid.id) : '',
+        target: 'target' in acid ? Math.max(0, number(acid.target)) : defaults.water.acid.target
+      }
+    };
     state.blend.useWater = state.blend.useWater !== false;
     const mix = candidate.mix && typeof candidate.mix === 'object' && !Array.isArray(candidate.mix) ? candidate.mix : {};
     const size = (value, fallback) => number(value) > 0 ? number(value) : fallback;

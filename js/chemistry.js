@@ -119,6 +119,36 @@
     return target / (MG_PER_L_PER_G_PER_GAL * percent / 100);
   }
 
+  // Acid injected to neutralize the water's alkalinity. Concentrations are the strengths
+  // sold for irrigation; densities are handbook values at 20 °C (CRC). `protons` is how
+  // many of the acid's hydrogens are available at feed pH: phosphoric gives up only its
+  // first (pKa2 is 7.2), sulfuric both (pKa2 is 2.0).
+  const CACO3_EQUIVALENT = 100.0869 / 2;
+  const ACIDS = [
+    {id: 'phosphoric75', name: 'Phosphoric 75%', concentration: 0.75, densityGPerMl: 1.579, molarMass: 97.995, protons: 1, element: 'P', elementMass: 30.973762},
+    {id: 'phosphoric85', name: 'Phosphoric 85%', concentration: 0.85, densityGPerMl: 1.685, molarMass: 97.995, protons: 1, element: 'P', elementMass: 30.973762},
+    {id: 'sulfuric35', name: 'Sulfuric 35%', concentration: 0.35, densityGPerMl: 1.2599, molarMass: 98.079, protons: 2, element: 'S', elementMass: 32.06},
+    {id: 'sulfuric93', name: 'Sulfuric 93%', concentration: 0.93, densityGPerMl: 1.8279, molarMass: 98.079, protons: 2, element: 'S', elementMass: 32.06},
+    {id: 'nitric61', name: 'Nitric 61.4%', concentration: 0.614, densityGPerMl: 1.373, molarMass: 63.012, protons: 1, element: 'N', elementMass: 14.007},
+    {id: 'nitric67', name: 'Nitric 67%', concentration: 0.67, densityGPerMl: 1.4048, molarMass: 63.012, protons: 1, element: 'N', elementMass: 14.007}
+  ];
+
+  // How much acid brings alkalinity (ppm CaCO₃) down to `target`, and what it adds to the
+  // feed. Null when there's nothing to neutralize or no acid chosen.
+  function acidDose(alkalinityPpm, targetPpm, acid) {
+    const target = number(targetPpm);
+    if (target < 0) throw new RangeError('Alkalinity target must be nonnegative.');
+    const removed = number(alkalinityPpm) - target;
+    if (!acid || removed <= 0) return null;
+    const millimolesPerLiter = removed / CACO3_EQUIVALENT / acid.protons;
+    const gramsPerLiter = millimolesPerLiter * acid.molarMass / 1000;
+    const mLPerL = gramsPerLiter / acid.concentration / acid.densityGPerMl;
+    const ppm = {[acid.element]: millimolesPerLiter * acid.elementMass};
+    // Nitric acid's N is all nitrate, so it counts towards the N-form breakdown too.
+    if (acid.element === 'N') ppm.nitrateN = ppm.N;
+    return {acid, removed, mLPerL, mLPerGal: mLPerL * US_GALLON_LITERS, ppm};
+  }
+
   function requireDensity(product) {
     const density = number(product && product.densityGPerMl);
     if (density <= 0) {
@@ -189,6 +219,8 @@
     K_FROM_K2O,
     ANALYSIS_KEYS: Object.freeze([...ANALYSIS_KEYS]),
     ELEMENT_KEYS: Object.freeze([...ELEMENT_KEYS]),
+    ACIDS: Object.freeze(ACIDS.map(acid => Object.freeze(acid))),
+    acidDose,
     elementalAnalysis,
     ppmAtDose,
     doseGramsPerLiter,

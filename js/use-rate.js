@@ -75,10 +75,43 @@
 
   const WATER_EXTRAS = [['pH', 'pH', ''], ['Na', 'Na', 'ppm'], ['Cl', 'Cl', 'ppm'], ['alkalinity', 'alkalinity', 'ppm CaCO₃'], ['ec', 'EC', 'mS/cm']];
 
-  // What the source water adds, as a plain {key: value} of what was entered; RO adds nothing.
-  function waterPpm(water) {
+  // chemistry.js loads first in the browser and is a plain module in tests.
+  const CHEMISTRY = typeof require === 'function' ? require('./chemistry.js') : globalThis.GrowboxChemistry;
+
+  // The alkalinity left behind is the buffer that holds the mixed feed's pH, so the
+  // target is flagged against the same UMass range the water fields use. Bicarbonate
+  // buffers hardest near its pKa1 of 6.35, which is where feed pH sits.
+  function acidTargetNote(target) {
+    const [low, high] = WATER_RANGES.alkalinity.target;
+    if (target <= 0) return {cls: 'water-poor', text: 'no buffer left — the feed will take its pH from whatever you mix into it'};
+    if (target < low) return {cls: 'water-fair', text: 'under the ' + low + ' ppm target — little buffer, so pH moves as soon as you mix'};
+    if (target > high) return {cls: 'water-fair', text: 'over the ' + high + ' ppm target — pH will creep up and each batch needs more acid'};
+    return {cls: '', text: 'target ' + low + '–' + high + ' · this is the buffer that holds the mixed feed steady'};
+  }
+
+  // The acid dose for the water as entered, or null: no dose for RO water, an acid the
+  // chemistry doesn't know, or alkalinity already at the target.
+  function waterAcidDose(water) {
+    if (!water || water.ro !== false) return null;
+    const acid = CHEMISTRY.ACIDS.find(entry => entry.id === (water.acid && water.acid.id));
+    return acid ? CHEMISTRY.acidDose(number(water.values && water.values.alkalinity), number(water.acid.target), acid) : null;
+  }
+
+  // What the acid adds to the tank, in ppm.
+  function acidPpm(water) {
+    const dose = waterAcidDose(water);
+    return dose ? dose.ppm : {};
+  }
+
+  // What the tank holds before any fertilizer: the water report as entered, plus the
+  // acid when asked for. RO adds nothing.
+  function waterPpm(water, withAcid) {
     if (!water || water.ro !== false) return {};
-    return Object.fromEntries(Object.entries(water.values || {}).filter(([, value]) => number(value) > 0).map(([key, value]) => [key, number(value)]));
+    const entered = Object.fromEntries(Object.entries(water.values || {}).filter(([, value]) => number(value) > 0).map(([key, value]) => [key, number(value)]));
+    if (!withAcid) return entered;
+    const acid = acidPpm(water);
+    Object.keys(acid).forEach(key => { entered[key] = number(entered[key]) + acid[key]; });
+    return entered;
   }
 
   function number(value) {
@@ -263,14 +296,17 @@
       });
     }
 
-    // Nutrients plus source water: what's actually in the tank.
+    // Nutrients plus source water and any acid: what's actually in the tank.
     function inSolution(result) {
       const water = waterPpm(getState().water);
+      const acid = acidPpm(getState().water);
       const ppm = {};
-      PPM_COLUMNS.forEach(([key]) => { ppm[key] = number(result.ppm[key]) + number(water[key]); });
+      PPM_COLUMNS.forEach(([key]) => { ppm[key] = number(result.ppm[key]) + number(water[key]) + number(acid[key]); });
       const forms = {...result.nitrogenForms};
-      ['nitrateN', 'ammoniacalN', 'ureaN'].forEach(key => { if (water[key]) forms[key] = number(forms[key]) + water[key]; });
-      return {ppm, forms, water};
+      ['nitrateN', 'ammoniacalN', 'ureaN'].forEach(key => {
+        if (water[key] || acid[key]) forms[key] = number(forms[key]) + number(water[key]) + number(acid[key]);
+      });
+      return {ppm, forms, water, acid};
     }
 
     function renderResult() {
@@ -282,9 +318,17 @@
         : '';
       element('useRateSummary').innerHTML = 'Product weight <b>' + format(result.totalGPerLiter * chemistry.US_GALLON_LITERS, 3) + ' g/gal</b> <span class="muted">· ' + format(result.totalGPerLiter, 3) + ' g/L</span>' + estimateNote;
       const digits = key => MICRO_KEYS.includes(key) ? 3 : 1;
+      const source = key => [
+        solution.water[key] ? '+' + format(solution.water[key], digits(key)) + ' water' : '',
+        solution.acid[key] ? '+' + format(solution.acid[key], digits(key)) + ' acid' : ''
+      ].filter(Boolean).join(' ');
       element('useRateResult').innerHTML = PPM_COLUMNS.map(([key, label]) => '<span class="cmp-chip"><small>' + label + '</small><b>' + format(solution.ppm[key], digits(key)) + '</b>' +
-        (solution.water[key] ? '<small>+' + format(solution.water[key], digits(key)) + ' water</small>' : '') + '</span>').join('');
-      const extras = WATER_EXTRAS.filter(([key]) => solution.water[key]).map(([key, label, unit]) => label + ' ' + format(solution.water[key], key === 'ec' ? 2 : 1) + (unit ? ' ' + unit : ''));
+        (source(key) ? '<small>' + source(key) + '</small>' : '') + '</span>').join('');
+      // Alkalinity is what the acid leaves, not what the report said.
+      const dose = waterAcidDose(getState().water);
+      const extras = WATER_EXTRAS.filter(([key]) => solution.water[key]).map(([key, label, unit]) => key === 'alkalinity' && dose
+        ? label + ' ' + format(solution.water[key] - dose.removed, 1) + ' ' + unit + ' after acid'
+        : label + ' ' + format(solution.water[key], key === 'ec' ? 2 : 1) + (unit ? ' ' + unit : ''));
       if (element('useRateWaterNote')) element('useRateWaterNote').textContent = extras.length ? 'From your water: ' + extras.join(' · ') : '';
       element('useRateNitrogen').innerHTML = nitrogenFormsHtml(solution.forms, solution.ppm.N, format, escape);
       renderMix('urMix', result.lines.filter(line => line.gramsPerLiter > 0)
@@ -332,7 +376,7 @@
       const water = getState().water;
       const card = element('waterCard');
       if (!element('waterInputs')) return;
-      const changed = () => { save(); renderWaterSummary(); renderResult(); onWaterChange(); };
+      const changed = () => { save(); renderWaterSummary(); renderAcidResult(); renderResult(); onWaterChange(); };
       element('waterRo').checked = water.ro;
       element('waterRo').onchange = () => {
         water.ro = element('waterRo').checked;
@@ -371,8 +415,50 @@
         };
       });
       bindNitrogenField(document, 'wt', format);
+      renderAcid(changed);
       if (card && !water.ro && !Object.keys(waterPpm(water)).length) card.open = true;
       renderWaterSummary();
+    }
+
+    // "Acid for alkalinity": how much acid brings the water's alkalinity to a target, and
+    // what that acid puts in the feed. Only useful once alkalinity has been entered.
+    function renderAcid(changed) {
+      if (!element('acidTool')) return;
+      const acid = getState().water.acid;
+      const options = ['<option value="">None</option>'].concat(chemistry.ACIDS.map(entry =>
+        '<option value="' + entry.id + '"' + (entry.id === acid.id ? ' selected' : '') + '>' + escape(entry.name) + '</option>')).join('');
+      element('acidTool').innerHTML = '<h3 class="acid-title">Acid for alkalinity</h3><div class="acid-row">' +
+        '<label>Acid<select id="acidPick">' + options + '</select></label>' +
+        '<label>Leave alkalinity at<span class="acid-target"><input id="acidTarget" type="number" min="0" step="10" value="' + format(number(acid.target), 1) + '"> ppm CaCO₃</span><small id="acidTargetNote"></small></label>' +
+        '</div><p id="acidResult" class="muted acid-result"></p>';
+      element('acidPick').onchange = () => { acid.id = element('acidPick').value; changed(); };
+      element('acidTarget').oninput = () => { acid.target = Math.max(0, number(element('acidTarget').value)); changed(); };
+      renderAcidResult();
+    }
+
+    function renderAcidResult() {
+      const water = getState().water;
+      const line = element('acidResult');
+      if (!line) return;
+      element('acidTool').classList.toggle('hidden', water.ro || !number(water.values.alkalinity));
+      const note = acidTargetNote(number(water.acid.target));
+      element('acidTargetNote').textContent = note.text;
+      element('acidTargetNote').parentElement.className = note.cls;
+      const dose = waterAcidDose(water);
+      if (!water.acid.id) {
+        line.innerHTML = 'Acid is dosed against alkalinity, not pH: how much you need depends on the alkalinity above, and the same pH can need very different amounts.';
+        return;
+      }
+      if (!dose) {
+        line.innerHTML = 'Alkalinity is already at or below the target — no acid needed.';
+        return;
+      }
+      const added = Object.keys(dose.ppm).filter(key => key !== 'nitrateN')
+        .map(key => format(dose.ppm[key], 1) + ' ppm ' + key).join(' · ');
+      line.innerHTML = '<b>' + format(dose.mLPerGal, 3) + ' mL/gal</b> · ' + format(dose.mLPerL, 4) + ' mL/L' +
+        ' — takes alkalinity down ' + format(dose.removed, 1) + ' ppm CaCO₃ and adds <b>' + added + '</b> to the feed.' +
+        '<br>This sets the alkalinity, not the pH. Mix the nutrients first, then read the pH with a meter and trim it to 5.8–6.2; the alkalinity left above is what keeps that reading from moving.' +
+        '<br>Always add acid to water, never water to acid; wear eye protection and measure it with a graduated cylinder.';
     }
 
     function renderWaterSummary() {
@@ -402,5 +488,5 @@
     return Object.freeze({render, renderResult, applyPreset, currentEntry, currentResult, csvRows, copyToBlend});
   }
 
-  return Object.freeze({PPM_COLUMNS, WATER_FIELDS, WATER_RANGES, waterStatus, waterPpm, nitrogenFormsHtml, doseUnits, resolveEntry, presetDoses, calculateRecipe, createComponent});
+  return Object.freeze({PPM_COLUMNS, WATER_FIELDS, WATER_RANGES, waterStatus, waterPpm, acidPpm, acidTargetNote, nitrogenFormsHtml, doseUnits, resolveEntry, presetDoses, calculateRecipe, createComponent});
 });

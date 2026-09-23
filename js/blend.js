@@ -124,7 +124,8 @@
         state.blend.useWater = element('blendUseWater').checked;
         clearResult();
       };
-      const summary = ['Ca', 'Mg', 'S', 'N', 'K'].filter(key => water[key]).map(key => key + ' ' + format(water[key], 1)).join(' · ');
+      // P is listed too: acid for alkalinity can put more P in the water than the target asks for.
+      const summary = ['Ca', 'Mg', 'S', 'N', 'P', 'K'].filter(key => water[key]).map(key => key + ' ' + format(water[key], 1)).join(' · ');
       if (element('blendWaterSummary')) element('blendWaterSummary').textContent = summary ? '(' + summary + ' ppm, from Use rate)' : '(from Use rate)';
     }
 
