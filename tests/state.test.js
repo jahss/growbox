@@ -263,7 +263,10 @@ test('source water defaults to RO and keeps only known, non-negative values', ()
 });
 
 test('mix settings default sensibly and reject junk', () => {
-  assert.deepEqual(stateModule.freshState().mix, {mode: 'reservoir', tankSize: 100, tankUnit: 'gal', ratio: 100, heads: 2, stockSize: 50, stockUnit: 'gal'});
+  assert.deepEqual(stateModule.freshState().mix, {mode: 'reservoir', tankSize: 100, tankUnit: 'gal', ratio: 100, heads: 2, stockSize: 50, stockUnit: 'gal', currentN: 0, targetN: 0, capacity: 0});
   const state = stateModule.normalizeState({mix: {mode: 'stock', tankSize: -5, tankUnit: 'L', ratio: '128', heads: '1', stockSize: 'x', stockUnit: 'barrels'}}, products, systems);
-  assert.deepEqual(state.mix, {mode: 'stock', tankSize: 100, tankUnit: 'L', ratio: 128, heads: 1, stockSize: 50, stockUnit: 'gal'});
+  assert.deepEqual(state.mix, {mode: 'stock', tankSize: 100, tankUnit: 'L', ratio: 128, heads: 1, stockSize: 50, stockUnit: 'gal', currentN: 0, targetN: 0, capacity: 0});
+  const adjust = stateModule.normalizeState({mix: {mode: 'adjust', currentN: '120', targetN: 160, capacity: -3}}, products, systems);
+  assert.equal(adjust.mix.mode, 'adjust');
+  assert.deepEqual([adjust.mix.currentN, adjust.mix.targetN, adjust.mix.capacity], [120, 160, 0]);
 });

@@ -27,7 +27,8 @@
       // `acid` neutralizes alkalinity down to `target` ppm CaCO3; a blank id means none.
       water: {ro: true, values: {}, acid: {id: '', target: 50}},
       // "Mix it" settings, shared by Use rate and Blend finder.
-      mix: {mode: 'reservoir', tankSize: 100, tankUnit: 'gal', ratio: 100, heads: 2, stockSize: 50, stockUnit: 'gal'},
+      // Adjust tank: ppm N in the tank now and wanted; capacity 0 means not given.
+      mix: {mode: 'reservoir', tankSize: 100, tankUnit: 'gal', ratio: 100, heads: 2, stockSize: 50, stockUnit: 'gal', currentN: 0, targetN: 0, capacity: 0},
       customProducts: [],
       compareMode: 'ppm',
       n: 160,
@@ -118,10 +119,11 @@
     const mix = candidate.mix && typeof candidate.mix === 'object' && !Array.isArray(candidate.mix) ? candidate.mix : {};
     const size = (value, fallback) => number(value) > 0 ? number(value) : fallback;
     state.mix = {
-      mode: mix.mode === 'stock' ? 'stock' : 'reservoir',
+      mode: ['stock', 'adjust'].includes(mix.mode) ? mix.mode : 'reservoir',
       tankSize: size(mix.tankSize, defaults.mix.tankSize), tankUnit: mix.tankUnit === 'L' ? 'L' : 'gal',
       ratio: size(mix.ratio, defaults.mix.ratio), heads: [1, 2, 3].includes(number(mix.heads)) ? number(mix.heads) : 2,
-      stockSize: size(mix.stockSize, defaults.mix.stockSize), stockUnit: mix.stockUnit === 'L' ? 'L' : 'gal'
+      stockSize: size(mix.stockSize, defaults.mix.stockSize), stockUnit: mix.stockUnit === 'L' ? 'L' : 'gal',
+      currentN: Math.max(0, number(mix.currentN)), targetN: Math.max(0, number(mix.targetN)), capacity: Math.max(0, number(mix.capacity))
     };
 
     state.useRate = candidate.useRate && typeof candidate.useRate === 'object' && !Array.isArray(candidate.useRate)

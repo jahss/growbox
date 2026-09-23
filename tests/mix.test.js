@@ -110,3 +110,74 @@ test('a product with calcium and sulfate/phosphate gets its own tank; more tanks
   assert.deepEqual(alone.tanks.map(tank => tank.name), ['Stock']);
   assert.equal(alone.conflict, false);
 });
+
+// Jack's 12-4-16 at 6.309 g/gal delivers 200 ppm N.
+const jacks = [{product: byId.get('jacks-12-4-16'), gPerGal: 6.309}];
+const tank = (extra) => ({tankSize: 500, tankUnit: 'gal', capacity: 0, ...extra});
+
+test('adjust: raising N adds more of the recipe, in its own proportions; the water’s N cancels out', () => {
+  const raise = mix.adjustTank(jacks, tank({currentN: 120, targetN: 160}), 0);
+  assert.equal(raise.status, 'raise');
+  // 40 ppm more N from a recipe giving 200 ppm at 6.309 g/gal: 6.309 × 40/200 g/gal × 500 gal.
+  closeTo(raise.items[0].grams, 630.9, 0.05);
+  closeTo(raise.factor, 160 / 120);
+  const withWater = mix.adjustTank(jacks, tank({currentN: 120, targetN: 160}), 20);
+  closeTo(withWater.items[0].grams, 630.9, 0.05);
+  // Everything else in the fertilizer rises with its N: 100 → 140 ppm from fertilizer.
+  closeTo(withWater.factor, 1.4);
+  const litres = mix.adjustTank(jacks, tank({tankSize: 1892.705892, tankUnit: 'L', currentN: 120, targetN: 160}), 0);
+  closeTo(litres.items[0].grams, 630.9, 0.05);
+  const two = mix.adjustTank([{product: core, gPerGal: 4.6}, {product: bloom, gPerGal: 7.7}], tank({currentN: 100, targetN: 150}), 0);
+  closeTo(two.items[1].grams / two.items[0].grams, 7.7 / 4.6);
+});
+
+test('adjust: lowering N adds water, and drains first when it won’t fit', () => {
+  const dilute = mix.adjustTank(jacks, tank({currentN: 160, targetN: 120}), 0);
+  assert.equal(dilute.status, 'dilute');
+  closeTo(dilute.finalVolume, 500 * 160 / 120);
+  closeTo(dilute.addWater, 500 * 160 / 120 - 500);
+  // Water with N dilutes less: fertilizer N goes 140 → 100.
+  closeTo(mix.adjustTank(jacks, tank({currentN: 160, targetN: 120}), 20).finalVolume, 700);
+  const drain = mix.adjustTank(jacks, tank({currentN: 160, targetN: 120, capacity: 600}), 0);
+  assert.equal(drain.status, 'drain');
+  closeTo(drain.drainTo, 450);
+  closeTo(drain.drain, 50);
+  closeTo(drain.addWater, 150);
+  closeTo(drain.finalVolume, 600);
+  assert.equal(mix.adjustTank(jacks, tank({currentN: 160, targetN: 120, capacity: 700}), 0).status, 'dilute');
+});
+
+test('adjust: blanks, no N, unreachable targets and a too-small capacity say so instead of answering', () => {
+  assert.equal(mix.adjustTank(jacks, tank({currentN: 0, targetN: 160}), 0).status, 'missing');
+  assert.equal(mix.adjustTank(jacks, tank({currentN: 120, targetN: 0}), 0).status, 'missing');
+  assert.equal(mix.adjustTank(jacks, tank({currentN: 150, targetN: 150}), 0).status, 'same');
+  assert.equal(mix.adjustTank([{product: byId.get('magnesium-sulfate'), gPerGal: 2}], tank({currentN: 120, targetN: 160}), 0).status, 'no-n');
+  assert.equal(mix.adjustTank(jacks, tank({currentN: 160, targetN: 20}), 20).status, 'below-water');
+  assert.equal(mix.adjustTank(jacks, tank({currentN: 15, targetN: 160}), 20).status, 'below-water');
+  assert.equal(mix.adjustTank(jacks, tank({currentN: 160, targetN: 120, capacity: 400}), 0).status, 'capacity');
+});
+
+test('the card’s Adjust tank mode asks for readings, then says what to add, or what to drain and top up', () => {
+  const box = {innerHTML: ''};
+  const state = {mix: {mode: 'adjust', tankSize: 500, tankUnit: 'gal', ratio: 100, heads: 2, stockSize: 50, stockUnit: 'gal', currentN: 0, targetN: 0, capacity: 0}};
+  const format = (value, digits = 2) => Number(value).toFixed(digits).replace(/(\.\d*?[1-9])0+$|\.0+$/, '$1');
+  let water = {};
+  const card = mix.createComponent({document: {getElementById: () => box}, format, escape: String, getState: () => state, waterOf: () => water});
+  const lines = [{product: byId.get('jacks-12-4-16'), gPerGal: 6.309, label: '12-4-16'}];
+  card.render('urMix', lines);
+  assert.match(box.innerHTML, /Enter the tank’s N now and the N you want/);
+  Object.assign(state.mix, {currentN: 120, targetN: 160});
+  card.render('urMix', lines);
+  assert.match(box.innerHTML, /Add to the 500 gal tank/);
+  assert.match(box.innerHTML, /12-4-16<\/span><b>631 g<\/b>/);
+  assert.match(box.innerHTML, /assumes the tank was mixed with this recipe/i);
+  Object.assign(state.mix, {currentN: 160, targetN: 120, capacity: 600});
+  card.render('urMix', lines);
+  assert.match(box.innerHTML, /Drain to 450 gal/);
+  assert.match(box.innerHTML, /add 150 gal of water/);
+  water = {N: 20};
+  state.mix.capacity = 0;
+  card.render('urMix', lines);
+  assert.match(box.innerHTML, /Add 200 gal of water/);
+  assert.match(box.innerHTML, /Your water brings 20 ppm N/);
+});
